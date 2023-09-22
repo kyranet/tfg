@@ -6,7 +6,7 @@ const dao_usuario = require("./../database/services/daos/daoUsuario");
 
 const getDatosHome = async(req, res) => {
     try {
-        const [ count_proyectos, count_partenariados, count_iniciativas] = await Promise.all([
+        const [ count_proyectos, count_partenariados, count_ofertas] = await Promise.all([
             dao_colaboracion.contarProyectos(),
             dao_colaboracion.contarPartenariados(),
             dao_colaboracion.contarIniciativas(),
@@ -16,7 +16,7 @@ const getDatosHome = async(req, res) => {
             ok: true,
             count_proyectos,
             count_partenariados,
-            count_iniciativas,
+            count_ofertas,
         });
 
     } catch (error) {
@@ -71,7 +71,7 @@ const getAreasConocimiento = async(req, res) => {
     
     try {
         areas = await dao_usuario.obtenerAreasConocimiento();
-     
+        console.log(areas);
         
         return res.status(200).json({
             ok: true,

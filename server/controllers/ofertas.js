@@ -1,10 +1,11 @@
-const dao_tentativa = require("./../database/services/daos/daoTentativa");
+const daoOferta = require("./../database/services/daos/daoOferta");
+const daoUtils = require("./../database/services/daos/daoUtils");
 const TOferta = require("./../database/services/transfers/TOfertaServicio");
 
-const getAreasservicio = async(req, res) => {
+const getAreasServicio = async (req, res) => {
     try {
-        areasServicio = await dao_tentativa.obtenerListaAreasServicio();
-        
+        areasServicio = await daoOferta.obtenerListaAreasServicio();
+
         return res.status(200).json({
             ok: true,
             areasServicio,
@@ -20,7 +21,7 @@ const getAreasservicio = async(req, res) => {
     }
 }
 
-const crearOferta = async(req, res = response) => {
+const crearOferta = async (req, res = response) => {
     try {
         let areas = [];
         req.body.area_servicio.forEach(data => {
@@ -41,8 +42,12 @@ const crearOferta = async(req, res = response) => {
             req.current_user.uid,
             areas,
             req.current_user.uid);
-        
-        await dao_tentativa.crearOferta(oferta);
+
+        let ofertaId = await daoOferta.crearOferta(oferta);
+        oferta.id = ofertaId;
+        for (tagName of req.body.tags) {
+            await daoUtils.createAndLinkedTags(tagName, ofertaId, 'oferta');
+        }
 
         return res.status(200).json({
             ok: true,
@@ -59,11 +64,11 @@ const crearOferta = async(req, res = response) => {
     }
 }
 
-const obtenerOferta = async(req, res) => {
+const obtenerOferta = async (req, res) => {
     try {
 
         const id = req.params.id;
-        const oferta = await dao_tentativa.obtenerOfertaServicio(id);
+        const oferta = await daoOferta.obtenerOfertaServicio(id);
 
         return res.status(200).json({
             ok: true,
@@ -75,13 +80,58 @@ const obtenerOferta = async(req, res) => {
 
         return res.status(500).json({
             ok: false,
-            msg: 'Error inesperado',
+            msg: 'Error inesperado.',
         });
     }
 }
 
+
+const obtenerOfertas = async (req, res = response) => {
+    try {
+        let ofertas = await daoOferta.obtenerTodasOfertasServicio(req.query.limit, req.query.skip, req.query.filtros);
+        let total = await daoOferta.contarTodasOfertasServicio();
+        console.log("total de ogertas generadas en la fata desde el controlador");
+        console.log(total);
+        return res.status(200).json({
+            ok: true,
+            ofertas,
+            total: total
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado',
+        })
+    }
+}
+/*****/
+
+const getOfertasAreaServicio = async(req, res = response) => {
+    console.log("aaaaaaaa");
+    try{
+        const id = req.params.id;
+        console.log("IDD: " + id);
+        let ofertas = [];
+        ofertas = await daoOferta.obtenerAnuncioPorAreaServicio(id);
+        console.log("ofertas = " + ofertas);
+        return res.status(200).json({
+            ok: true,
+            ofertas
+        })
+    } catch(error){
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: "Error inesperado",
+        })
+    }
+}
+
 module.exports = {
-    getAreasservicio,
+    getAreasServicio,
     crearOferta,
-    obtenerOferta
+    obtenerOferta,
+    obtenerOfertas,
+    getOfertasAreaServicio
 }

@@ -4,7 +4,7 @@ const { Router } = require('express');
 const { check } = require('express-validator');
 const { validarCampos } = require('./../middlewares/validar-campos');
 const { obtenerProfesores} = require('../controllers/usuarios');
-const { getUsuarios, getUsuario, crearUsuario, actualizarUsuario, borrarUsuario } = require('./../controllers/usuarios');
+const { getUsuarios, getUsuario, getUsuarioPath,crearUsuario, actualizarUsuario, borrarUsuario } = require('./../controllers/usuarios');
 const { opcionalJWT, validarJWT, validarEsGestor } = require('../middlewares/validar-jwt');
 
 const router = Router();
@@ -18,7 +18,7 @@ router.get(
     obtenerProfesores
 );
 
-// obtener un usuario, solo gestor
+// obtener path de usuario, si existe
 router.get(
     '/:uid', [
         check('uid', 'El id del usuario debe ser válido').isMongoId(),
@@ -27,6 +27,10 @@ router.get(
         validarCampos
     ],
     getUsuario
+);
+
+router.get(
+    '/avatar/:uid',  [validarJWT, validarEsGestor], getUsuarioPath
 );
 
 // crear usuario, cualquiera (registro) - para crear gestor se debe ser gestor

@@ -1,4 +1,5 @@
 const TAnuncioServicio = require('./TAnuncioServicio');
+
 class TDemandaServicio extends TAnuncioServicio{
     creador;
     ciudad;
@@ -18,19 +19,19 @@ class TDemandaServicio extends TAnuncioServicio{
     constructor( id_demanda, titulo, descripcion, imagen, created_at, updated_at,
         creador, ciudad, finalidad, periodo_definicion_ini, periodo_definicion_fin, periodo_ejecucion_ini,
         periodo_ejecucion_fin, fecha_fin, observaciones_temporales, necesidad_social, titulacionlocal,
-        area_servicio, comunidad_beneficiaria, dummy) 
+        area_servicio, comunidad_beneficiaria, dummy)
     {
         super(id_demanda, titulo, descripcion, imagen, created_at, updated_at, area_servicio, dummy);
-        this.creador = creador; 
-        this.ciudad = ciudad; 
-        this.finalidad = finalidad; 
-        this.periodo_definicion_ini = periodo_definicion_ini; 
-        this.periodo_definicion_fin = periodo_definicion_fin; 
+        this.creador = creador;
+        this.ciudad = ciudad;
+        this.finalidad = finalidad;
+        this.periodo_definicion_ini = periodo_definicion_ini;
+        this.periodo_definicion_fin = periodo_definicion_fin;
         this.periodo_ejecucion_ini = periodo_ejecucion_ini;
-        this.periodo_ejecucion_fin = periodo_ejecucion_fin; 
-        this.fecha_fin = fecha_fin; 
-        this.observaciones_temporales = observaciones_temporales; 
-        this.necesidad_social = necesidad_social; 
+        this.periodo_ejecucion_fin = periodo_ejecucion_fin;
+        this.fecha_fin = fecha_fin;
+        this.observaciones_temporales = observaciones_temporales;
+        this.necesidad_social = necesidad_social;
         this.titulacionlocal = titulacionlocal;
         this.comunidad_beneficiaria = comunidad_beneficiaria;
         this.dummy = dummy;
@@ -134,7 +135,7 @@ class TDemandaServicio extends TAnuncioServicio{
     setTitulacionlocal_demandada(titulacionlocal) {
         this.titulacionlocal = titulacionlocal;
     }
-    
+
 
 }
 

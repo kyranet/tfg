@@ -164,4 +164,19 @@ googleInit() {
   borrarUsuario(usuario: Usuario) {
     return this.http.delete(`${ base_url }/usuarios/${ usuario.uid }`, this.headers);
   }
+
+  getAvatar() {
+    return this.http.get<{ ok: boolean, usuario: Usuario}>(`${ base_url }/usuarios`, this.headers)
+                    .pipe(
+                      map( (resp: {ok: boolean, usuario: Usuario}) => resp.usuario )
+                    );
+  }
+ 
+  getAvatarPath(usuario: string) {
+    return this.http.get<{ ok: boolean, path: string}>(`${ base_url }/usuarios/avatar/${usuario}`, this.headers)
+                    .pipe(
+                      map( (resp: {ok: boolean, path: string}) => resp.path )
+                    );
+  }
+ 
 }

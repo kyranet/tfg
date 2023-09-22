@@ -1,4 +1,5 @@
 import { environment } from '../../environments/environment';
+ 
 
 const base_url = environment.base_url;
 
@@ -23,6 +24,7 @@ export class Usuario {
         public telefono?: Number,
         public url?: string,
         public mision?: string,
+        public avatar?: string
     ) {}
 
     get imagenUrl() {
@@ -33,9 +35,9 @@ export class Usuario {
 
         if(this.origin_img.includes('https')) {
             return this.origin_img;
-        }
+        } 
 
-        return `${ base_url }/upload/${ this.origin_img }/avatar`;
+        return `${ base_url }/photos/${ this.origin_img }`;
     }
 
     get additionalInfoArray() {
@@ -70,24 +72,15 @@ export class Usuario {
         switch (this.rol) {
             case 'ROL_ESTUDIANTE':
                 return 'Estudiante';
-                break;
-
             case 'ROL_PROFESOR':
                 return 'Profesor';
-                break;
-
             case 'ROL_SOCIO_COMUNITARIO':
                 return 'Socio comunitario';
-                break;
-
             case 'ROL_GESTOR':
                 return 'Gestor';
-                break;
-
             default:
                 console.log('Usuario - Rol no definido', this);
                 throw "Rol no definido";
-                break;
         }
     }
 

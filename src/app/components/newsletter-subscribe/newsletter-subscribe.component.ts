@@ -9,6 +9,7 @@ import { UsuarioService } from 'src/app/services/usuario.service';
   templateUrl: './newsletter-subscribe.component.html',
   styleUrls: ['./newsletter-subscribe.component.scss']
 })
+
 export class NewsletterSubscribeComponent {
 
   public formSending = false;

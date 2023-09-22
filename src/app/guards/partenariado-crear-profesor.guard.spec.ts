@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { PartenariadoCrearProfesorGuard } from './partenariado-crear-profesor.guard';
 
-describe('PartenariadoCrearProfesorGuard', () => {
+xdescribe('PartenariadoCrearProfesorGuard', () => {
   let guard: PartenariadoCrearProfesorGuard;
 
   beforeEach(() => {

@@ -5,11 +5,11 @@ import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { ValidateEqualModule } from 'ng-validate-equal';
-import { NgMultiSelectDropDownModule } from "ng-multiselect-dropdown";
-import {MatAutocompleteModule} from '@angular/material/autocomplete';
+import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import {MatFormFieldModule} from '@angular/material/form-field';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
@@ -21,7 +21,10 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
 // libraries
-import { FontAwesomeModule, FaIconLibrary } from '@fortawesome/angular-fontawesome';
+import {
+    FontAwesomeModule,
+    FaIconLibrary,
+} from '@fortawesome/angular-fontawesome';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 import { far } from '@fortawesome/free-regular-svg-icons';
 
@@ -58,21 +61,15 @@ import { SobreApsUnedQuienesSomosComponent } from './pages/sobre-aps-uned-quiene
 import { SobreApsUnedHistoriaComponent } from './pages/sobre-aps-uned-historia/sobre-aps-uned-historia.component';
 import { SobreApsUnedContactaComponent } from './pages/sobre-aps-uned-contacta/sobre-aps-uned-contacta.component';
 
-
-// iniciativas
-import { IniciativasComponent } from './pages/iniciativas/iniciativas.component';
-import { IniciativasVerComponent } from './pages/iniciativas-ver/iniciativas-ver.component';
-import { IniciativasCrearComponent } from './pages/iniciativas-crear/iniciativas-crear.component';
-import { IniciativasEditarComponent } from './pages/iniciativas-editar/iniciativas-editar.component';
-
 // ofertas
-// import { OfertasComponent } from './pages/ofertas/ofertas.component';
-// import { OfertasVerComponent } from './pages/ofertas-ver/ofertas-ver.component';
+import { OfertasComponent } from './pages/ofertas/ofertas.component';
+import { OfertasVerComponent } from './pages/ofertas-ver/ofertas-ver.component';
 import { OfertasCrearComponent } from './pages/ofertas-crear/ofertas-crear.component';
-// import { OfertasEditarComponent } from './pages/ofertas-editar/ofertas-editar.component';
+//import { OfertasEditarComponent } from './pages/ofertas-editar/ofertas-editar.component';
 
 //demandas
 import { crearDemandaComponent } from './pages/crear-demanda/crear-demanda.component';
+import { DemandasComponent } from './pages/demandas/demandas.component';
 
 // partenariados
 import { PartenariadosComponent } from './pages/partenariados/partenariados.component';
@@ -91,112 +88,148 @@ import { GestorNewsletterComponent } from './pages/gestor/gestor-newsletter/gest
 // varios y error pages
 import { CondicionesComponent } from './pages/condiciones/condiciones.component';
 import { Code404Component } from './errors/code404/code404.component';
+import { TagInputModule } from 'ngx-chips';
+import { DemandasVerComponent } from './pages/demandas-ver/demandas-ver.component';
+import { ResumenComponent } from './pages/resumen/resumen.component';
+import { OfertaCardComponent } from './pages/oferta-card/oferta-card.component';
+import { PartenariadosCardComponent } from './pages/partenariados-card/partenariados-card.component';
+import { ResumenEstudianteExternoComponent } from './pages/resumen-estudiante-externo/resumen-estudiante-externo.component';
+import { ResumenEstudianteInternoComponent } from './pages/resumen-estudiante-interno/resumen-estudiante-interno.component';
+import { ResumenProfesorExternoComponent } from './pages/resumen-profesor-externo/resumen-profesor-externo.component';
+import { ResumenProfesorInternoComponent } from './pages/resumen-profesor-interno/resumen-profesor-interno.component';
+import { ResumenSocioComunitarioComponent } from './pages/resumen-socio-comunitario/resumen-socio-comunitario.component';
+import { ResumenOficinaApsComponent } from './pages/resumen-oficina-aps/resumen-oficina-aps.component';
+import { SugerirOfertaComponent } from './pages/sugerir-oferta/sugerir-oferta.component';
+import { FaqComponent } from './pages/faq/faq.component';
+import { CheckboxNotificacionesComponent } from './pages/checkbox-notificaciones/checkbox-notificaciones.component';
+import { ProyectosCardComponent } from './pages/proyectos-card/proyectos-card.component';
+import { ServicioOfertadoComponent } from './pages/servicio-ofertado/servicio-ofertado.component';
+import {OfertaRespaldadaComponent} from './pages/oferta-respaldada/oferta-respaldada.component';
 
-
-
+TagInputModule.withDefaults({
+    tagInput: {
+        placeholder: 'Add a new tag',
+        // add here other default values for tag-input
+    },
+    dropdown: {
+        displayBy: 'my-display-value',
+        // add here other default values for tag-input-dropdown
+    }
+});
 
 // Go!
 @NgModule({
-  declarations: [
+    declarations: [
+        // main root component
+        AppComponent,
 
-    // main root component
-    AppComponent,
+        // pipes
+        SafeHtmlPipe,
 
-    // pipes
-    SafeHtmlPipe,
+        // regular components
+        NewsletterSubscribeComponent,
 
-    // regular components
-    NewsletterSubscribeComponent,
+        // shared by all pages
+        NavbarComponent,
+        FooterComponent,
+        BreadcrumbsComponent,
 
-    // shared by all pages
-    NavbarComponent,
-    FooterComponent,
-    BreadcrumbsComponent,
+        // auth
+        LoginComponent,
+        RegisterComponent,
+        ProfileComponent,
 
-    // auth
-    LoginComponent,
-    RegisterComponent,
-    ProfileComponent,
+        // gestor
+        GestionUsuariosComponent,
 
-    // gestor
-    GestionUsuariosComponent,
+        // regular pages
+        HomeComponent,
+        CarouselComponent,
+        QueEsApsComponent,
 
-    // regular pages
-    HomeComponent,
-    CarouselComponent,
-    QueEsApsComponent,
+        ComoParticiparEstudiantesComponent,
+        ComoParticiparProfesoresComponent,
+        ComoParticiparSociosComunitariosComponent,
 
-    ComoParticiparEstudiantesComponent,
-    ComoParticiparProfesoresComponent,
-    ComoParticiparSociosComunitariosComponent,
+        SobreApsUnedQuienesSomosComponent,
+        SobreApsUnedHistoriaComponent,
+        SobreApsUnedContactaComponent,
 
-    SobreApsUnedQuienesSomosComponent,
-    SobreApsUnedHistoriaComponent,
-    SobreApsUnedContactaComponent,
+        // ofertas
+        OfertasCrearComponent,
+        OfertasComponent,
+        OfertasVerComponent,
+        // partenariados
+        PartenariadosComponent,
+        PartenariadosVerComponent,
+        PartenariadoCrearProfesorComponent,
 
-    // iniciativas
-    IniciativasComponent,
-    IniciativasVerComponent,
-    IniciativasCrearComponent,
-    IniciativasEditarComponent,
+        // proyectos
+        ProyectosComponent,
 
-    // ofertas
-    OfertasCrearComponent,
-    
-    // partenariados
-    PartenariadosComponent,
-    PartenariadosVerComponent,
-    PartenariadoCrearProfesorComponent,
+        //demandas
+        crearDemandaComponent,
+        DemandasComponent,
 
-    // proyectos
-    ProyectosComponent,
+        // gestor
+        GestionUsuariosEditarComponent,
+        GestorEmailsComponent,
+        GestorNewsletterComponent,
 
-    //demandas
-    crearDemandaComponent,
+        // varios
+        CondicionesComponent,
+        Code404Component,
+        ProyectosVerComponent,
+        DemandasVerComponent,
+        ResumenComponent,
+        OfertaCardComponent,
+        PartenariadosCardComponent,
+        OfertaRespaldadaComponent,
+        ResumenEstudianteExternoComponent,
+        ResumenEstudianteInternoComponent,
+        ResumenProfesorExternoComponent,
+        ResumenProfesorInternoComponent,
+        ResumenSocioComunitarioComponent,
+        ResumenOficinaApsComponent,
+        SugerirOfertaComponent,
+        FaqComponent,
+        CheckboxNotificacionesComponent,
+        ProyectosCardComponent,
+        ServicioOfertadoComponent,
+    ],
+    imports: [
+        BrowserModule,
+        CommonModule,
+        RouterModule,
+        NgMultiSelectDropDownModule.forRoot(),
+        MatAutocompleteModule,
+        MatInputModule,
+        MatButtonModule,
+        MatFormFieldModule,
+        MatSelectModule,
+        BrowserAnimationsModule,
+        NgxMatSelectSearchModule,
 
-    // gestor
-    GestionUsuariosEditarComponent,
-    GestorEmailsComponent,
-    GestorNewsletterComponent,
+        FormsModule,
+        ReactiveFormsModule,
+        HttpClientModule,
 
-    // varios
-    CondicionesComponent,
-    Code404Component,
-    ProyectosVerComponent,
-  ],
-  imports: [
-    BrowserModule,
-    CommonModule,
-    RouterModule,
-    NgMultiSelectDropDownModule.forRoot(),
-    MatAutocompleteModule,
-    MatInputModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    BrowserAnimationsModule,
-    NgxMatSelectSearchModule,
-  
+        // libraries
+        FontAwesomeModule,
 
-    FormsModule,
-    ReactiveFormsModule,
-    HttpClientModule,
+        // app routing
+        AppRoutingModule,
 
-    // libraries
-    FontAwesomeModule,
+        ValidateEqualModule,
 
-    // app routing
-    AppRoutingModule,
-    
-    ValidateEqualModule,
-  ],
-  providers: [],
-  bootstrap: [AppComponent]
+        //utils modules
+        TagInputModule,
+    ],
+    providers: [],
+    bootstrap: [AppComponent],
 })
-
-
 export class AppModule {
-  constructor(library: FaIconLibrary) {
-    library.addIconPacks(fas, far);
-  }
+    constructor(library: FaIconLibrary) {
+        library.addIconPacks(fas, far);
+    }
 }

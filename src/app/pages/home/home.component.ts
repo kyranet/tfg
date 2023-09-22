@@ -10,12 +10,12 @@ export class HomeComponent {
 
   public count_proyectos: string;
   public count_partenariados: string;
-  public count_iniciativas: string;
+  public count_ofertas: string;
 
   constructor( private homeService: HomeService) {
     this.count_proyectos = '...';
     this.count_partenariados = '...';
-    this.count_iniciativas = '...';
+    this.count_ofertas = '...';
   }
 
   ngOnInit(): void {
@@ -28,7 +28,7 @@ export class HomeComponent {
         .subscribe( (resp: any) => {
           this.count_proyectos = resp.count_proyectos;
           this.count_partenariados = resp.count_partenariados;
-          this.count_iniciativas = resp.count_iniciativas;
+          this.count_ofertas = resp.count_ofertas;
         });
   }
 

@@ -2,19 +2,17 @@
 <div class="container mt-4 animate__animated animate__fadeIn animate__faster">
 
     <h5 class="px-4 py-2 mb-4 text-white display-block bg-secondary d-flex justify-content-between align-items-center">
-        <b>Ver Partenariado</b>
-        <a class="btn btn-primary border-white btn-sm" [routerLink]="['/mis-partenariados']" role="button">Volver a Mis Partenariados</a>
+        <strong>Ver Partenariado</strong>
+        <a [routerLink]="['/mis-partenariados']" class="btn btn-primary border-white btn-sm" role="button">Volver a Mis Partenariados</a>
     </h5>
 
-    <div class="alert alert-warning" role="alert" *ngIf="partenariado?.proponedor.rol === 'ROL_SOCIO_COMUNITARIO' && this.usuarioService.usuario && this.usuarioService.usuario.esSocioComunitario">
-        <b>Atención: </b> Estás en la aplicación como <b>Socio comunitario</b>. Sólo un Profesor puede convertir este partenariado en PROYECTO.
+    <div *ngIf="partenariado?.proponedor.rol === 'ROL_SOCIO_COMUNITARIO' && this.usuarioService.usuario && this.usuarioService.usuario.esSocioComunitario" class="alert alert-warning" role="alert">
+        <strong>Atención: </strong> Estás en la aplicación como <strong>Socio comunitario</strong>. Sólo un Profesor puede convertir este partenariado en PROYECTO.
     </div>
 
-    <div class="alert alert-warning" role="alert" *ngIf="partenariado?.estado !== 'En negociación' ">
-        <b>Atención: </b> Esta PARTENARIADO ya no está en negociación. Se puede seguir viendo a modo de consulta. Si crees que este partenariado se ha cerrado por error, por favor, <a class="font-weight-bold" [routerLink]="['/sobre-ApS-UNED/contacta']">contacta con el Gestor</a> para que evalúe si puede proceder a abrirlo de nuevo.
+    <div *ngIf="partenariado?.estado !== 'En negociación' " class="alert alert-warning" role="alert">
+        <strong>Atención: </strong> Esta PARTENARIADO ya no está en negociación. Se puede seguir viendo a modo de consulta. Si crees que este partenariado se ha cerrado por error, por favor, <a [routerLink]="['/sobre-ApS-UNED/contacta']" class="font-weight-bold">contacta con el Gestor</a> para que evalúe si puede proceder a abrirlo de nuevo.
     </div>
-
-
 
 
     <!-- Info de cargando -->
@@ -25,77 +23,76 @@
     </div>
 
 
-    <div class="row" *ngIf="partenariado">
+    <div *ngIf="partenariado" class="row">
 
         <div class="col-9">
 
             <header class="card-header mb-2 border d-flex justify-content-between align-items-center">
-                <h6 class="title mb-0"><b>Partenariado: {{ partenariado.titulo }}</b></h6>
-                <span><b>Estado: {{ partenariado.estado }}</b></span>
+                <h6 class="title mb-0"><strong>Partenariado: {{ partenariado.titulo }}</strong></h6>
+                <span><strong>Estado: {{ partenariado.estado }}</strong></span>
             </header>
 
             <div class="card my-2 p-3">
                 <div class="d-flex justify-content-between">
-                    <div><b>Rama de conocimiento:</b> {{ partenariado.rama }}</div>
-                    <div><b>Ciudad:</b> {{ partenariado.ciudad }}</div>
+                    <div><strong>Rama de conocimiento:</strong> {{ partenariado.rama }}</div>
+                    <div><strong>Ciudad:</strong> {{ partenariado.ciudad }}</div>
                 </div>
-                <hr />
+                <hr/>
 
-                <p><b>Fecha de registro de la partenariado:</b> {{ partenariado.parsedCreatedAt }}</p>
-                <p><b>Descripción:</b> {{ partenariado.descripcion }}</p>
-                <p><b>¿Quién es el responsable de la partenariado?:</b></p>
+                <p><strong>Fecha de registro de la partenariado:</strong> {{ partenariado.parsedCreatedAt }}</p>
+                <p><strong>Descripción:</strong> {{ partenariado.descripcion }}</p>
+                <p><strong>¿Quién es el responsable de la partenariado?:</strong></p>
                 <ul>
-                    <li><b><i>Nombre y Apellidos: </i></b>{{ partenariado.proponedor.nombre}} {{ partenariado.proponedor.apellidos}}</li>
+                    <li><strong><em>Nombre y Apellidos: </em></strong>{{ partenariado.proponedor.nombre}} {{ partenariado.proponedor.apellidos}}</li>
                     <li>
-                        <b><i>
+                        <strong><em>
                             <span *ngIf="['ROL_ESTUDIANTE', 'ROL_PROFESOR', 'ROL_GESTOR'].includes(partenariado.proponedor.rol)">Universidad / Titulación: </span>
                             <span *ngIf="['ROL_ESTUDIANTE'].includes(partenariado.proponedor.rol)">Sector: </span>
-                        </i></b>
+                        </em></strong>
                         {{ partenariado.proponedor.additionalInfoPlain || 'Sin información'}}
                     </li>
-                    <li><b><i>Rol en la aplicación: </i></b>{{ partenariado.proponedor.displayRol}}</li>
+                    <li><strong><em>Rol en la aplicación: </em></strong>{{ partenariado.proponedor.displayRol}}</li>
                 </ul>
 
 
             </div>
 
 
-
-            <header class="card-header mb-2 border d-flex justify-content-between" *ngIf="partenariado.estado == 'En negociación'">
-                <h6 class="title mb-0"><b>Escribir Mensaje</b></h6>
+            <header *ngIf="partenariado.estado == 'En negociación'" class="card-header mb-2 border d-flex justify-content-between">
+                <h6 class="title mb-0"><strong>Escribir Mensaje</strong></h6>
             </header>
 
-            <header class="card-header mb-2 border d-flex justify-content-between" *ngIf="partenariado.estado != 'En negociación'">
-                <h6 class="title mb-0"><b>El partenariado ya no está en negociación y no se pueden escribir mensajes </b></h6>
+            <header *ngIf="partenariado.estado != 'En negociación'" class="card-header mb-2 border d-flex justify-content-between">
+                <h6 class="title mb-0"><strong>El partenariado ya no está en negociación y no se pueden escribir mensajes </strong></h6>
             </header>
 
-            <div class="card my-2 p-3" *ngIf="partenariado.estado == 'En negociación'">
+            <div *ngIf="partenariado.estado == 'En negociación'" class="card my-2 p-3">
                 <div class="col-md-12">
                     <div class="form-group">
                         <label for="mensaje">Mensaje</label>
-                        <textarea id="mensaje" name="mensaje" class="form-control" placeholder="Escribe un mensaje" rows="3" [(ngModel)]="mensaje"></textarea>
+                        <textarea [(ngModel)]="mensaje" class="form-control" id="mensaje" name="mensaje" placeholder="Escribe un mensaje" rows="3"></textarea>
                     </div>
                 </div>
                 <div class="col-md-12">
-                    <input type="submit" class="btn btn-success float-right" [value]="'Enviar mensaje'" [disabled]="this.mensaje == ''" (click)="enviarMensaje()">
+                    <input (click)="enviarMensaje()" [disabled]="this.mensaje == ''" [value]="'Enviar mensaje'" class="btn btn-success float-right" type="submit">
                 </div>
             </div>
 
             <header class="card-header mb-2 border d-flex justify-content-between">
-                <h6 class="title mb-0"><b>Histórico de mensajes del partenariado</b></h6>
+                <h6 class="title mb-0"><strong>Histórico de mensajes del partenariado</strong></h6>
             </header>
 
 
-            <div class="card my-2 p-3" *ngIf="!numeroMensajes()">
+            <div *ngIf="!numeroMensajes()" class="card my-2 p-3">
                 Aún no hay ningún mensaje...
             </div>
 
-            <div class="card my-2 p-3" *ngFor="let mensaje of partenariado.mensajes">
+            <div *ngFor="let mensaje of partenariado.mensajes" class="card my-2 p-3">
                 <div class="d-flex justify-content-between">
-                    <div><b>Autor:</b> {{ mensaje.nombre }} {{ mensaje.apellidos }} <{{ mensaje.email }}> [{{ mensaje.rol}}]</div>
-                    <div><b>Fecha:</b> {{ parseFecha(mensaje.fecha) }}</div>
+                    <div><strong>Autor:</strong> {{ mensaje.nombre }} {{ mensaje.apellidos }} <{{ mensaje.email }}> [{{ mensaje.rol}}]</div>
+                    <div><strong>Fecha:</strong> {{ parseFecha(mensaje.fecha) }}</div>
                 </div>
-                <hr />
+                <hr/>
                 <p>{{ mensaje.texto }}</p>
             </div>
 
@@ -113,7 +110,7 @@
                     <div class="card-body">
                         <div>
                             <div class="text-center font-weight-bold mb-4">{{partenariado.estado}}</div>
-                            <button *ngIf="!partenariado.proyecto && partenariado.estado == 'En negociación' && this.usuarioService.usuario && (this.usuarioService.usuario.esProfesor || this.usuarioService.usuario.esGestor)" class="btn btn-warning border-white btn-sm w-100 font-weight-bold mb-2" (click)="cambiarEstado('Acordado')" role="button">CONVERTIR EN PROYECTO</button>
+                            <button (click)="cambiarEstado('Acordado')" *ngIf="!partenariado.proyecto && partenariado.estado == 'En negociación' && this.usuarioService.usuario && (this.usuarioService.usuario.esProfesor || this.usuarioService.usuario.esGestor)" class="btn btn-warning border-white btn-sm w-100 font-weight-bold mb-2" role="button">CONVERTIR EN PROYECTO</button>
                             <p *ngIf="!partenariado.proyecto && partenariado.estado == 'En negociación' && this.usuarioService.usuario && (this.usuarioService.usuario.esProfesor || this.usuarioService.usuario.esGestor)">Si pulsas convertir en proyecto, se creará un proyecto y se dará este partenariado por Acordado.</p>
 
                         </div>
@@ -121,30 +118,30 @@
                     </div>
                 </div>
 
-                <div class="filtro" *ngIf="this.usuarioService.usuario && (this.usuarioService.usuario.esProfesor || this.usuarioService.usuario.esGestor) && partenariado.estado == 'En negociación'">
+                <div *ngIf="this.usuarioService.usuario && (this.usuarioService.usuario.esProfesor || this.usuarioService.usuario.esGestor) && partenariado.estado == 'En negociación'" class="filtro">
                     <header class="card-header border-top rounded-0">
                         <h6 class="title mb-0">Cancelar Partenariado </h6>
                     </header>
 
                     <div class="card-body">
                         <div>
-                            <button *ngIf="this.usuarioService.usuario && (this.usuarioService.usuario.esProfesor || this.usuarioService.usuario.esGestor) && partenariado.estado == 'En negociación'" class="btn btn-danger border-white btn-sm w-100 font-weight-bold mb-2" (click)="cambiarEstado('Sin respuesta')" role="button">Cerrar - Sin respuesta</button>
-                            <button *ngIf="this.usuarioService.usuario && (this.usuarioService.usuario.esProfesor || this.usuarioService.usuario.esGestor) && partenariado.estado == 'En negociación'" class="btn btn-danger border-white btn-sm w-100 font-weight-bold mb-2" (click)="cambiarEstado('Suspendido')" role="button">Cerrar - Suspendido</button>
+                            <button (click)="cambiarEstado('Sin respuesta')" *ngIf="this.usuarioService.usuario && (this.usuarioService.usuario.esProfesor || this.usuarioService.usuario.esGestor) && partenariado.estado == 'En negociación'" class="btn btn-danger border-white btn-sm w-100 font-weight-bold mb-2" role="button">Cerrar - Sin respuesta</button>
+                            <button (click)="cambiarEstado('Suspendido')" *ngIf="this.usuarioService.usuario && (this.usuarioService.usuario.esProfesor || this.usuarioService.usuario.esGestor) && partenariado.estado == 'En negociación'" class="btn btn-danger border-white btn-sm w-100 font-weight-bold mb-2" role="button">Cerrar - Suspendido</button>
 
-                            <button *ngIf="this.usuarioService.usuario && this.usuarioService.usuario.esGestor && partenariado.estado != 'En negociación'" class="btn btn-success border-white btn-sm w-100 font-weight-bold mb-2" (click)="cambiarEstado('En negociación')" role="button">Reabrir Partenariado</button>
+                            <button (click)="cambiarEstado('En negociación')" *ngIf="this.usuarioService.usuario && this.usuarioService.usuario.esGestor && partenariado.estado != 'En negociación'" class="btn btn-success border-white btn-sm w-100 font-weight-bold mb-2" role="button">Reabrir Partenariado</button>
                         </div>
 
                     </div>
                 </div>
 
-                <div class="filtro" *ngIf="this.usuarioService.usuario && this.usuarioService.usuario.esGestor && partenariado.estado != 'En negociación'">
+                <div *ngIf="this.usuarioService.usuario && this.usuarioService.usuario.esGestor && partenariado.estado != 'En negociación'" class="filtro">
                     <header class="card-header border-top rounded-0">
                         <h6 class="title mb-0">Reabrir Partenariado </h6>
                     </header>
 
                     <div class="card-body">
                         <div>
-                            <button class="btn btn-success border-white btn-sm w-100 font-weight-bold mb-2" (click)="cambiarEstado('En negociación')" role="button">Reabrir Partenariado</button>
+                            <button (click)="cambiarEstado('En negociación')" class="btn btn-success border-white btn-sm w-100 font-weight-bold mb-2" role="button">Reabrir Partenariado</button>
                         </div>
 
                     </div>
@@ -160,19 +157,18 @@
                         <ul *ngIf="partenariado.archivos.length > 0" class="list-group">
                             <li *ngFor="let archivo of partenariado.archivos" class="list-group-item">
                                 <a href="{{ archivo.url }}" target="_blank">{{ archivo.client_name }}</a>
-                                <span class="remove-image-btn float-right" aria-label="Borrar Fichero" (click)="borrarFichero(archivo._id)" *ngIf="this.usuarioService.usuario.esGestor">(x)</span>
+                                <span (click)="borrarFichero(archivo._id)" *ngIf="this.usuarioService.usuario.esGestor" aria-label="Borrar Fichero" class="remove-image-btn float-right">(x)</span>
                             </li>
                         </ul>
-
 
 
                         <div class="row">
                             <div class="col-12 justify-content-between">
                                 <div class="form-group">
-                                    <label for="file-upload-2" class="custom-file-upload">
-                                        <i class="fa fa-cloud-upload"></i> Subir Fichero (solo pdf)
+                                    <label class="custom-file-upload" for="file-upload-2">
+                                        <em class="fa fa-cloud-upload"></em> Subir Fichero (solo pdf)
                                     </label>
-                                    <input id="file-upload-2" type="file" (change)="subirFichero($event.target.files[0])"/>
+                                    <input (change)="subirFichero($event.target.files[0])" id="file-upload-2" type="file"/>
                                 </div>
                             </div>
                         </div>
@@ -185,26 +181,18 @@
                     </header>
 
                     <div class="card-body">
-
                         <ul class="list-group">
-                            <li class="list-group-item"><a [routerLink]="['/iniciativas/ver/', partenariado.iniciativa]">Ver Iniciativa Origen</a></li>
+                            <li class="list-group-item"><a [routerLink]="['/ofertas/ver/', partenariado.oferta]">Ver Oferta</a></li>
                         </ul>
-
                         <ul class="list-group">
                             <li *ngIf="partenariado.proyecto" class="list-group-item"><a [routerLink]="['/proyectos/ver/', partenariado.proyecto]">Ver Proyecto Destino</a></li>
                             <li *ngIf="!partenariado.proyecto" class="list-group-item">El profesor aún no ha dado por acordado este partenariado y por lo tanto no se ha generado ningún proyecto.</li>
                         </ul>
-
                     </div>
                 </div>
 
             </div>
         </div>
-
-
-
-
     </div>
-
 </div>
 <app-footer></app-footer>

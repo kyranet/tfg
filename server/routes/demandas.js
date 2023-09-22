@@ -1,34 +1,46 @@
-// ruta: /api/demandas
-
 const { Router } = require('express');
 const { check } = require('express-validator');
 const { validarCampos } = require('./../middlewares/validar-campos');
-const { getAreasservicio, crearDemanda, getTitulaciones, getNecesidades, obtenerDemanda} = require('../controllers/demandas');
+const { getAreasservicio, crearDemanda, getTitulaciones, getNecesidades, obtenerDemanda, obtenerDemandas, getDemandasAreaServicio, getDemandasNecesidadSocial } = require('../controllers/demandas');
 const { opcionalJWT, validarJWT, validarEsSocioComunitarioOrEsGestor } = require('../middlewares/validar-jwt');
 
 const router = Router();
 
-//Obtener areas de servicio
+router.get('/', [], obtenerDemandas);
+
+// Obtener areas de servicio
 router.get(
-    '/areasservicio',[],
+    '/areasservicio', [],
     getAreasservicio
 );
 
-//Obtener necesidades sociales
+// Obtener necesidades sociales
 router.get(
-    '/necesidadsocial',[],
+    '/necesidadsocial', [],
     getNecesidades
 );
 
+// Obtener las demandas que contienen una determinada area de servicio
 router.get(
-    '/demanda/:id', [],
-    obtenerDemanda
+    '/demandasAreaServicio/:id', [],
+    getDemandasAreaServicio
 );
 
-//Obtener titulaciones locales
+// Obtener las demandas que contienen una determinada necesidad social
 router.get(
-    '/titulacionlocal',[],
+    '/demandasNecesidadSocial/:id', [],
+    getDemandasNecesidadSocial
+);
+
+// Obtener titulaciones locales
+router.get(
+    '/titulacionlocal', [],
     getTitulaciones
+);
+
+router.get(
+    '/:id', [],
+    obtenerDemanda
 );
 
 // crear iniciativa, profesor, socio o gestor
@@ -50,7 +62,7 @@ router.post(
         check('necesidad_social', 'La necesidad social es un campo obligatorio').not().isEmpty(),
         check('comunidadBeneficiaria', 'La comunidad beneficiaria es un campo obligatorio').not().isEmpty(),
         check('titulacion_local', 'La titulacion local es un campo obligatorio').not().isEmpty(),
-        validarCampos,
+        validarCampos
     ],
     crearDemanda
 );

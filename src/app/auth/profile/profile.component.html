@@ -50,8 +50,8 @@
 
                                                 <div class="d-flex justify-content-between">
                                                     <div class="text-center ml-4">
-                                                        <img *ngIf="this.imagenPreview" [src]="this.imagenPreview" class="rounded-circle" width="96" height="96" />
-                                                        <img *ngIf="!this.imagenPreview" [src]="usuario.imagenUrl" class="rounded-circle" width="96" height="96" />
+                                                        <img *ngIf="this.imagenPreview" [src]="this.imagenPreview" class="rounded-circle" width="96" height="96" alt="preview" />
+                                                        <img *ngIf="!this.imagenPreview" [src]="usuario.imagenUrl" class="rounded-circle" width="96" height="96" alt="preview" />
 
                                                     </div>
 
@@ -59,7 +59,7 @@
 
                                                         <div class="form-group">
                                                             <label for="file-upload" class="custom-file-upload">
-                                                                <i class="fa fa-cloud-upload"></i> Subir imagen
+                                                                <em class="fa fa-cloud-upload"></em> Subir imagen
                                                             </label>
                                                             <input id="file-upload" type="file" (input)="cambiarImagen($event.target.files[0])"/>
                                                         </div>
@@ -120,7 +120,7 @@
                                         <option *ngFor="let c of codeList" [value]="c.nombre" ></option>
                                         </datalist>
                                         <small class="text-danger" *ngIf="noListMatch()">Debe elegir una universidad valida</small>
-                                       
+
                                     </div>
 
                                     <div class="form-group" *ngIf="['ROL_PROFESOR'].includes(this.profileForm.get('rol').value)">
@@ -161,9 +161,9 @@
                                             </div>
                                         </ng-template>
                                         </ng-multiselect-dropdown>
-                                       
+
                                     </div>
-                                    
+
 
                                     <div class="form-group" *ngIf="['ROL_ESTUDIANTE'].includes(this.profileForm.get('rol').value)">
                                         <label for="titulacion">
@@ -172,7 +172,7 @@
                                             </ng-container>
                                         </label>
                                         <input name="titulacion" type="text" id="titulacion" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Introduzca su titulación" [class.is-invalid] = "profileForm.get('titulacion').invalid && profileForm.get('titulacion').touched"  formControlName="titulacion">
-                        
+
                                     </div>
 
                                     <div class="form-group" *ngIf="['ROL_PROFESOR'].includes(this.profileForm.get('rol').value)">
@@ -182,7 +182,7 @@
                                             </ng-container>
                                         </label>
                                         <input name="facultad" type="text" id="facultad" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Introduzca su facultad" [class.is-invalid] = "profileForm.get('facultad').invalid && profileForm.get('facultad').touched"  formControlName="facultad">
-                        
+
                                     </div>
 
                                     <div class="form-group" *ngIf="['ROL_GESTOR', 'ROL_SOCIO_COMUNITARIO'].includes(usuario.rol)">
@@ -224,7 +224,7 @@
                                         <div *ngIf="campoNoValido('url') && ['ROL_SOCIO_COMUNITARIO'].includes(usuario.rol)" class="col">{{ campoNoValido('url') }}</div>
                                         <div *ngIf="campoNoValido('mision') && ['ROL_SOCIO_COMUNITARIO'].includes(usuario.rol)" class="col">{{ campoNoValido('mision') }}</div>
                                         <div *ngIf="campoNoValido('nombreSocioComunitario') && ['ROL_SOCIO_COMUNITARIO'].includes(usuario.rol)" class="col">{{ campoNoValido('nombreSocioComunitario') }}</div>
-                                    </div> 
+                                    </div>
 
                                     <div class="ml-auto mb-2">
                                          <input type="submit" value="Actualizar Perfil" class="btn btn-default btn-primary" [disabled]="profileForm.invalid">

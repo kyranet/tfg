@@ -1,4 +1,5 @@
 var TUsuario = require("./TUsuario");
+
 class TSocioComunitario extends TUsuario {
 
     constructor(id, correo, nombre, apellidos, password, origin_login, origin_img, createdAt, updatedAt, terminos_aceptados, sector, nombre_socioComunitario,telefono, url, mision) {

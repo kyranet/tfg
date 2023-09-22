@@ -38,7 +38,7 @@ export class ProfileComponent {
     this.obtenerAreasConocimiento();
     this.obtenerAreasConocimientoUsuario();
     await this.actualizarInformacionOrigenDeUsuario();
-    
+
 
     this.profileForm = this.fb.group({
       rol: [this.usuario.rol, Validators.required],
@@ -234,31 +234,16 @@ export class ProfileComponent {
       switch (campo) {
         case 'rol':
           return 'Debe elegir un tipo de perfil con el que será registrado en la aplicación: Estudiante, Profesor o Socio Comunitario';
-          break;
-
-        case 'email':
+          case 'email':
           return 'El campo correo electrónico es obligatorio y debe ser un correo válido';
-          break;
-
         case 'titulacion':
           return `El campo titulación es obligatorio`;
-          break;
         case 'facultad':
           return `El campo facultad es obligatorio`;
-          break;
-
         case 'areaConocimiento':
           return `El campo area/s conocimiento es obligatorio`;
-          break;
-
-
-        case 'facultad':
-          return `El campo facultad/escuela es obligatorio`;
-          break;
-
         default:
           return `El campo ${campo} es obligatorio`;
-          break;
       }
     }
 
@@ -325,7 +310,7 @@ export class ProfileComponent {
       return acc;
     }, {});
   }
-  
+
   onItemSelect(item: any) {
     console.log("onItemSelect", item);
   }

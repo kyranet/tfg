@@ -16,32 +16,38 @@ export class PartenariadosVerComponent implements OnInit {
 
   public partenariado: Partenariado;
   public partenariados: Partenariado[];
-
+  public offset = 0;
+  public limit = 50;
   public mensaje: string;
+
+  public filterCreador = '';
 
   constructor(public partenariadoService: PartenariadoService, public fileUploadService: FileUploadService, public usuarioService: UsuarioService, public router: Router, public activatedRoute: ActivatedRoute) {
     this.mensaje = '';
+    this.filterCreador = this.usuarioService.usuario.uid
   }
 
   ngOnInit(): void {
-    /* this.activatedRoute.params.subscribe( ({ id }) => {
-      this.cargarPartenariado(id);
-    }); */
+     this.activatedRoute.params.subscribe( ({ }) => {
+      this.cargarPartenariado();
+    }); 
+  } 
+
+  getFiltros() {
+    return {
+      creador: this.filterCreador
+    }
   }
 
-  /*  cargarPartenariado(id: string) {
+  
+  cargarPartenariado() {
 
     // ver o editar la partenariado
-    this.partenariadoService.cargarPartenariado(id).subscribe( (partenariado: Partenariado) => {
-
-      // si no hay partenariado, le devuelvo al listado de partenariados
-      if (!partenariado) {
-        return this.router.navigateByUrl(`/mis-partenariados`);
-      }
-
-      this.partenariado = this.partenariadoService.mapearPartenariados([partenariado])[0];
+    this.partenariadoService.cargarPartenariados(this.offset, this.limit, this.getFiltros())
+    .subscribe(({ total, filtradas, partenariados }) => { 
+      this.partenariados = partenariados 
     });
-  }  */
+  }  
 /* 
   cambiarEstado(estado: string) {
     this.partenariadoService.cambiarEstado(this.partenariado, estado)

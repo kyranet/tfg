@@ -1,15 +1,15 @@
 <app-navbar></app-navbar>
 <div class="container mt-4 animate__animated animate__fadeIn animate__faster">
     <h5 class="px-4 py-2 mb-4 text-white display-block bg-secondary d-flex justify-content-between">
-        <b>Partenariados</b>
+        <strong>{{pageTitle}}</strong>
     </h5>
 
-    <div class="alert alert-warning" role="alert" *ngIf="!this.usuarioService.usuario">
-        <b>Atención: </b> Estás en la aplicación como <b>usuario invitado</b>. Sólo los Profesores y Entidades pueden participar en los PARTENARIADOS.
+    <div *ngIf="!this.usuarioService.usuario" class="alert alert-warning" role="alert">
+        <strong>Atención: </strong> Estás en la aplicación como <strong>usuario invitado</strong>. Sólo los Profesores y Entidades pueden participar en los PARTENARIADOS.
     </div>
 
-    <div class="alert alert-warning" role="alert" *ngIf="this.usuarioService.usuario && this.usuarioService.usuario.esEstudiante">
-        <b>Atención: </b> Estás en la aplicación como <b>ESTUDIANTE</b>. Sólo los Profesores y Entidades pueden participar en los PARTENARIADOS.
+    <div *ngIf="this.usuarioService.usuario && this.usuarioService.usuario.esEstudiante" class="alert alert-warning" role="alert">
+        <strong>Atención: </strong> Estás en la aplicación como <strong>ESTUDIANTE</strong>. Sólo los Profesores y Entidades pueden participar en los PARTENARIADOS.
     </div>
 
     <div class="row">
@@ -25,7 +25,7 @@
                     </header>
 
                     <div class="card-body">
-                        <input [(ngModel)]="terminoBusqueda" (keyup)="cargarPartenariados()" (search)="cargarPartenariados()" type="search" class="form-control float-right mb-4" placeholder="Buscar por título...">
+                        <input (keyup)="cargarPartenariados()" (search)="cargarPartenariados()" [(ngModel)]="terminoBusqueda" class="form-control float-right mb-4" placeholder="Buscar por título..." type="search">
                     </div>
                 </div>
 
@@ -37,7 +37,7 @@
 
                     <div class="card-body">
                         <label *ngFor="let RAMA of RAMAS" class="form-check">
-                            <input class="form-check-input" type="checkbox" [value]="true" (change)="cargarPartenariados()" [(ngModel)]="filterRamas[RAMA]">
+                            <input (change)="cargarPartenariados()" [(ngModel)]="filterRamas[RAMA]" [value]="true" class="form-check-input" type="checkbox">
                             <span class="form-check-label">{{ RAMA }}</span>
                         </label>
                     </div>
@@ -51,7 +51,7 @@
 
                     <div class="card-body">
                         <label *ngFor="let CIUDAD of CIUDADES" class="form-check">
-                            <input class="form-check-input" type="checkbox" [value]="true" (change)="cargarPartenariados()" [(ngModel)]="filterCiudades[CIUDAD]">
+                            <input (change)="cargarPartenariados()" [(ngModel)]="filterCiudades[CIUDAD]" [value]="true" class="form-check-input" type="checkbox">
                             <span class="form-check-label">{{ CIUDAD }}</span>
                         </label>
                     </div>
@@ -65,36 +65,17 @@
 
                     <div class="card-body">
                         <label class="form-check">
-                            <input class="form-check-input" type="radio" name="ESTADO_PARTENARIADO" value="" (change)="cargarPartenariados()" [(ngModel)]="filterEstado">
+                            <input (change)="cargarPartenariados()" [(ngModel)]="filterEstado" class="form-check-input" name="ESTADO_PARTENARIADO" type="radio" value="">
                             <span class="form-check-label">Todos</span>
                         </label>
 
                         <label *ngFor="let ESTADO_PARTENARIADO of ESTADOS_PARTENARIADOS" class="form-check">
-                            <input class="form-check-input" type="radio" name="ESTADO_PARTENARIADO" value="{{ ESTADO_PARTENARIADO }}" (change)="cargarPartenariados()" [(ngModel)]="filterEstado">
+                            <input (change)="cargarPartenariados()" [(ngModel)]="filterEstado" class="form-check-input" name="ESTADO_PARTENARIADO" type="radio" value="{{ ESTADO_PARTENARIADO }}">
                             <span class="form-check-label">{{ ESTADO_PARTENARIADO }}</span>
                         </label>
                     </div>
                 </div>
-
-                <!--
-                <div class="filtro">
-                    <header class="card-header border-top rounded-0">
-                        <h6 class="title mb-0">Creador </h6>
-                    </header>
-
-                    <div class="card-body">
-                        <label class="form-check">
-                            <input class="form-check-input" type="radio" name="creador" value="" (change)="cargarPartenariados()" [(ngModel)]="filterCreador">
-                            <span class="form-check-label">Todas</span>
-                        </label>
-
-                        <label class="form-check">
-                            <input class="form-check-input" type="radio" name="creador" [value]="usuarioService.usuario.uid" (change)="cargarPartenariados()" [(ngModel)]="filterCreador">
-                            <span class="form-check-label">Ver mis partenariados</span>
-                        </label>
-                    </div>
-                </div>
-                -->
+ 
 
 
             </div>
@@ -104,10 +85,10 @@
         <div class="col-9">
 
             <header class="card-header mb-2 rounded border d-flex justify-content-between">
-                <h6 class="title mb-0">Listado de Partenariados <span class="leading-none" *ngIf="totalPartenariadosBuscados != totalPartenariados"><sub>(total: {{ totalPartenariados }})</sub></span></h6>
+                <h6 class="title mb-0">Listado de Partenariados <span *ngIf="totalPartenariadosBuscados != totalPartenariados" class="leading-none"><sub>(total: {{ totalPartenariados }})</sub></span></h6>
 
-                <span class="leading-none" *ngIf="totalPartenariadosBuscados == totalPartenariados">Total de partenariados: {{ totalPartenariados }} (mostrando del {{ firstPageRecord }} al {{ lastPageRecord }})</span>
-                <span class="leading-none" *ngIf="totalPartenariadosBuscados != totalPartenariados">Partenariados que coinciden con el filtro: {{ totalPartenariadosBuscados }} (mostrando del {{ firstPageRecord }} al {{ lastPageRecord }})</span>
+                <span *ngIf="totalPartenariadosBuscados == totalPartenariados" class="leading-none">Total de partenariados: {{ totalPartenariados }} (mostrando del {{ firstPageRecord }} al {{ lastPageRecord }})</span>
+                <span *ngIf="totalPartenariadosBuscados != totalPartenariados" class="leading-none">Partenariados que coinciden con el filtro: {{ totalPartenariadosBuscados }} (mostrando del {{ firstPageRecord }} al {{ lastPageRecord }})</span>
             </header>
 
 
@@ -121,7 +102,7 @@
                 </div>
 
                 <!-- Tabla cargada -->
-                <div class="card-body" *ngIf="!cargando">
+                <div *ngIf="!cargando" class="card-body">
 
                     <div class="text-right mb-3">
                         <button (click)="cambiarPagina(prevLimit)" class="btn btn-outline-secondary">Anteriores</button>
@@ -129,50 +110,14 @@
                         <button (click)="cambiarPagina(nextLimit)" class="btn btn-outline-secondary">Siguientes</button>
                     </div>
 
-                    <table class="table table-sm table-bordered">
-
-                        <thead>
-                            <tr class="">
-                                <th scope="col" class="w-200px">Profesores</th>
-                                <th scope="col" class="w-200px">Entidades</th>
-                                <th scope="col">Partenariado</th>
-                                <th scope="col" class="w-140px">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let partenariado of partenariados" class="">
-                                <td>
-                                    <p *ngIf="!partenariado.profesores.filter(notNull).length">Esperando profesores...</p>
-                                    <p *ngFor="let profesor of partenariado.profesores.filter(notNull)">{{ profesor.email}}</p>
-                                </td>
-                                <td>
-                                    <p *ngIf="!partenariado.entidades.filter(notNull).length">Esperando entidades...</p>
-                                    <p *ngFor="let entidad of partenariado.entidades.filter(notNull)">{{ entidad.email}}</p>
-                                </td>
-                                <td>
-                                    <b>Rama: </b>{{ partenariado.rama }}<br />
-                                    <b>Ciudad: </b>{{ partenariado.ciudad }}<br />
-                                    <b>Título: </b>{{ partenariado.titulo }}
-                                </td>
-
-                                <td class="h-100 p-0">
-                                    <div class="border-bottom mb-2 p-2 text-center">{{ partenariado.parsedCreatedAt }}</div>
-                                    <div class="mb-2 p-2 text-center">{{ partenariado.estado }}</div>
-                                    <div class="d-flex justify-content-around border-top" *ngIf="tienePermisoEdicion(partenariado)">
-                                        <fa-icon [icon]="['fas', 'edit']" class="text-primary cursor-pointer" [routerLink]="['/partenariados/ver', partenariado._id]" title="Ver partenariado"></fa-icon>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-
+                    <div class="row">
+                        <app-partenariado-card class="col-sm-6 col-lg-4 mb-3" *ngFor="let partenariado of partenariados" [partenariado]="partenariado"></app-partenariado-card> 
+                    </div> 
+ 
                 </div>
             </div>
         </div>
     </div>
-
-
 
 
 </div>

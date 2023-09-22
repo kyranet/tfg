@@ -1,0 +1,21 @@
+<div class="card mb-3 h-100">
+    <div class="card-body">
+        <h5 class="card-title">{{ oferta.titulo | slice: 0:100 }}</h5>
+        <p class="card-text">{{ oferta.descripcion | slice: 0:100 }}...</p>
+    </div>
+    <div class="card-footer">
+        <fa-icon
+            [icon]="['fas', 'eye']"
+            [routerLink]="['/ofertas/ver/', oferta.id]"
+            class="text-primary cursor-pointer"
+            title="Ver oferta"
+        ></fa-icon>
+        <fa-icon
+            *ngIf="usuarioService.usuario?.esGestor"
+            [icon]="['fas', 'edit']"
+            [routerLink]="['/ofertas/editar', oferta.id]"
+            class="text-primary cursor-pointer"
+            title="Editar oferta"
+        ></fa-icon>
+    </div>  
+</div>

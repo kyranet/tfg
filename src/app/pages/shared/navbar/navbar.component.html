@@ -1,93 +1,112 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
-  <div class="container">
-    <a class="navbar-brand" [routerLink]="['/']">
-      <img src="/assets/img/logo-uned.jpg" width="30" height="30" alt="">
-    </a>
 
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+    <div class="container">
 
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="mr-auto navbar-nav text-center text-lg-left">
-        <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-          <a class="nav-link" [routerLink]="['/']">Inicio <span class="sr-only">(actual)</span></a>
-        </li>
-        <li class="nav-item" routerLinkActive="active">
-          <a class="nav-link" [routerLink]="['/que-es-ApS']">Qué es ApS</a>
-        </li>
+        <a [routerLink]="['/']" class="navbar-brand">
+            <img alt="" height="30" src="/assets/img/logo-uned.jpg" width="30">
+        </a>
 
-        <li class="dropdown nav-item" routerLinkActive="active">
-          <a class="nav-link dropdown-toggle" data-toggle="dropdown">Cómo participar <span class="caret"></span></a>
-          <div class="dropdown-menu text-center text-lg-left">
-            <a class="dropdown-item" routerLinkActive="active" [routerLink]="['/como-participar/estudiantes']">Estudiantes</a>
-            <a class="dropdown-item" routerLinkActive="active" [routerLink]="['/como-participar/profesores']">Profesores</a>
-            <a class="dropdown-item" routerLinkActive="active" [routerLink]="['/como-participar/socioscomunitarios']">Socios comunitarios</a>
-          </div>
-        </li>
+        <button aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler"
+                data-target="#navbarSupportedContent" data-toggle="collapse" type="button">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-        <li class="dropdown nav-item" routerLinkActive="active">
-          <a class="nav-link dropdown-toggle" data-toggle="dropdown">Proyectos <span class="caret"></span></a>
-          <div class="dropdown-menu text-center text-lg-left">
-            <a class="dropdown-item" routerLinkActive="active" [routerLink]="['/iniciativas']">Iniciativas</a>
-            <a class="dropdown-item" routerLinkActive="active" [routerLink]="['/partenariados']">Partenariados</a>
-            <a class="dropdown-item" routerLinkActive="active" [routerLink]="['/proyectos']">Proyectos</a>
-          </div>
-        </li>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="mr-auto navbar-nav text-center text-lg-left">
+                <li class="nav-item" routerLinkActive="active">
+                    <a [routerLink]="['/que-es-ApS']" class="nav-link">¿Qué es el ApS?</a>
+                </li>
 
+                <li *ngIf=mostrarOfertasDeServicio() class="dropdown nav-item">
+                    <a [routerLink]="['/ofertas']" class="nav-link">Ofertas de servicio</a>
+                </li>
 
-        <li class="dropdown nav-item" routerLinkActive="active">
-          <a class="nav-link dropdown-toggle" data-toggle="dropdown">Sobre ApS UNED <span class="caret"></span></a>
-          <div class="dropdown-menu text-center text-lg-left">
-            <a class="dropdown-item" routerLinkActive="active" [routerLink]="['/sobre-ApS-UNED/quienes-somos']">Quiénes somos</a>
-            <a class="dropdown-item" routerLinkActive="active" [routerLink]="['/sobre-ApS-UNED/historia']">Historia</a>
-            <a class="dropdown-item" routerLinkActive="active" [routerLink]="['/sobre-ApS-UNED/contacta']">Contacta</a>
-          </div>
-        </li>
+                <li *ngIf=mostrarDemandasDeServicio() class="dropdown nav-item">
+                    <a [routerLink]="['/demandas']" class="nav-link">Demandas de servicio</a>
+                </li>
 
-        <li class="dropdown nav-item" routerLinkActive="active" *ngIf="this.usuarioService.usuario && this.usuarioService.usuario.esGestor">
-          <a class="nav-link dropdown-toggle" data-toggle="dropdown">Zona Admin <span class="caret"></span></a>
-          <div class="dropdown-menu text-center text-lg-left">
-            <a class="dropdown-item" routerLinkActive="active" [routerLink]="['/gestor/gestion-usuarios']">Usuarios</a>
-            <a class="dropdown-item" routerLinkActive="active" [routerLink]="['/gestor/gestion-emails']">Emails</a>
-            <a class="dropdown-item" routerLinkActive="active" [routerLink]="['/gestor/gestion-suscripciones']">Suscripciones newsletter</a>
-          </div>
-        </li>
-      </ul>
+                <li *ngIf=mostrarPartenariados() class="dropdown nav-item">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown">Paternariados</a>
+                </li>
 
+                <li class="dropdown nav-item">
+                    <a [routerLink]="['/proyectos']" class="nav-link">Proyectos</a>
+                </li>
 
-      <ul class="nav navbar-nav navbar-right" *ngIf="!isLoggedIn">
-        <li class="nav-item" routerLinkActive="active">
-          <a class="nav-link" [routerLink]="['/registro']"><span class="glyphicon glyphicon-user"></span> Registro</a>
-        </li>
+                <li class="dropdown nav-item" routerLinkActive="active">
+                    <a class="nav-link dropdown-toggle"
+                       data-toggle="dropdown">ApS {{getUniversidad()}}
+                        <span class="caret"></span>
+                    </a>
+                    <div class="dropdown-menu text-center text-lg-left">
+                        <a [routerLink]="['/sobre-ApS-UNED/quienes-somos']" class="dropdown-item"
+                           routerLinkActive="active">Quiénes
+                            somos</a>
+                        <a [routerLink]="['/sobre-ApS-UNED/historia']" class="dropdown-item" routerLinkActive="active">Historia</a>
+                        <a [routerLink]="['/sobre-ApS-UNED/contacta']" class="dropdown-item" routerLinkActive="active">Contacta</a>
+                    </div>
+                </li>
 
-        <li class="nav-item" routerLinkActive="active">
-          <a class="nav-link" [routerLink]="['/login']"><span class="glyphicon glyphicon-log-in"></span> Login</a>
-        </li>
-      </ul>
+                <li *ngIf="this.usuarioService.usuario && this.usuarioService.usuario.esGestor" class="dropdown nav-item"
+                    routerLinkActive="active">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown">Zona Admin <span
+                        class="caret"></span></a>
+                    <div class="dropdown-menu text-center text-lg-left">
+                        <a [routerLink]="['/gestor/gestion-usuarios']" class="dropdown-item" routerLinkActive="active">Usuarios</a>
+                        <a [routerLink]="['/gestor/gestion-emails']" class="dropdown-item" routerLinkActive="active">Emails</a>
+                        <a [routerLink]="['/gestor/gestion-suscripciones']" class="dropdown-item"
+                           routerLinkActive="active">Suscripciones newsletter</a>
+                    </div>
+                </li>
+            </ul>
 
-      <ul class="navbar-nav navbar-right" *ngIf="isLoggedIn">
-        <li class="nav-item dropdown">
+            <ul *ngIf="!isLoggedIn" class="nav navbar-nav navbar-right">
+                <li class="nav-item" routerLinkActive="active">
+                    <a [routerLink]="['/registro']" class="nav-link"><span class="glyphicon glyphicon-user"></span>
+                        Registro</a>
+                </li>
 
-          <a class="nav-link dropdown-toggle d-flex justify-content-end pr-3" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <div class="d-flex flex-column align-items-end justify-content-center mr-2">
-              <span title="{{ usuarioService.usuario.additionalInfoPlain }}">{{ usuarioService.usuario.nombre }} {{ usuarioService.usuario.apellidos }}</span>
-              <span><b>{{ usuarioService.usuario.displayRol }}</b></span>
-            </div>
+                <li class="nav-item" routerLinkActive="active">
+                    <a [routerLink]="['/login']" class="nav-link"><span class="glyphicon glyphicon-log-in"></span> Login</a>
+                </li>
+            </ul>
 
-            <img [src]="usuarioService.usuario.imagenUrl" width="40" height="40" class="rounded-circle">
-          </a>
+            <ul *ngIf="isLoggedIn" class="navbar-nav navbar-right">
+                <li class="nav-item dropdown">
 
-          <div class="dropdown-menu text-center text-lg-left profile-dropdown" aria-labelledby="navbarDropdownMenuLink">
-            <a class="dropdown-item" routerLinkActive="font-weight-bold" [routerLink]="['/mis-iniciativas']" *ngIf="this.usuarioService.usuario && (this.usuarioService.usuario.esGestor || this.usuarioService.usuario.esSocioComunitario || this.usuarioService.usuario.esProfesor)">Mis Iniciativas</a>
-            <a class="dropdown-item" routerLinkActive="font-weight-bold" [routerLink]="['/mis-partenariados']" *ngIf="this.usuarioService.usuario && (this.usuarioService.usuario.esGestor || this.usuarioService.usuario.esSocioComunitario || this.usuarioService.usuario.esProfesor)">Mis Partenariados</a>
-            <a class="dropdown-item" routerLinkActive="font-weight-bold" [routerLink]="['/mis-proyectos']" *ngIf="this.usuarioService.usuario">Mis Proyectos</a>
-            <a class="dropdown-item" routerLinkActive="font-weight-bold" [routerLink]="['/perfil']">Editar Perfil</a>
-            <a class="dropdown-item" href="javascript:void(0)" (click)="logout()">Salir</a>
-          </div>
-        </li>
-      </ul>
+                    <a aria-expanded="false" aria-haspopup="true"
+                       class="nav-link dropdown-toggle d-flex justify-content-end pr-3"
+                       data-toggle="dropdown" href="#" id="navbarDropdownMenuLink" role="button">
+                        <div class="d-flex flex-column align-items-end justify-content-center mr-2">
+              <span title="{{ usuarioService.usuario.additionalInfoPlain }}">{{ usuarioService.usuario.nombre }} {{
+                  usuarioService.usuario.apellidos }}</span>
+                            <span><strong>{{ usuarioService.usuario.displayRol }}</strong></span>
+                        </div>
 
+                        <img alt="user-image" aria-label="Image URL" class="rounded-circle" height="40" src="{{usuarioService.usuario.imagenUrl}}" width="40">
+                        <!-- <img alt="user-image" aria-label="Image URL" class="rounded-circle" height="40" src="usuarioService.getAvatar" width="40"> -->
+                    </a>
+
+                    <div aria-labelledby="navbarDropdownMenuLink"
+                         class="dropdown-menu text-center text-lg-left profile-dropdown">
+                        <a [routerLink]="['/mi-resumen']" class="dropdown-item"
+                           routerLinkActive="font-weight-bold">Resumen</a>
+                        <a *ngIf="this.usuarioService.usuario && (this.usuarioService.usuario.esGestor || this.usuarioService.usuario.esSocioComunitario || this.usuarioService.usuario.esProfesor)" [routerLink]="['/mis-ofertas']" class="dropdown-item"
+                           routerLinkActive="font-weight-bold">Mis
+                            Ofertas</a>
+                        <a *ngIf="this.usuarioService.usuario && (this.usuarioService.usuario.esGestor || this.usuarioService.usuario.esSocioComunitario || this.usuarioService.usuario.esProfesor)" [routerLink]="['/mis-partenariados']"
+                           class="dropdown-item"
+                           routerLinkActive="font-weight-bold">Mis
+                            Partenariados</a>
+                        <a *ngIf="this.usuarioService.usuario" [routerLink]="['/mis-proyectos']" class="dropdown-item"
+                           routerLinkActive="font-weight-bold">Mis Proyectos</a>
+                        <a [routerLink]="['/perfil']" class="dropdown-item" routerLinkActive="font-weight-bold">Editar
+                            Perfil</a>
+                        <a (click)="logout()" class="dropdown-item" href="javascript:void(0)">Salir</a>
+                    </div>
+                </li>
+            </ul>
+
+        </div>
     </div>
-  </div>
 </nav>

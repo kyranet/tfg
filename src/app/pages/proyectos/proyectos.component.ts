@@ -20,6 +20,7 @@ export class ProyectosComponent implements OnInit {
   public RAMAS = RAMAS;
   public CIUDADES = CIUDADES;
   public ESTADOS_PROYECTOS = ESTADOS_PROYECTOS;
+  public pageTitle = 'Proyectos'
 
   public skip: number = 0;
   public limit: number = 5;
@@ -48,6 +49,7 @@ export class ProyectosComponent implements OnInit {
 
     if(this.router.url === '/mis-proyectos') {
       this.filterCreador = this.usuarioService.usuario.uid;
+      this.pageTitle = 'Mis Proyectos'
     }
    }
 

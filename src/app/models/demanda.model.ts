@@ -38,14 +38,14 @@ export class Demanda {
     get imagenUrl() {
 
         if(!this.imagen) {
-            return `${ base_url }/upload/default/iniciativa`;
+            return `${ base_url }/upload/default/oferta`;
         }
 
         if(this.imagen.includes('https')) {
             return this.imagen;
         }
 
-        return `${ base_url }/upload/${ this.imagen }/iniciativa`;
+        return `${ base_url }/upload/${ this.imagen }/oferta`;
     }
     get displayProponedorTableInfo() {
 
@@ -70,24 +70,15 @@ export class Demanda {
         switch (user.rol) {
             case 'ROL_ESTUDIANTE':
                 return 'Estudiante';
-                break;
-
             case 'ROL_PROFESOR':
                 return 'Profesor';
-                break;
-
             case 'ROL_SOCIO_COMUNITARIO':
                 return 'Socio comunitario';
-                break;
-
             case 'ROL_GESTOR':
                 return 'Gestor';
-                break;
-
             default:
                 console.log('demanda - Rol no definido', user);
                 throw "Rol no definido";
-                break;
         }
     }
 }

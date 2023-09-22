@@ -1,128 +1,258 @@
-<!-- <app-navbar></app-navbar> -->
-<div class="container mt-4 animate__animated animate__fadeIn animate__faster">
-    <h5 class="px-4 py-2 mb-4 text-white display-block bg-secondary d-flex justify-content-between align-items-center">
-        <b *ngIf="this.oferta_id">Actualizar Oferta</b>
-        <b *ngIf="!this.oferta_id">Crear Oferta</b>
+<app-navbar></app-navbar>
+<div class='container mt-4 animate__animated animate__fadeIn animate__faster'>
+    <h5
+        class='
+            px-4
+            py-2
+            mb-4
+            text-white
+            display-block
+            bg-secondary
+            d-flex
+            justify-content-between
+            align-items-center
+        '
+    >
+        <strong *ngIf='this.oferta_id'>Actualizar Oferta</strong>
+        <strong *ngIf='!this.oferta_id'>Crear Oferta</strong>
+        <strong *ngIf='!this.oferta_id'>Crear Oferta para un partenariado</strong>
         <!-- <a class="btn btn-light border-white btn-sm" [routerLink]="['/ofertas']" role="button">Volver</a> -->
     </h5>
 
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
+    <div class='row'>
+        <div class='col-12'>
+            <div class='card'>
                 <form
-                    id="form-oferta"
-                    role="form"
-                    autocomplete="off"
-                    *ngIf="crearOfertaForm"
-                    [formGroup]="crearOfertaForm"
-                    (ngSubmit)="enviarOferta()">
-
-                    <div class="card-body">
-
-                        <div class="row">
-                            <div class="col">
-                                <div class="form-group">
+                    (ngSubmit)='enviarOferta()'
+                    *ngIf='crearOfertaForm'
+                    [formGroup]='crearOfertaForm'
+                    autocomplete='off'
+                    id='form-oferta'
+                    role='form'
+                >
+                    <div class='card-body'>
+                        <div class='row'>
+                            <div class='col'>
+                                <div class='form-group'>
                                     <label>Título *</label>
-                                    <input name="titulo" type="text" id="titulo" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Título corto y descriptivo"  formControlName="titulo">
+                                    <input
+                                        autocapitalize='none'
+                                        autocorrect='off'
+                                        class='form-control'
+                                        formControlName='titulo'
+                                        id='titulo'
+                                        name='titulo'
+                                        placeholder='Título corto y descriptivo'
+                                        spellcheck='false'
+                                        type='text'
+                                    />
                                 </div>
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="area_servicio">Area de implementación *</label>
+                        <div class='form-group'>
+                            <label for='area_servicio'
+                            >Area de implementación *</label
+                            >
                             <ng-multiselect-dropdown
-                            name="area_servicio"
-                            [settings]="dropdownSettings"
-                            [placeholder]="'Selecciona el area de servicio'"
-                            [data]="areasServicio"
-                            formControlName="area_servicio"
+                                [data]='areasServicio'
+                                [placeholder]="'Selecciona el area de servicio'"
+                                [settings]='dropdownSettings'
+                                formControlName='area_servicio'
+                                name='area_servicio'
                             >
-                            <ng-template
-                                #optionsTemplate
-                                let-item
-                                let-option="option"
-                                let-id="id"
-                                let-isSelected="isSelected"
-                            >
-                                <div
-                                style="
-                                    padding: 1px 10px;
-                                    margin: 40px;
-                                    right: 2px;
-                                    top: -2px;
-
-                                "
+                                <ng-template
+                                    #optionsTemplate
+                                    let-id='id'
+                                    let-isSelected='isSelected'
+                                    let-item
+                                    let-option='option'
                                 >
-                                <label
-                                    style="color: #333; min-width: 130px; font-weight: normal;"
-                                    [ngStyle]="{ 'font-weight': isSelected? 'bold':' normal','color': getItems[id].isDisabled? 'lightgrey': ''}"
-                                    >{{getItems[id].nombre}}</label
+                                    <div
+                                        style='
+                                            padding: 1px 10px;
+                                            margin: 40px;
+                                            right: 2px;
+                                            top: -2px;
+                                        '
+                                    >
+                                        <label
+                                            [ngStyle]="{
+                                                'font-weight': isSelected
+                                                    ? 'bold'
+                                                    : ' normal',
+                                                color: getItems[id].isDisabled
+                                                    ? 'lightgrey'
+                                                    : ''
+                                            }"
+                                            style='
+                                                color: #333;
+                                                min-width: 130px;
+                                                font-weight: normal;
+                                            '
+                                        >{{ getItems[id].nombre }}</label
+                                        >
+                                    </div>
+                                </ng-template>
+                                <ng-template
+                                    #optionSelectedTemplate
+                                    let-id='id'
+                                    let-option='option'
                                 >
-                                </div>
-                            </ng-template>
-                            <ng-template #optionSelectedTemplate let-option="option" let-id="id">
-                                <div>
-                                {{option}}
-                                </div>
-                            </ng-template>
+                                    <div>
+                                        {{ option }}
+                                    </div>
+                                </ng-template>
                             </ng-multiselect-dropdown>
-                           
                         </div>
 
-                        <div class="row">
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="descripcion">Descripción *</label>
-                                    <textarea id="descripcion" name="descripcion" class="form-control" placeholder="Escribe una descripción sobre la oferta" rows="8" formControlName="descripcion"></textarea>
+                        <div class='row'>
+                            <div class='col'>
+                                <div class='form-group'>
+                                    <label for='descripcion'
+                                    >Descripción *</label
+                                    >
+                                    <textarea
+                                        class='form-control'
+                                        formControlName='descripcion'
+                                        id='descripcion'
+                                        name='descripcion'
+                                        placeholder='Escribe una descripción sobre la oferta'
+                                        rows='8'
+                                    ></textarea>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col">
-                                <div class="form-group">
-                                    <label>Asignatura objetivo (Tenga en cuenta que también se consideran asignaturas un TFG o un TFM) *</label>
-                                    <input name="asignatura" type="text" id="asignatura" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Asignatura objetivo"  formControlName="asignatura">
+                        <div class='row'>
+                            <div class='col'>
+                                <div class='form-group'>
+                                    <label for='tags'>Tags (Click para asignarlo automaticamente)</label>
+                                    <tag-input
+                                        (click)='computeTags()'
+                                        [ngModel]='tags'
+                                        formControlName='tags'
+                                    >
+                                        <tag-input-dropdown
+                                            [autocompleteItems]='tags'
+                                            [dynamicUpdate]='false'
+                                            [showDropdownIfEmpty]='true'
+                                        >
+                                        </tag-input-dropdown>
+                                    </tag-input>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col">
-                                <div class="form-group">
-                                    <label>Fecha límite para terminar la definición del proyecto</label>
-                                    <input name="fecha_limite" type="date" id="fecha_limite" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false"   formControlName="fecha_limite" value="2021-07-01">
+                        <div class='row'>
+                            <div class='col'>
+                                <div class='form-group'>
+                                    <label
+                                    >Asignatura objetivo (Tenga en cuenta
+                                        que también se consideran asignaturas un
+                                        TFG o un TFM) *</label
+                                    >
+                                    <input
+                                        autocapitalize='none'
+                                        autocorrect='off'
+                                        class='form-control'
+                                        formControlName='asignatura'
+                                        id='asignatura'
+                                        name='asignatura'
+                                        placeholder='Asignatura objetivo'
+                                        spellcheck='false'
+                                        type='text'
+                                    />
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="cuatrimestre">Cuatrimestre Objetivo</label>
-                                    <select name="cuatrimestre" id="cuatrimestre" formControlName="cuatrimestre" class="form-control" placeholder="Elige un cuatrimestre">
-                                        <option value="Primer cuatrimestre">Primer cuatrimestre</option>
-                                        <option value="Segundo cuatrimestre">Segundo cuatrimestre</option>
-                                        <option value="Anual">Anual</option>
+                        <div class='row'>
+                            <div class='col'>
+                                <div class='form-group'>
+                                    <label
+                                    >Fecha límite para terminar la
+                                        definición del proyecto</label
+                                    >
+                                    <input
+                                        aria-label='Fecha limite'
+                                        autocapitalize='none'
+                                        autocorrect='off'
+                                        class='form-control'
+                                        formControlName='fecha_limite'
+                                        id='fecha_limite'
+                                        name='fecha_limite'
+                                        spellcheck='false'
+                                        type='date'
+                                        value='2021-07-01'
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class='row'>
+                            <div class='col'>
+                                <div class='form-group'>
+                                    <label for='cuatrimestre'
+                                    >Cuatrimestre Objetivo</label
+                                    >
+                                    <select
+                                        class='form-control'
+                                        formControlName='cuatrimestre'
+                                        id='cuatrimestre'
+                                        name='cuatrimestre'
+                                        placeholder='Elige un cuatrimestre'
+                                    >
+                                        <option value='Primer cuatrimestre'>
+                                            Primer cuatrimestre
+                                        </option>
+                                        <option value='Segundo cuatrimestre'>
+                                            Segundo cuatrimestre
+                                        </option>
+                                        <option value='Anual'>Anual</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col">
-                                <div class="form-group">
+                        <div class='row'>
+                            <div class='col'>
+                                <div class='form-group'>
                                     <label>Año académico objetivo</label>
-                                    <input name="anio_academico" type="number" id="anio_academico" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Año académico"  formControlName="anio_academico" min="2021" value="2021" value="2022">
+                                    <input
+                                        autocapitalize='none'
+                                        autocorrect='off'
+                                        class='form-control'
+                                        formControlName='anio_academico'
+                                        id='anio_academico'
+                                        min='2021'
+                                        name='anio_academico'
+                                        placeholder='Año académico'
+                                        spellcheck='false'
+                                        type='number'
+                                        value='2021'
+                                        value='2022'
+                                    />
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="observaciones">Si tiene alguna peticion especial en cuanto a las fechas, escribala aqui</label>
-                                    <textarea id="observaciones" name="observaciones" class="form-control" placeholder="Escribe cualquier observación temporal que consideres adecuada" rows="8" formControlName="observaciones"></textarea>
+                        <div class='row'>
+                            <div class='col'>
+                                <div class='form-group'>
+                                    <label for='observaciones'
+                                    >Si tiene alguna peticion especial en
+                                        cuanto a las fechas, escribala
+                                        aqui</label
+                                    >
+                                    <textarea
+                                        class='form-control'
+                                        formControlName='observaciones'
+                                        id='observaciones'
+                                        name='observaciones'
+                                        placeholder='Escribe cualquier observación temporal que consideres adecuada'
+                                        rows='8'
+                                    ></textarea>
                                 </div>
                             </div>
                         </div>
@@ -153,60 +283,99 @@
                                 </div>
                             </div> -->
 
-                            <!-- <div class="col-6 justify-content-between">
+                        <!-- <div class="col-6 justify-content-between">
 
-                                <div class="border p-3 w-100 mb-3">
+                            <div class="border p-3 w-100 mb-3">
 
-                                    <div class="d-flex justify-content-between">
-                                        <label>Imagen de oferta {{ oferta.imagen === '' ? ' (actualmente por defecto)' : '' }}</label>
-                                        <span class="remove-image-btn" aria-label="Borrar Imagen" *ngIf="!this.imagenPreview && oferta.imagen != ''" (click)="borrarImagen()">borrar actual</span>
-                                    </div>
-
-                                    <div class="row">
-
-                                        <div class="col-6">
-                                            <img *ngIf="this.imagenPreview" [src]="this.imagenPreview" class="img-fluid" />
-                                            <img *ngIf="!this.imagenPreview" [src]="oferta.imagenUrl" class="img-fluid" />
-                                        </div>
-
-                                        <div class="col-6 d-flex flex-column justify-content-between">
-
-                                            <div class="form-group">
-                                                <label for="file-upload" class="custom-file-upload">
-                                                    <i class="fa fa-cloud-upload"></i> Subir imagen
-                                                </label>
-                                                <input id="file-upload" type="file" (change)="cambiarImagen($event.target.files[0])"/>
-                                            </div>
-
-                                            <button type="button" class="btn btn-secondary btn-sm" [disabled]="!imagenSubir" (click)="actualizarImagen()">Actualizar Imagen</button>
-                                        </div>
-                                    </div>
+                                <div class="d-flex justify-content-between">
+                                    <label>Imagen de oferta {{ oferta.imagen === '' ? ' (actualmente por defecto)' : '' }}</label>
+                                    <span class="remove-image-btn" aria-label="Borrar Imagen" *ngIf="!this.imagenPreview && oferta.imagen != ''" (click)="borrarImagen()">borrar actual</span>
                                 </div>
 
-                            </div> -->
+                                <div class="row">
+
+                                    <div class="col-6">
+                                        <img *ngIf="this.imagenPreview" [src]="this.imagenPreview" class="img-fluid" />
+                                        <img *ngIf="!this.imagenPreview" [src]="oferta.imagenUrl" class="img-fluid" />
+                                    </div>
+
+                                    <div class="col-6 d-flex flex-column justify-content-between">
+
+                                        <div class="form-group">
+                                            <label for="file-upload" class="custom-file-upload">
+                                                <i class="fa fa-cloud-upload"></i> Subir imagen
+                                            </label>
+                                            <input id="file-upload" type="file" (change)="cambiarImagen($event.target.files[0])"/>
+                                        </div>
+
+                                        <button type="button" class="btn btn-secondary btn-sm" [disabled]="!imagenSubir" (click)="actualizarImagen()">Actualizar Imagen</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div> -->
                         <!-- </div> -->
 
-                        <div class="row" *ngIf="this.usuarioService.usuario.esGestor && USUARIOS">
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="creador">creador (solo modificable por el gestor del portal)</label>
-                                    <select id="creador" name="area" class="form-control" formControlName="creador">
-                                        <option value="">Elije un usuario que se haga cargo de la oferta</option>
-                                        <option *ngFor="let USUARIO of USUARIOS" [selected]="this.oferta.creador == USUARIO.uid" value="{{ USUARIO.uid }}">{{ USUARIO.email }} - {{ USUARIO.displayRol }}</option>
+                        <div
+                            *ngIf='
+                                this.usuarioService.usuario.esGestor && USUARIOS
+                            '
+                            class='row'
+                        >
+                            <div class='col'>
+                                <div class='form-group'>
+                                    <label for='creador'
+                                    >creador (solo modificable por el gestor
+                                        del portal)</label
+                                    >
+                                    <select
+                                        class='form-control'
+                                        formControlName='creador'
+                                        id='creador'
+                                        name='area'
+                                    >
+                                        <option value=''>
+                                            Elije un usuario que se haga cargo
+                                            de la oferta
+                                        </option>
+                                        <option
+                                            *ngFor='let USUARIO of USUARIOS'
+                                            [selected]='
+                                                this.oferta.creador ==
+                                                USUARIO.uid
+                                            '
+                                            value='{{ USUARIO.uid }}'
+                                        >
+                                            {{ USUARIO.email }} -
+                                            {{ USUARIO.displayRol }}
+                                        </option>
                                     </select>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row">
-                          <div class="col">
-                            <div class="card text-white bg-info mb-3" *ngIf="!this.oferta_id">
-                              <div class="card-body">
-                                <h5 class="card-title text-center"><fa-icon [icon]="['fas', 'info-circle']"></fa-icon> Info</h5>
-                                <p class="card-text">Una vez creados los datos básicos de la oferta, se podrán subir archivos e imágenes a la misma, así como editar sus datos básicos.</p>
-                              </div>
+                        <div class='row'>
+                            <div class='col'>
+                                <div
+                                    *ngIf='!this.oferta_id'
+                                    class='card text-white bg-info mb-3'
+                                >
+                                    <div class='card-body'>
+                                        <h5 class='card-title text-center'>
+                                            <fa-icon
+                                                [icon]="['fas', 'info-circle']"
+                                            ></fa-icon>
+                                            Info
+                                        </h5>
+                                        <p class='card-text'>
+                                            Una vez creados los datos básicos de
+                                            la oferta, se podrán subir archivos
+                                            e imágenes a la misma, así como
+                                            editar sus datos básicos.
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
-                          </div>
 
                             <!-- <div class="col" *ngIf = "!this.oferta_id">
                                 <div class="form-check text-right m-4">
@@ -217,33 +386,102 @@
                             </div> -->
                         </div>
 
-                        <label style="color:green; margin-top:0.5cm;">Los campos obligatorios tienen asterisco.</label>
+                        <label style='color: green; margin-top: 0.5cm'
+                        >Los campos obligatorios tienen asterisco.</label
+                        >
 
-                        <div class="d-flex">
-                            <div class="flex-fill alert alert-danger mr-3" role="alert" *ngIf="this.crearOfertaForm.invalid && this.formSubmitted">
-                                <div *ngIf="campoNoValido('titulo')" class="col">{{ campoNoValido('titulo') }}</div>
-                                <div *ngIf="campoNoValido('area_servicio')" class="col">{{ campoNoValido('area_servicio') }}</div>
-                                <div *ngIf="campoNoValido('descripcion')" class="col">{{ campoNoValido('descripcion') }}</div>
-                                <div *ngIf="campoNoValido('asignatura')" class="col">{{ campoNoValido('asignatura') }}</div>
-                                <div *ngIf="campoNoValido('fecha_limite')" class="col">{{ campoNoValido('fecha_limite') }}</div>
-                                <div *ngIf="campoNoValido('cuatrimestre')" class="col">{{ campoNoValido('cuatrimestre') }}</div>
-                                <div *ngIf="campoNoValido('anio_academico')" class="col">{{ campoNoValido('anio_academico') }}</div>
+                        <div class='d-flex'>
+                            <div
+                                *ngIf='
+                                    this.crearOfertaForm.invalid &&
+                                    this.formSubmitted
+                                '
+                                class='flex-fill alert alert-danger mr-3'
+                                role='alert'
+                            >
+                                <div
+                                    *ngIf="campoNoValido('titulo')"
+                                    class='col'
+                                >
+                                    {{ campoNoValido("titulo") }}
+                                </div>
+                                <div
+                                    *ngIf="campoNoValido('area_servicio')"
+                                    class='col'
+                                >
+                                    {{ campoNoValido("area_servicio") }}
+                                </div>
+                                <div
+                                    *ngIf="campoNoValido('descripcion')"
+                                    class='col'
+                                >
+                                    {{ campoNoValido("descripcion") }}
+                                </div>
+                                <div
+                                    *ngIf="campoNoValido('asignatura')"
+                                    class='col'
+                                >
+                                    {{ campoNoValido("asignatura") }}
+                                </div>
+                                <div
+                                    *ngIf="campoNoValido('fecha_limite')"
+                                    class='col'
+                                >
+                                    {{ campoNoValido("fecha_limite") }}
+                                </div>
+                                <div
+                                    *ngIf="campoNoValido('cuatrimestre')"
+                                    class='col'
+                                >
+                                    {{ campoNoValido("cuatrimestre") }}
+                                </div>
+                                <div
+                                    *ngIf="campoNoValido('anio_academico')"
+                                    class='col'
+                                >
+                                    {{ campoNoValido("anio_academico") }}
+                                </div>
                                 <!-- <div *ngIf="campoNoValido('observaciones')" class="col">{{ campoNoValido('observaciones') }}</div> -->
                                 <!-- <div *ngIf="campoNoValido('terminos_aceptados')" class="col">{{ campoNoValido('terminos_aceptados') }}</div> -->
                             </div>
 
-                            <div class="ml-auto mb-2">
-                                <input *ngIf="!this.oferta_id" type="submit" [value]="this.formSending ? 'Creando...' : 'Crear oferta'" class="btn btn-default btn-secondary m-4" [disabled]="this.formSending || (this.formSubmitted && this.crearOfertaForm.invalid)">
-                                <input *ngIf="this.oferta_id" type="submit" [value]="this.formSending ? 'Actualizando...' : 'Actualizar oferta'" class="btn btn-default btn-secondary m-4" [disabled]="this.formSending || (this.formSubmitted && this.crearOfertaForm.invalid)">
+                            <div class='ml-auto mb-2'>
+                                <input
+                                    *ngIf='!this.oferta_id'
+                                    [disabled]='
+                                        this.formSending ||
+                                        (this.formSubmitted &&
+                                            this.crearOfertaForm.invalid)
+                                    '
+                                    [value]="
+                                        this.formSending
+                                            ? 'Creando...'
+                                            : 'Crear oferta'
+                                    "
+                                    class='btn btn-default btn-secondary m-4'
+                                    type='submit'
+                                />
+                                <input
+                                    *ngIf='this.oferta_id'
+                                    [disabled]='
+                                        this.formSending ||
+                                        (this.formSubmitted &&
+                                            this.crearOfertaForm.invalid)
+                                    '
+                                    [value]="
+                                        this.formSending
+                                            ? 'Actualizando...'
+                                            : 'Actualizar oferta'
+                                    "
+                                    class='btn btn-default btn-secondary m-4'
+                                    type='submit'
+                                />
                             </div>
                         </div>
-
-
                     </div>
                 </form>
-
             </div>
         </div>
     </div>
 </div>
-<!-- <app-footer></app-footer> -->
+<app-footer></app-footer>

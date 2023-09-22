@@ -305,6 +305,17 @@ function contarIniciativas() {
       console.log(err);
     });
 }
+
+function contarOfertas(){
+  return knex("anuncio_servicio")
+          .count("*")
+          .then((result) => {
+            return result[0]["count(*)"];
+          })
+          .catch((err)=>{
+            console.log(err);
+          })
+}
 //ELIMINAR UNO---------------------------------------------------------------------------------------------------------------------------
 function eliminarColaboracion(id_colab) {
   return knex("colaboracion")
@@ -618,6 +629,7 @@ function obtenerTodosPartenariados() {
       );
     });
 }
+
 function crearPrevioPartenariado(
   id_demanda,
   id_oferta,

@@ -11,6 +11,7 @@ class TPartenariado extends TColaboracion {
         this.id_oferta = id_oferta;
         this.estado = estado;
     }
+ 
     getId_Demanda(){
         return this.id_demanda;
     }

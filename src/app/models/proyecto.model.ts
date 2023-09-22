@@ -71,24 +71,15 @@ export class Proyecto {
         switch (user.rol) {
             case 'ROL_ESTUDIANTE':
                 return 'Estudiante';
-                break;
-
             case 'ROL_PROFESOR':
                 return 'Profesor';
-                break;
-
             case 'ROL_SOCIO_COMUNITARIO':
                 return 'Socio comunitario';
-                break;
-
             case 'ROL_GESTOR':
                 return 'Gestor';
-                break;
-
             default:
                 console.log('Proyecto - Rol no definido', user);
                 throw "Rol no definido";
-                break;
         }
     }
 }

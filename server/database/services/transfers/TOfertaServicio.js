@@ -7,8 +7,9 @@ class TOfertaServicio extends TAnuncioServicio{
     observaciones_temporales;
     creador;
     profesores;
+    tags;
     constructor(id, titulo, descripcion, imagen, created_at, updated_at, asignatura_objetivo,
-         cuatrimestre, anio_academico, fecha_limite, observaciones_temporales, creador, area_servicio, profesores, dummy) 
+         cuatrimestre, anio_academico, fecha_limite, observaciones_temporales, creador, area_servicio, profesores, dummy, tags) 
     {
         super(id, titulo, descripcion, imagen, created_at, updated_at, area_servicio,dummy);
         this.asignatura_objetivo = asignatura_objetivo;
@@ -18,6 +19,7 @@ class TOfertaServicio extends TAnuncioServicio{
         this.observaciones_temporales = observaciones_temporales;
         this.creador = creador;
         this.profesores = profesores;
+        this.tags = tags;
     }
 
     getAsignatura_objetivo() {
@@ -74,6 +76,13 @@ class TOfertaServicio extends TAnuncioServicio{
 
     setProfesores(profesores) {
         this.profesores = profesores;
+    }
+    getTags() {
+        return this.profesores;
+    }
+
+    setTags(tags) {
+        this.tags = tags;
     }
 }
 

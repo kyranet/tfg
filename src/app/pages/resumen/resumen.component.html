@@ -1,0 +1,43 @@
+<app-navbar></app-navbar>
+<div class="container mt-4 animate__animated animate__fadeIn animate__faster">
+    <h5 class="px-4 py-2 mb-4 text-white display-block bg-secondary d-flex justify-content-between">
+        <strong>Resumen</strong> 
+    </h5>
+<!-- 
+    <app-resumen-estudiante-externo *ngIf=" this.usuarioService.usuario &&  
+                                            this.usuarioService.usuario.esEstudiante && 
+                                            !this.usuarioService.usuario.email.includes('@uned')"> 
+    </app-resumen-estudiante-externo>
+
+    <app-resumen-estudiante-interno *ngIf=" this.usuarioService.usuario &&  
+                                            this.usuarioService.usuario.esEstudiante && 
+                                            this.usuarioService.usuario.email.includes('@uned')"> 
+    </app-resumen-estudiante-interno>
+ 
+    <app-resumen-profesor-interno *ngIf="   this.usuarioService.usuario &&  
+                                            this.usuarioService.usuario.esProfesor && 
+                                            this.usuarioService.usuario.email.includes('@uned')"> 
+    </app-resumen-profesor-interno>
+ 
+    <app-resumen-profesor-externo *ngIf="   this.usuarioService.usuario &&  
+                                            this.usuarioService.usuario.esProfesor && 
+                                            !this.usuarioService.usuario.email.includes('@uned')"> 
+    </app-resumen-profesor-externo>
+
+    <app-resumen-socio-comunitario *ngIf="  this.usuarioService.usuario && 
+                                            this.usuarioService.usuario.esSocioComunitario"> 
+    </app-resumen-socio-comunitario> 
+
+    <app-resumen-oficina-aps *ngIf="    this.usuarioService.usuario && 
+                                        this.usuarioService.usuario.esGestor"> 
+    </app-resumen-oficina-aps>  -->
+
+    <!-- <app-resumen-estudiante-externo></app-resumen-estudiante-externo> -->
+    <!-- <app-resumen-estudiante-interno></app-resumen-estudiante-interno> -->
+    <app-resumen-profesor-interno></app-resumen-profesor-interno>
+    <!-- <app-resumen-profesor-externo></app-resumen-profesor-externo> -->
+    <!-- <app-resumen-socio-comunitario></app-resumen-socio-comunitario> -->
+    <!-- <app-resumen-oficina-aps></app-resumen-oficina-aps> -->
+
+</div>
+<app-footer></app-footer>

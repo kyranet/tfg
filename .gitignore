@@ -48,3 +48,4 @@ Thumbs.db
 # development project
 /.dev_resources
 /.env
+/.scannerwork/

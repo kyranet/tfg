@@ -1,18 +1,32 @@
 // ruta: /api/ofertas
 
-const { Router } = require('express');
-const { check } = require('express-validator');
-const { validarCampos } = require('./../middlewares/validar-campos');
-const { getAreasservicio, crearOferta, obtenerOferta} = require('../controllers/ofertas');
-const { opcionalJWT, validarJWT, validarEsProfesorOrEsGestor } = require('../middlewares/validar-jwt');
+const {Router} = require('express');
+const {check} = require('express-validator');
+const {validarCampos} = require('./../middlewares/validar-campos');
+const {getAreasServicio, crearOferta, obtenerOferta, obtenerOfertas, getOfertasAreaServicio} = require('../controllers/ofertas');
+const {opcionalJWT, validarJWT, validarEsProfesorOrEsGestor} = require('../middlewares/validar-jwt');
 
 const router = Router();
 
+
+router.get('/', [], obtenerOfertas);
+
 //Obtener universidades
 router.get(
-    '/areasservicio',[],
-    getAreasservicio
+    '/areasservicio', [],
+    getAreasServicio
 );
+
+// Obtener las ofertas que contienen un determinado area de servicio
+router.get(
+    '/ofertasAreaServicio/:id', [],
+    getOfertasAreaServicio
+)
+
+router.get(
+    '/ofertasAreaServicio/:id', [],
+    getOfertasAreaServicio
+)
 
 // crear iniciativa, profesor, socio o gestor
 router.post(
@@ -33,7 +47,7 @@ router.post(
     crearOferta
 );
 
-// obtener una iniciativa
+// obtener una oferta
 router.get(
     '/:id', [],
     obtenerOferta

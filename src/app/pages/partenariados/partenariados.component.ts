@@ -20,6 +20,7 @@ export class PartenariadosComponent implements OnInit {
   public RAMAS = RAMAS;
   public CIUDADES = CIUDADES;
   public ESTADOS_PARTENARIADOS = ESTADOS_PARTENARIADOS;
+  public pageTitle = 'Partenariados'
 
   public skip: number = 0;
   public limit: number = 5;
@@ -48,6 +49,7 @@ export class PartenariadosComponent implements OnInit {
 
     if(this.router.url === '/mis-partenariados') {
       this.filterCreador = this.usuarioService.usuario.uid;
+      this.pageTitle = 'Mis Partenariados';
     }
    }
 
@@ -138,13 +140,13 @@ export class PartenariadosComponent implements OnInit {
   }
 
   cargarPartenariados() {
-    /* this.partenariadoService.cargarPartenariados(this.skip, this.limit, this.getFiltros())
+    this.partenariadoService.cargarPartenariados(this.skip, this.limit, this.getFiltros())
         .subscribe( ({total, filtradas, partenariados}) => {
           this.totalPartenariados = total.valueOf();
-          this.totalPartenariadosBuscados = filtradas.valueOf();
+          //this.totalPartenariadosBuscados = filtradas.valueOf();
           this.partenariados = partenariados;
           this.cargando = false;
-        }); */
+        }); 
   }
 
   notNull(e) {

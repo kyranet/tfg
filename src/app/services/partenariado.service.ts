@@ -5,6 +5,7 @@ import { Partenariado } from '../models/partenariado.model';
 import { map } from 'rxjs/operators';
 import { UsuarioService } from './usuario.service';
 import { FileUploadService } from './file-upload.service';
+import { Profesor } from '../models/profesor.model';
 
 const base_url = environment.base_url;
 
@@ -14,30 +15,32 @@ const base_url = environment.base_url;
 export class PartenariadoService {
 
   constructor( private http: HttpClient, private usuarioService: UsuarioService, private fileUploadService: FileUploadService) { }
-/* 
+ 
    mapearPartenariados( partenariados: any ): Partenariado[] {
     return partenariados.map( (partenariado) => {
-        return new Partenariado(
-          partenariado.
+  
+        return new Partenariado( 
+          '',
           partenariado._id,
           partenariado.estado,
           partenariado.titulo,
           partenariado.descripcion,
           partenariado.rama,
           partenariado.ciudad,
-          partenariado.iniciativa,
-          //meter atributos
-          partenariado.proyecto,
-          this.usuarioService.mapearUsuarios(partenariado.profesores),
-          this.usuarioService.mapearUsuarios(partenariado.sociosComunitarios),
-          partenariado.mensajes || {},
-          this.fileUploadService.mapearUploads(partenariado.archivos || []),
-          this.usuarioService.mapearUsuarios([partenariado.proponedor])[0],
+          //meter atributos 
+          '',
+          [],
+          null,
+          '',
+          [],  
           partenariado.creador,
-          partenariado.createdAt
+          partenariado.createdAt,
+          partenariado.id_demanda,
+          partenariado.id_oferta,
+
         );
     });
-  }  */
+  }  
 
   crearPartenariadoProfesor(body: Object) {
     return this.http.post<{ ok: boolean, parteneriado: Partenariado}>(`${ base_url }/partenariados/crearProfesor`, body, this.usuarioService.headers)
@@ -53,12 +56,14 @@ export class PartenariadoService {
                     );
   } */
 
-  /* cargarPartenariados(skip: number, limit: number, filtros: Object) {
+  cargarPartenariados(skip: number, limit: number, filtros: Object) {
     return this.http.get<{ total: Number, filtradas: Number, partenariados: Partenariado[]}>(`${ base_url }/partenariados?skip=${ skip }&limit=${ limit }&filtros=${ encodeURIComponent( JSON.stringify(filtros)) }`, this.usuarioService.headers)
                     .pipe(
-                      map( resp => { return { total: resp.total, filtradas: resp.filtradas, partenariados: this.mapearPartenariados(resp.partenariados) }; })
+                      map( resp => {
+                         return { total: resp.total, filtradas: resp.filtradas, partenariados: this.mapearPartenariados(resp.partenariados) }; 
+                        })
                     );
-  } */
+  } 
 
   cambiarEstado(partenariado: Partenariado, estado: string) {
     return this.http.put<{ ok: boolean, partenariado: Partenariado}>(`${ base_url }/partenariados/modificar-estado/${ partenariado._id }`, {estado}, this.usuarioService.headers)
@@ -74,12 +79,13 @@ export class PartenariadoService {
                     );
   }
 
+
   obtenerProfesores() {
-    return this.http.get<{ ok: boolean, datos: Object}>(`${ base_url }/usuarios/profesores`, this.usuarioService.headers)
+    return this.http.get<{ ok: boolean, profesores: Profesor[]}>(`${ base_url }/usuarios/profesores`, this.usuarioService.headers)
                     .pipe(
-                      map( (resp) => resp )
+                      map( 
+                        resp => {return {ok: resp.ok, profesores: resp.profesores}} )
                     );
   }
 
- 
 }

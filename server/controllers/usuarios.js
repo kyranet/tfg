@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const Usuario = require('./../models/usuario.model');
 const { generarJWT } = require('../helpers/jwt');
 const { esGestor } = require('../helpers/auth');
+const { getCurrentDate } = require('../helpers/dates');
 const { ROL_GESTOR } = require('./../models/rol.model');
 const dao_usuario = require('../database/services/daos/daoUsuario');
 var TSocioComunitario = require('../database/services/transfers/TSocioComunitario');
@@ -10,10 +11,10 @@ const TEstudiante = require('../database/services/transfers/TEstudiante');
 const TEstudianteExterno = require('../database/services/transfers/TEstudianteExterno');
 const TProfesorExterno = require('../database/services/transfers/TProfesorExterno');
 
-const obtenerProfesores = async(req, res) => {
+const obtenerProfesores = async (req, res) => {
     try {
         profesores = await dao_usuario.obtenerProfesores();
-        
+
         return res.status(200).json({
             ok: true,
             profesores,
@@ -79,11 +80,33 @@ const getUsuarios = async (req, res) => {
 const getUsuario = async (req, res) => {
     try {
         const uid = req.params.uid;
-        const usuario = await dao_usuario.obtenerUsuarioSinRolPorId(uid);
-
+        let usuario = await dao_usuario.obtenerUsuarioSinRolPorId(uid);
+        let usuarioPath = await dao_usuario.getPathAvatar(uid);
+        usuario.origin_img = usuarioPath;
         return res.status(200).json({
             ok: true,
             usuario,
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado',
+        });
+    }
+}
+
+
+const getUsuarioPath = async (req, res) => {
+    try {
+        const uid = req.params.uid;
+        const usuarioPath = await dao_usuario.getPathAvatar(uid);
+
+        return res.status(200).json({
+            ok: true,
+            usuarioPath,
         });
 
     } catch (error) {
@@ -122,7 +145,7 @@ const crearUsuario = async (req, res = response) => {
                     msg: 'Operación no autorizada, solo gestores.',
                 });
             }
-            let socio = new TSocioComunitario(null, email, req.body.nombre, req.body.apellidos, passwordNew, "Portal ApS", "imagen", "fechaAt", "updatedAt", req.body.terminos_aceptados, req.body.sector, req.body.nombreSocioComunitario, req.body.telefono, req.body.url, req.body.mision)
+            let socio = new TSocioComunitario(null, email, req.body.nombre, req.body.apellidos, passwordNew, "Portal ApS", "imagen", getCurrentDate(), getCurrentDate(), req.body.terminos_aceptados, req.body.sector, req.body.nombreSocioComunitario, req.body.telefono, req.body.url, req.body.mision)
 
             let id = await dao_usuario.insertarSocioComunitario(socio);
             if (id === -1) {
@@ -174,7 +197,7 @@ const crearUsuario = async (req, res = response) => {
                 });
             }
 
-            let estudiante = new TEstudianteExterno(null, email, req.body.nombre, req.body.apellidos, passwordNew, "Portal ApS", "imagen", "fechaAt", "updatedAt", req.body.terminos_aceptados,
+            let estudiante = new TEstudianteExterno(null, email, req.body.nombre, req.body.apellidos, passwordNew, "Portal ApS", "imagen", getCurrentDate(), getCurrentDate(), req.body.terminos_aceptados,
                 req.body.titulacion,
                 req.body.universidad,
                 req.body.telefono)
@@ -225,7 +248,7 @@ const crearUsuario = async (req, res = response) => {
                     msg: 'Operación no autorizada, solo gestores.',
                 });
             }
-            let profesor = new TProfesorExterno(null, email, req.body.nombre, req.body.apellidos, passwordNew,  "Portal ApS", "imagen", "fechaAt", "updatedAt", req.body.terminos_aceptados, req.body.universidad,req.body.facultad,req.body.areaConocimiento, req.body.telefono)
+            let profesor = new TProfesorExterno(null, email, req.body.nombre, req.body.apellidos, passwordNew, "Portal ApS", "imagen", getCurrentDate(), getCurrentDate(), req.body.terminos_aceptados, req.body.universidad, req.body.facultad, req.body.areaConocimiento, req.body.telefono)
 
 
             let id = await dao_usuario.insertarProfesorExterno(profesor);
@@ -337,8 +360,8 @@ const actualizarUsuario = async (req, res = response) => {
             // si era un socio comunitario, borrale el sector
             if (usuario.rol == 'ROL_SOCIO_COMUNITARIO') {
                 campos.sector = '';
-                campos.url= '';
-                campos.mision= '';
+                campos.url = '';
+                campos.mision = '';
             }
 
             // si deja de ser estudiante o profesor, borra universidad y titulacion
@@ -349,11 +372,11 @@ const actualizarUsuario = async (req, res = response) => {
         }
 
 
-        if(usuario.rol === 'ROL_ESTUDIANTE'){
+        if (usuario.rol === 'ROL_ESTUDIANTE') {
 
-        const usuarioActualizado = await dao_usuario.actualizarEstudianteExterno(usuario);
+            const usuarioActualizado = await dao_usuario.actualizarEstudianteExterno(usuario);
         }
-        
+
         const token = await generarJWT(usuarioActualizado);
 
         return res.status(200).json({
@@ -426,6 +449,7 @@ const borrarUsuario = async (req, res = response) => {
 module.exports = {
     getUsuarios,
     getUsuario,
+    getUsuarioPath,
     crearUsuario,
     actualizarUsuario,
     borrarUsuario,

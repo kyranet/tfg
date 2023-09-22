@@ -1,13 +1,15 @@
-const dao_tentativa = require("./../database/services/daos/daoTentativa");
-const TDemanda = require("./../database/services/transfers/TDemandaServicio");
+const daoDemanda = require('./../database/services/daos/daoDemanda');
+const TDemanda = require('./../database/services/transfers/TDemandaServicio');
+
+const UNEXPECTED_ERROR = 'Error inesperado';
 
 const getAreasservicio = async (req, res) => {
     try {
-        areasServicio = await dao_tentativa.obtenerListaAreasServicio();
+        areasServicio = await daoDemanda.obtenerListaAreasServicio();
 
         return res.status(200).json({
             ok: true,
-            areasServicio,
+            areasServicio
         });
 
     } catch (error) {
@@ -15,19 +17,17 @@ const getAreasservicio = async (req, res) => {
 
         return res.status(500).json({
             ok: false,
-            msg: 'Error inesperado',
+            msg: 'Error inesperado'
         });
     }
-}
-
+};
 
 const getTitulaciones = async (req, res) => {
     try {
-        titulacionLocal = await dao_tentativa.obtenerListaTitulacionLocal();
-
+        titulacionLocal = await daoDemanda.obtenerListaTitulacionLocal();
         return res.status(200).json({
-            ok: true,
-            titulacionLocal,
+            ok: false,
+            titulacionLocal
         });
 
     } catch (error) {
@@ -35,18 +35,56 @@ const getTitulaciones = async (req, res) => {
 
         return res.status(500).json({
             ok: false,
-            msg: 'Error inesperado',
+            msg: 'Error inesperado'
         });
     }
-}
+};
+
+/****/
+const getDemandasAreaServicio = async (req, res = response) => {
+    try {
+        const id = req.params.id;
+        let demandas = [];
+        demandas = await daoDemanda.obtenerDemandaPorAreaServicio(id);
+        return res.status(200).json({
+            ok: true,
+            demandas
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado'
+        });
+    }
+};
+
+const getDemandasNecesidadSocial = async (req, res = response) => {
+    try {
+        const id = req.params.id;
+        let demandas = [];
+        demandas = await daoDemanda.obtenerDemandaPorNecesidadSocial(id);
+        return res.status(200).json({
+            ok: true,
+            demandas
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado'
+        });
+    }
+};
+/****/
 
 const getNecesidades = async (req, res) => {
     try {
-        necesidadSocial = await dao_tentativa.obtenerListaNecesidadSocial();
+        necesidadSocial = await daoDemanda.obtenerListaNecesidadSocial();
 
         return res.status(200).json({
             ok: true,
-            necesidadSocial,
+            necesidadSocial
         });
 
     } catch (error) {
@@ -54,14 +92,12 @@ const getNecesidades = async (req, res) => {
 
         return res.status(500).json({
             ok: false,
-            msg: 'Error inesperado',
+            msg: 'Error inesperado'
         });
     }
-}
+};
 
-const crearDemanda = async (req, res = response) => {//continuar 
-
-
+const crearDemanda = async (req, res = response) => {//continuar
     try {
         let areas = [];
         req.body.area_servicio.forEach(data => {
@@ -91,14 +127,14 @@ const crearDemanda = async (req, res = response) => {//continuar
             titulaciones,
             areas,
             req.body.comunidadBeneficiaria,
-            0,
+            0
         );
-      
-        await dao_tentativa.crearDemanda(demanda);
+        let demandaId = await daoDemanda.crearDemanda(demanda);
+        demanda.id = demandaId;
 
         return res.status(200).json({
             ok: true,
-            demanda: demanda,
+            demanda: demanda
         });
     } catch (error) {
 
@@ -106,37 +142,52 @@ const crearDemanda = async (req, res = response) => {//continuar
 
         return res.status(500).json({
             ok: false,
-            msg: 'Error inesperado',
+            msg: 'Error inesperado'
         });
     }
-}
+};
+
+const obtenerDemandas = async (req, res = response) => {
+    try {
+        let demandas = await daoDemanda.obtenerTodasDemandasServicio();
+        let total = await daoDemanda.contarTodasDemandasServicio();
+        return res.status(200).json({
+            ok: true,
+            demandas,
+            total: total
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado'
+        });
+    }
+};
 
 const obtenerDemanda = async (req, res) => {
     try {
-
-        const id = req.params.id;
-        const demanda = await dao_tentativa.obtenerDemandaServicio(id);
-
+        const demanda = await daoDemanda.obtenerDemandaServicio(req.params.id);
         return res.status(200).json({
             ok: true,
-            demanda,
+            demanda
         });
-
-        console.error(error);
     } catch (error) {
-
+        console.error(error);
         return res.status(500).json({
             ok: false,
-            msg: 'Error inesperado',
+            msg: UNEXPECTED_ERROR
         });
     }
-}
+};
 
 module.exports = {
     getAreasservicio,
     getNecesidades,
     getTitulaciones,
     crearDemanda,
-    obtenerDemanda
-}
-
+    obtenerDemanda,
+    obtenerDemandas,
+    getDemandasNecesidadSocial,
+    getDemandasAreaServicio
+};

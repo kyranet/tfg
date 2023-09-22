@@ -23,7 +23,7 @@
 
                             <div class="panel-body">
 
-                                <p>En esta página puedes registrarte dentro de la aplicación <b>Portal ApS</b>.</p>
+                                <p>En esta página puedes registrarte dentro de la aplicación <strong>Portal ApS</strong>.</p>
                                 <p>Si deseas utilizar tu cuenta de la UNED, no es necesario que te registres, entra en la pantalla <a href="javascript:void(0)" [routerLink]="['/login']"><span class="glyphicon glyphicon-log-in"></span> Login</a> y utiliza el SSO de la UNED.</p>
                                 <p>Si deseas utilizar tu cuenta de la Google como Estudiante, no es necesario que te registres, entra en la pantalla <a href="javascript:void(0)" [routerLink]="['/login']"><span class="glyphicon glyphicon-log-in"></span> Login</a> y utiliza el SSO de la Google.</p>
 
@@ -48,7 +48,7 @@
                                           </div>
                                     </div>
 
-                                    
+
 
                                     <div class="d-flex">
                                         <div class="form-group flex-fill mr-2">
@@ -118,7 +118,7 @@
                                         <option *ngFor="let c of codeList" [value]="c.nombre" ></option>
                                         </datalist>
                                         <small class="text-danger" *ngIf="noListMatch()">Debe elegir una universidad valida</small>
-                                       
+
                                     </div>
                                     <div class="form-group" *ngIf="['ROL_PROFESOR'].includes(this.registerForm.get('rol').value)">
                                         <label for="areaConocimiento">Area/s de conocimiento UNESCO *</label>
@@ -157,9 +157,9 @@
                                             </div>
                                         </ng-template>
                                         </ng-multiselect-dropdown>
-                                       
+
                                     </div>
-                                    
+
 
                                     <div class="form-group" *ngIf="['ROL_ESTUDIANTE'].includes(this.registerForm.get('rol').value)">
                                         <label for="titulacion">
@@ -168,7 +168,7 @@
                                             </ng-container>
                                         </label>
                                         <input name="titulacion" type="text" id="titulacion" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Introduzca su titulación" [class.is-invalid] = "registerForm.get('titulacion').invalid && registerForm.get('titulacion').touched"  formControlName="titulacion">
-                        
+
                                     </div>
 
                                     <div class="form-group" *ngIf="['ROL_PROFESOR'].includes(this.registerForm.get('rol').value)">
@@ -178,31 +178,31 @@
                                             </ng-container>
                                         </label>
                                         <input name="facultad" type="text" id="facultad" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Introduzca su facultad" [class.is-invalid] = "registerForm.get('facultad').invalid && registerForm.get('facultad').touched"  formControlName="facultad">
-                        
+
                                     </div>
 
                                     <div class="form-group" *ngIf="['ROL_SOCIO_COMUNITARIO'].includes(this.registerForm.get('rol').value)">
                                         <label for="sector">Sector</label>
                                         <input name="sector" type="text" id="sector" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Introduzca su sector" [class.is-invalid] = "registerForm.get('sector').invalid && registerForm.get('sector').touched"  formControlName="sector">
-                                       
+
                                     </div>
 
                                     <div class="form-group" *ngIf="['ROL_SOCIO_COMUNITARIO'].includes(this.registerForm.get('rol').value)">
                                         <label for="url">URL</label>
                                         <input name="url" type="text" id="url" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Introduzca su URL" [class.is-invalid] = "registerForm.get('url').invalid && registerForm.get('url').touched"  formControlName="url">
-                                       
+
                                     </div>
 
                                     <div class="form-group" *ngIf="['ROL_SOCIO_COMUNITARIO'].includes(this.registerForm.get('rol').value)">
                                         <label for="mision">Misión</label>
                                         <input name="mision" type="text" id="mision" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Introduzca su misión" [class.is-invalid] = "registerForm.get('mision').invalid && registerForm.get('mision').touched"  formControlName="mision">
-                                       
+
                                     </div>
 
                                     <div class="form-group" *ngIf="['ROL_SOCIO_COMUNITARIO'].includes(this.registerForm.get('rol').value)">
                                         <label for="nombreSocioComunitario">Nombre socio comunitario</label>
                                         <input name="nombreSocioComunitario" type="text" id="nombreSocioComunitario" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Introduzca el nombre del socio comunitario" [class.is-invalid] = "registerForm.get('nombreSocioComunitario').invalid && registerForm.get('nombreSocioComunitario').touched"  formControlName="nombreSocioComunitario">
-                                       
+
                                     </div>
                                 </fieldset>
 
@@ -216,7 +216,7 @@
                                     <div class="flex-fill alert alert-danger mr-3" role="alert" *ngIf="this.registerForm.invalid && this.formSubmitted">
                                         <div class="col">Debes completar/seleccionar correctamente todos los campos</div>
                                         <div *ngIf="passwordsVacias()" class="col">Las contraseñas están en blanco</div>
-                                        
+
                                     </div>
 
                                     <div class="ml-auto mb-2">

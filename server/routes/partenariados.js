@@ -3,7 +3,7 @@
 const { Router } = require('express');
 const { check } = require('express-validator');
 const { validarCampos } = require('./../middlewares/validar-campos');
-const { crearPartenariadoProfesor, crearPartenariadoSocioComunitario} = require('../controllers/partenariados');
+const { crearPartenariadoProfesor, crearPartenariadoSocioComunitario, getPartenariados, getPartenariado } = require('../controllers/partenariados');
 const { validarJWT, validarEsProfesor, validarEsSocioComunitario } = require('../middlewares/validar-jwt');
 
 const router = Router();
@@ -19,7 +19,7 @@ router.post(
         check('descripcion', 'La descripcion es un campo obligatorio').not().isEmpty(),
         // check('responsable', 'El responsable es un campo obligatorio').not().isEmpty(),
         check('profesores', 'Los profesores es un campo obligatorio').not().isEmpty(),
-        validarCampos,
+        validarCampos
     ],
     crearPartenariadoProfesor
 );
@@ -36,23 +36,24 @@ router.post(
         // check('externos', 'El campo externos es un campo obligatorio').not().isEmpty(),
         // check('responsable', 'El responsable es un campo obligatorio').not().isEmpty(),
         // check('profesores', 'Los profesores es un campo obligatorio').not().isEmpty(),
-        validarCampos,
+        validarCampos
     ],
     crearPartenariadoSocioComunitario
 );
 // listar partenariados
-// router.get('/', [], getPartenariados);
+router.get('/', [],
+    getPartenariados);
 
-// // obtener un partenariado
-// router.get(
-//     '/:id', [
-//         validarJWT,
-//         validarEsProfesorOrSocioComunitarioOrEsGestor,
-//         check('id', 'El id del partenariado debe ser válido').isMongoId(),
-//         validarCampos
-//     ],
-//     getPartenariado
-// );
+// obtener un partenariado
+router.get(
+    '/:id', [
+        // validarJWT,
+        // validarEsProfesorOrSocioComunitarioOrEsGestor,
+        //check('id', 'El id del partenariado debe ser válido').isMongoId(),
+        // validarCampos
+    ],
+    getPartenariado
+);
 
 // // modificar estado
 // router.put(

@@ -1,0 +1,78 @@
+<app-navbar></app-navbar>
+
+<div class='container mt-4 animate__animated animate__fadeIn animate__faster'>
+
+    <h5 class='px-4 py-2 mb-4 text-white display-block bg-secondary d-flex justify-content-between align-items-center'>
+        <strong>Ver Oferta</strong>
+    </h5>
+
+
+    <div *ngIf='!this.usuarioService.usuario' class='alert alert-warning' role='alert'>
+        <strong>Atención: </strong> Estás en la aplicación como <strong>INVITADO</strong>. Sólo Profesores pueden presentar OFERTAS.
+    </div>
+
+    <div *ngIf='this.usuarioService.usuario && this.usuarioService.usuario.esEstudiante' class='alert alert-warning'
+         role='alert'>
+        <strong>Atención: </strong> Estás en la aplicación como <strong>ESTUDIANTE</strong>. Sólo Profesores pueden presentar OFERTAS.
+    </div>
+
+    <div
+        *ngIf="oferta?.creador.rol === 'ROL_PROFESOR' && this.usuarioService.usuario && this.usuarioService.usuario.esProfesor"
+        class='alert alert-warning'
+        role='alert'>
+        <strong>Atención: </strong> Estás en la aplicación como <strong>PROFESOR</strong>, pero esta oferta ha sido presentada por otro
+        profesor.
+    </div>
+
+    <div
+        *ngIf="oferta?.creador.rol === 'ROL_ENTIDAD' && this.usuarioService.usuario && this.usuarioService.usuario.esSocioComunitario"
+        class='alert alert-warning'
+        role='alert'>
+        <strong>Atención: </strong> Estás en la aplicación como <strong>ENTIDAD</strong>. Sólo Profesores pueden presentar OFERTAS.
+    </div>
+
+    <!-- Info de cargando -->
+    <div *ngIf='!oferta' class='mb-0 alert alert-info text-center animate__animated animate__fadeIn animate__fast'
+         role='alert'>
+        <h4>Cargando oferta...</h4>
+        <fa-icon [icon]="['fas', 'sync']" [spin]='true'></fa-icon>
+        <p class='mb-'>Por favor, espere</p>
+    </div>
+
+
+    <div *ngIf='oferta' class='row'>
+
+        <div class='col-12'>
+
+            <header class='card-header mb-2 border d-flex justify-content-between align-items-center'>
+                <h6 class='title mb-0'><strong>Oferta: {{ oferta.titulo }}</strong></h6>
+            </header>
+
+            <div class='card my-2 p-3'>
+                <div class='d-flex justify-content-between'>
+                    <div><strong>Cuatrimestre:</strong> {{ oferta.displayCuatrimestre }}</div>
+                    <div><strong>Año académico:</strong> {{ oferta.anio_academico }}</div>
+                </div>
+                <hr />
+                <p><strong>Descripción:</strong> {{ oferta.descripcion }}</p>
+                <p><strong>Fecha de creación de la oferta:</strong> {{ oferta.created_at | date:"dd-MM-yyyy" }}</p>
+                <p><strong>Fecha límite:</strong> {{ oferta.fecha_limite | date:"dd-MM-yyyy" }} </p>
+                <p><strong>¿Quién es el responsable de la oferta?:</strong></p>
+                <ul>
+                    <li><strong><em>Nombre y Apellidos: </em></strong>{{ oferta.creador.nombre}} {{ oferta.creador.apellidos}}</li>
+                    <li><strong><em>Rol en la aplicación: </em></strong>{{ oferta.creador.rol}}</li>
+                </ul>
+                <p><strong>Observaciones: </strong>{{ oferta.observaciones || 'Sin observaciones'}}</p>
+                <p class='mt-3'><strong>Imagen de la oferta:</strong></p>
+                <img [src]='oferta.imagen' alt='imagen-de-la-oferta' class='img-fluid'>
+            </div>
+            <div style='display: flex; justify-content: space-evenly'>
+                <button [routerLink]="['/ofertas']" class='btn btn-info' style='width: 200px' type='button'>Volver
+                    al listado
+                </button>
+                <button (click)='crearPartenariado()' class='btn btn-info' style='width: 200px' type='button'>Crear partenariado</button>
+            </div>
+        </div>
+    </div>
+</div>
+<app-footer></app-footer>
