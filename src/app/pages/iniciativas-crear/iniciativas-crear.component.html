@@ -1,0 +1,182 @@
+<app-navbar></app-navbar>
+<div class="container mt-4 animate__animated animate__fadeIn animate__faster">
+    <h5 class="px-4 py-2 mb-4 text-white display-block bg-secondary d-flex justify-content-between align-items-center">
+        <b *ngIf="this.iniciativa_id">Actualizar Iniciativa</b>
+        <b *ngIf="!this.iniciativa_id">Crear Iniciativa</b>
+        <a class="btn btn-light border-white btn-sm" [routerLink]="['/iniciativas']" role="button">Volver</a>
+    </h5>
+
+    <div class="row">
+
+        <div class="col-12">
+
+            <div class="card">
+
+                <form
+                    id="form-iniciativa"
+                    role="form"
+                    autocomplete="off"
+                    *ngIf="crearIniciativaForm"
+                    [formGroup]="crearIniciativaForm"
+                    (ngSubmit)="enviarIniciativa()">
+
+                    <div class="card-body">
+
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label>Título</label>
+                                    <input name="titulo" type="text" id="titulo" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Título corto y descriptivo"  formControlName="titulo">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="descripcion">Descripción</label>
+                                    <textarea id="descripcion" name="descripcion" class="form-control" placeholder="Escribe una descripción detallada y larga sobre la iniciativa" rows="8" formControlName="descripcion"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label for="ciudad">Localización de desarrollo de la iniciativa</label>
+                                    <select id="ciudad" name="ciudad" class="form-control" formControlName="ciudad">
+                                        <option value="">Elije una ciudad de desarrollo de la iniciativa</option>
+                                        <option *ngFor="let CIUDAD of CIUDADES" [selected]="this.iniciativa.ciudad == CIUDAD" value="{{ CIUDAD }}">{{ CIUDAD }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label for="rama">Rama de Conocimiento</label>
+                                    <select id="rama" name="area" class="form-control" formControlName="rama">
+                                        <option value="">Elije una rama de conocimiento</option>
+                                        <option *ngFor="let RAMA of RAMAS" [selected]="this.iniciativa.rama == RAMA" value="{{ RAMA }}">{{ RAMA }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row" *ngIf="this.iniciativa_id">
+                            <div class="col-6 justify-content-between">
+                                <div class="border p-3 w-100 mb-3">
+                                    <div class="form-group">
+                                        <label for="ficheros">Ficheros</label>
+
+                                        <div class="form-group">
+                                            <label for="file-upload-2" class="custom-file-upload">
+                                                <i class="fa fa-cloud-upload"></i> Subir Fichero (solo pdf)
+                                            </label>
+                                            <input id="file-upload-2" type="file" (change)="subirFichero($event.target.files[0])"/>
+                                        </div>
+
+                                    </div>
+
+                                    <p *ngIf="iniciativa.archivos.length === 0">No se ha subido ningún archivo para esta iniciativa</p>
+
+                                    <ul *ngIf="iniciativa.archivos.length > 0" class="list-group">
+                                        <li *ngFor="let archivo of iniciativa.archivos" class="list-group-item">
+                                            <a href="{{ archivo.url }}" target="_blank">{{ archivo.client_name }}</a>
+                                            <span class="float-right cursor-pointer text-danger" aria-label="Borrar Fichero" (click)="borrarFichero(archivo._id)"><fa-icon [icon]="['fas', 'trash']"></fa-icon></span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="col-6 justify-content-between">
+
+                                <div class="border p-3 w-100 mb-3">
+
+                                    <div class="d-flex justify-content-between">
+                                        <label>Imagen de iniciativa {{ iniciativa.imagen === '' ? ' (actualmente por defecto)' : '' }}</label>
+                                        <span class="remove-image-btn" aria-label="Borrar Imagen" *ngIf="!this.imagenPreview && iniciativa.imagen != ''" (click)="borrarImagen()">borrar actual</span>
+                                    </div>
+
+                                    <div class="row">
+
+                                        <div class="col-6">
+                                            <img *ngIf="this.imagenPreview" [src]="this.imagenPreview" class="img-fluid" />
+                                            <img *ngIf="!this.imagenPreview" [src]="iniciativa.imagenUrl" class="img-fluid" />
+                                        </div>
+
+                                        <div class="col-6 d-flex flex-column justify-content-between">
+
+                                            <div class="form-group">
+                                                <label for="file-upload" class="custom-file-upload">
+                                                    <i class="fa fa-cloud-upload"></i> Subir imagen
+                                                </label>
+                                                <input id="file-upload" type="file" (change)="cambiarImagen($event.target.files[0])"/>
+                                            </div>
+
+                                            <button type="button" class="btn btn-secondary btn-sm" [disabled]="!imagenSubir" (click)="actualizarImagen()">Actualizar Imagen</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="row" *ngIf="this.usuarioService.usuario.esGestor && USUARIOS">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="proponedor">Proponedor (solo modificable por el gestor del portal)</label>
+                                    <select id="proponedor" name="area" class="form-control" formControlName="proponedor">
+                                        <option value="">Elije un usuario que se haga cargo de la iniciativa</option>
+                                        <option *ngFor="let USUARIO of USUARIOS" [selected]="this.iniciativa.proponedor == USUARIO.uid" value="{{ USUARIO.uid }}">{{ USUARIO.email }} - {{ USUARIO.displayRol }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="col">
+                            <div class="card text-white bg-info mb-3" *ngIf="!this.iniciativa_id">
+                              <div class="card-body">
+                                <h5 class="card-title text-center"><fa-icon [icon]="['fas', 'info-circle']"></fa-icon> Info</h5>
+                                <p class="card-text">Una vez creados los datos básicos de la iniciativa, se podrán subir archivos e imágenes a la misma, así como editar sus datos básicos.</p>
+                              </div>
+                            </div>
+                          </div>
+
+                            <div class="col" *ngIf = "!this.iniciativa_id">
+                                <div class="form-check text-right m-4">
+                                    <input type="checkbox" class="form-check-input" id="terminos_aceptados" formControlName="terminos_aceptados">
+                                    <label class="form-check-label">Entiendo <a href="javascript:void(0)" target="_blank" [routerLink]="['/que-es-ApS']">Qué es un Proyecto ApS</a></label>
+                                </div>
+
+                            </div>
+                        </div>
+
+
+
+                        <div class="d-flex">
+                            <div class="flex-fill alert alert-danger mr-3" role="alert" *ngIf="this.crearIniciativaForm.invalid && this.formSubmitted">
+                                <div *ngIf="campoNoValido('estado')" class="col">{{ campoNoValido('estado') }}</div>
+                                <div *ngIf="campoNoValido('titulo')" class="col">{{ campoNoValido('titulo') }}</div>
+                                <div *ngIf="campoNoValido('descripcion')" class="col">{{ campoNoValido('descripcion') }}</div>
+                                <div *ngIf="campoNoValido('rama')" class="col">{{ campoNoValido('rama') }}</div>
+                                <div *ngIf="campoNoValido('ciudad')" class="col">{{ campoNoValido('ciudad') }}</div>
+                                <div *ngIf="campoNoValido('proponedor')" class="col">{{ campoNoValido('proponedor') }}</div>
+                                <div *ngIf="campoNoValido('terminos_aceptados')" class="col">{{ campoNoValido('terminos_aceptados') }}</div>
+                            </div>
+
+                            <div class="ml-auto mb-2">
+                                <input *ngIf="!this.iniciativa_id" type="submit" [value]="this.formSending ? 'Creando...' : 'Crear Iniciativa'" class="btn btn-default btn-secondary m-4" [disabled]="this.formSending || (this.formSubmitted && this.crearIniciativaForm.invalid)">
+                                <input *ngIf="this.iniciativa_id" type="submit" [value]="this.formSending ? 'Actualizando...' : 'Actualizar Iniciativa'" class="btn btn-default btn-secondary m-4" [disabled]="this.formSending || (this.formSubmitted && this.crearIniciativaForm.invalid)">
+                            </div>
+                        </div>
+
+
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+<app-footer></app-footer>

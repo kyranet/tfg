@@ -1,0 +1,245 @@
+<app-navbar></app-navbar>
+
+<div class="container mt-4 animate__animated animate__fadeIn animate__faster">
+
+ 	<main class="container">
+
+    <h1>{{ editUserTitle }}</h1>
+        <section role="main">
+
+            <div class="row d-flex">
+                <form
+                    class="col-12"
+                    id="form-register"
+                    role="form"
+                    autocomplete="off"
+                    *ngIf="profileForm"
+                    [formGroup]="profileForm"
+                    (ngSubmit)="updateProfile()">
+
+                    <div class="card my-2 mr-2 p-4">
+
+                            <h2>
+                                <strong>{{ editUserTitle }}</strong>
+                            </h2>
+
+                            <div class="panel-body" *ngIf="usuario">
+
+                                <fieldset class="p-4 mb-2">
+                                    <legend class="mb-0 px-2"><strong>Informacion de usuario</strong></legend>
+
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <label>Perfil de Usuario</label>
+                                                <input class="form-control" disabled value="{{ usuario.displayRol }}">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="email">Correo electrónico</label>
+                                                <input name="email" type="email" id="email" [readOnly]="usuario.origin_login !== 'Portal ApS'" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Introduzca su Usuario"  formControlName="email">
+                                            </div>
+                                        </div>
+
+                                        <div class="col">
+                                            <div class="border m-2 p-2">
+                                                <div class="d-flex justify-content-between">
+                                                    <p class="text-decoration-underline font-weight-bold">Imagen de perfil</p>
+                                                    <span class="remove-image-btn" aria-label="Borrar Imagen" *ngIf="!this.imagenPreview && usuario.origin_img != '' && !usuario.origin_img.includes('https')" (click)="borrarImagen()">borrar actual</span>
+                                                </div>
+
+                                                <div class="d-flex justify-content-between">
+                                                    <div class="text-center ml-4">
+                                                        <img *ngIf="this.imagenPreview" [src]="this.imagenPreview" class="rounded-circle" width="96" height="96" />
+                                                        <img *ngIf="!this.imagenPreview" [src]="usuario.imagenUrl" class="rounded-circle" width="96" height="96" />
+
+                                                    </div>
+
+                                                    <div class="d-flex flex-column justify-content-between w-50">
+
+                                                        <div class="form-group">
+                                                            <label for="file-upload" class="custom-file-upload">
+                                                                <i class="fa fa-cloud-upload"></i> Subir imagen
+                                                            </label>
+                                                            <input id="file-upload" type="file" (input)="cambiarImagen($event.target.files[0])"/>
+                                                        </div>
+
+                                                        <button type="button" class="btn btn-secondary btn-sm" [disabled]="!imagenSubir" (click)="actualizarImagen()">Actualizar Imagen</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col mr-2">
+                                            <label for="password">Contraseña (vacía si no se quiere modificar)</label>
+                                            <input name="password" type="password" id="password" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Introduzca su Contraseña" formControlName="password">
+                                        </div>
+
+                                        <div class="col ml-2">
+                                            <label for="password_2">Repetir Contraseña</label>
+                                            <input name="password_2" type="password" id="password_2" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Introduzca su Contraseña" formControlName="password_2">
+                                        </div>
+                                    </div>
+                                </fieldset>
+
+
+                                <fieldset class="p-4 mb-2">
+                                    <legend class="mb-0 px-2"><strong>Informacion personal</strong></legend>
+
+
+                                    <div class="d-flex">
+                                        <div class="form-group flex-fill mr-2">
+                                            <label for="nombre">Nombre</label>
+                                            <input name="nombre" type="text" id="nombre" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Introduzca su Nombre" formControlName="nombre">
+                                        </div>
+
+                                        <div class="form-group flex-fill ml-2">
+                                            <label for="apellidos">Apellidos</label>
+                                            <input name="apellidos" type="text" id="apellidos" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Introduzca sus Apellidos" formControlName="apellidos">
+                                        </div>
+
+                                        <div class="form-group flex-fill ml-2">
+                                            <label for="telefono">Número de teléfono</label>
+                                            <input name="telefono" type="text" id="telefono" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Introduzca su telefono" formControlName="telefono">
+                                        </div>
+                                    </div>
+
+                                </fieldset>
+
+
+                                <fieldset class="p-4 mb-2" *ngIf="usuario.rol !== ''">
+                                    <legend class="mb-0 px-2"><strong>Informacion de perfil</strong></legend>
+                                    <div class="form-group" *ngIf="['ROL_ESTUDIANTE', 'ROL_PROFESOR'].includes(this.profileForm.get('rol').value)">
+                                        <label for="universidad">Universidad</label>
+                                        <!-- <input name="universidad" type="text" id="universidad" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Introduzca su universidad" [class.is-invalid] = "registerForm.get('universidad').invalid && registerForm.get('universidad').touched" formControlName="universidad"> -->
+                                        <input name="universidad" type="text" id="universidad"  list="codes"  formControlName="universidad"  class="form-control" [class.is-invalid] = "profileForm.get('universidad').invalid && profileForm.get('universidad').touched" placeholder="Introduzca su universidad">
+                                        <datalist id="codes">
+                                        <option *ngFor="let c of codeList" [value]="c.nombre" ></option>
+                                        </datalist>
+                                        <small class="text-danger" *ngIf="noListMatch()">Debe elegir una universidad valida</small>
+                                       
+                                    </div>
+
+                                    <div class="form-group" *ngIf="['ROL_PROFESOR'].includes(this.profileForm.get('rol').value)">
+                                        <label for="areaConocimiento">Area/s de conocimiento</label>
+                                        <ng-multiselect-dropdown
+                                        name="areaConocimiento"
+                                        [settings]="dropdownSettings"
+                                        [placeholder]="'Selecciona la/s area/s de conocimiento'"
+                                        [data]="areasList"
+                                        [(ngModel)]="areasUsuario"
+                                        formControlName="areaConocimiento"
+                                        >
+                                        <ng-template
+                                            #optionsTemplate
+                                            let-item
+                                            let-option="option"
+                                            let-id="id"
+                                            let-isSelected="isSelected"
+                                        >
+                                            <div
+                                            style="
+                                                padding: 1px 10px;
+                                                margin-right: 10px;
+                                                right: 2px;
+                                                top: -2px;
+                                            "
+                                            >
+                                            <label
+                                                style="color: #333; min-width: 130px; font-weight: normal;"
+                                                [ngStyle]="{ 'font-weight': isSelected? 'bold':' normal','color': getItems[id].isDisabled? 'lightgrey': ''}"
+                                                >{{getItems[id].nombre}}</label
+                                            >
+                                            </div>
+                                        </ng-template>
+                                        <ng-template #optionSelectedTemplate let-option="option" let-id="id">
+                                            <div>
+                                            {{option}}
+                                            </div>
+                                        </ng-template>
+                                        </ng-multiselect-dropdown>
+                                       
+                                    </div>
+                                    
+
+                                    <div class="form-group" *ngIf="['ROL_ESTUDIANTE'].includes(this.profileForm.get('rol').value)">
+                                        <label for="titulacion">
+                                            <ng-container *ngIf="this.profileForm.get('rol').value === 'ROL_ESTUDIANTE';">
+                                                Titulación
+                                            </ng-container>
+                                        </label>
+                                        <input name="titulacion" type="text" id="titulacion" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Introduzca su titulación" [class.is-invalid] = "profileForm.get('titulacion').invalid && profileForm.get('titulacion').touched"  formControlName="titulacion">
+                        
+                                    </div>
+
+                                    <div class="form-group" *ngIf="['ROL_PROFESOR'].includes(this.profileForm.get('rol').value)">
+                                        <label for="facultad">
+                                            <ng-container *ngIf="this.profileForm.get('rol').value === 'ROL_PROFESOR';">
+                                                Facultad / Escuela
+                                            </ng-container>
+                                        </label>
+                                        <input name="facultad" type="text" id="facultad" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Introduzca su facultad" [class.is-invalid] = "profileForm.get('facultad').invalid && profileForm.get('facultad').touched"  formControlName="facultad">
+                        
+                                    </div>
+
+                                    <div class="form-group" *ngIf="['ROL_GESTOR', 'ROL_SOCIO_COMUNITARIO'].includes(usuario.rol)">
+                                        <label for="sector">Sector</label>
+                                        <input name="sector" type="text" id="sector" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Introduzca su sector" formControlName="sector">
+                                    </div>
+
+                                    <div class="form-group" *ngIf="['ROL_GESTOR', 'ROL_SOCIO_COMUNITARIO'].includes(usuario.rol)">
+                                        <label for="url">URL</label>
+                                        <input name="url" type="text" id="url" [readOnly]="usuario.origin_login !== 'Portal ApS'" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Introduzca su URL" formControlName="url">
+                                    </div>
+
+                                    <div class="form-group" *ngIf="['ROL_GESTOR', 'ROL_SOCIO_COMUNITARIO'].includes(usuario.rol)">
+                                        <label for="mision">Misión</label>
+                                        <input name="mision" type="text" id="mision" [readOnly]="usuario.origin_login !== 'Portal ApS'" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Introduzca su mision" formControlName="mision">
+                                    </div>
+
+                                    <div class="form-group" *ngIf="['ROL_GESTOR', 'ROL_SOCIO_COMUNITARIO'].includes(usuario.rol)">
+                                        <label for="nombreSocioComunitario">Nombre socio comunitario</label>
+                                        <input name="nombreSocioComunitario" type="text" id="nombreSocioComunitario" class="form-control" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Introduzca el nombre del socio comunitario" formControlName="nombreSocioComunitario">
+                                    </div>
+                                </fieldset>
+
+                                <label style="color:green; margin-top:0.5cm;">Los campos obligatorios tienen asterisco.</label>
+
+                                <div class="d-flex">
+                                     <div class="flex-fill alert alert-danger mr-3" role="alert" *ngIf="this.profileForm.invalid">
+                                        <div *ngIf="campoNoValido('rol')" class="col">{{ campoNoValido('rol') }}</div>
+                                        <div *ngIf="campoNoValido('email')" class="col">{{ campoNoValido('email') }}</div>
+                                        <div *ngIf="campoNoValido('password')" class="col">{{ campoNoValido('passwordsCoinciden') }}</div>
+                                        <div *ngIf="passwordsNoCoinciden()" class="col">Las contraseñas no coinciden</div>
+                                        <div *ngIf="campoNoValido('nombre')" class="col">{{ campoNoValido('nombre') }}</div>
+                                        <div *ngIf="campoNoValido('apellidos')" class="col">{{ campoNoValido('apellidos') }}</div>
+                                        <div *ngIf="campoNoValido('telefono')" class="col">{{ campoNoValido('telefono') }}</div>
+                                        <div *ngIf="campoNoValido('universidad')" class="col">{{ campoNoValido('universidad') }}</div>
+                                        <div *ngIf="campoNoValido('titulacion') && ['ROL_ESTUDIANTE'].includes(usuario.rol)" class="col">{{ campoNoValido('titulacion') }}</div>
+                                        <div *ngIf="campoNoValido('facultad') && ['ROL_PROFESOR'].includes(usuario.rol)" class="col">{{ campoNoValido('facultad') }}</div>
+                                        <div *ngIf="campoNoValido('sector') && ['ROL_SOCIO_COMUNITARIO'].includes(usuario.rol)" class="col">{{ campoNoValido('sector') }}</div>
+                                        <div *ngIf="campoNoValido('url') && ['ROL_SOCIO_COMUNITARIO'].includes(usuario.rol)" class="col">{{ campoNoValido('url') }}</div>
+                                        <div *ngIf="campoNoValido('mision') && ['ROL_SOCIO_COMUNITARIO'].includes(usuario.rol)" class="col">{{ campoNoValido('mision') }}</div>
+                                        <div *ngIf="campoNoValido('nombreSocioComunitario') && ['ROL_SOCIO_COMUNITARIO'].includes(usuario.rol)" class="col">{{ campoNoValido('nombreSocioComunitario') }}</div>
+                                    </div> 
+
+                                    <div class="ml-auto mb-2">
+                                         <input type="submit" value="Actualizar Perfil" class="btn btn-default btn-primary" [disabled]="profileForm.invalid">
+                                    </div>
+                                </div>
+
+                            </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+        </section>
+ 	</main>
+
+</div>
+<app-footer></app-footer>

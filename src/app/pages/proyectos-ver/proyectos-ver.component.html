@@ -1,0 +1,210 @@
+<app-navbar></app-navbar>
+<div class="container mt-4 animate__animated animate__fadeIn animate__faster">
+
+    <h5 class="px-4 py-2 mb-4 text-white display-block bg-secondary d-flex justify-content-between align-items-center">
+        <b>Ver Proyecto</b>
+        <a class="border-white btn btn-primary btn-sm" [routerLink]="['/proyectos']" role="button">Volver a Proyectos</a>
+    </h5>
+
+    <div class="alert alert-warning" role="alert" *ngIf="proyecto?.estado !== 'En curso' && proyecto?.estado !== 'Abierto'">
+        <b>Atención: </b> Esta PROYECTO ya no está en curso. Se puede seguir viendo a modo de consulta. Si crees que este proyecto se ha cerrado por error, por favor, <a class="font-weight-bold" [routerLink]="['/sobre-ApS-UNED/contacta']">contacta con el Gestor</a> para que evalúe si puede proceder a abrirlo de nuevo.
+    </div>
+
+    <div class="alert alert-warning" role="alert" *ngIf="proyecto?.estado === 'Abierto' && this.usuarioService.usuario && this.usuarioService.usuario.esEstudiante">
+        <b>Atención: </b> Esta PROYECTO está a la espera de ESTUDIANTES interesados en realizarlo.
+        <button class="float-right btn btn-success btn-sm" (click)="pendienteImplementar()">Solicitar acceso</button>
+    </div>
+
+
+    <div class="alert alert-warning" role="alert" *ngIf="!tienePermisoEdicion()">
+        <b>Atención: </b> No tienes permisos para participar en el proyecto. Puedes acceder a modo de consulta.
+    </div>
+
+
+
+
+    <!-- Info de cargando -->
+    <div *ngIf="!proyecto" class="mb-0 text-center alert alert-info animate__animated animate__fadeIn animate__fast" role="alert">
+        <h4>Cargando proyecto...</h4>
+        <fa-icon [icon]="['fas', 'sync']" [spin]="true"></fa-icon>
+        <p class="mb-">Por favor, espere</p>
+    </div>
+
+
+    <div class="row" *ngIf="proyecto">
+
+        <div class="col-9">
+
+            <header class="mb-2 border card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 title"><b>Proyecto: {{ proyecto.titulo }}</b></h6>
+                <span><b>Estado: {{ proyecto.estado }}</b></span>
+            </header>
+
+            <div class="p-3 my-2 card">
+                <div class="d-flex justify-content-between">
+                    <div><b>Rama de conocimiento:</b> {{ proyecto.rama }}</div>
+                    <div><b>Ciudad:</b> {{ proyecto.ciudad }}</div>
+                </div>
+                <hr />
+
+                <p><b>Fecha de registro de la proyecto:</b> {{ proyecto.parsedCreatedAt }}</p>
+                <p><b>Descripción:</b> {{ proyecto.descripcion }}</p>
+                <p><b>¿Quién es el responsable de la proyecto?:</b></p>
+                <ul>
+                    <li><b><i>Nombre y Apellidos: </i></b>{{ proyecto.proponedor.nombre}} {{ proyecto.proponedor.apellidos}}</li>
+                    <li>
+                        <b><i>
+                            <span *ngIf="['ROL_ESTUDIANTE', 'ROL_PROFESOR', 'ROL_GESTOR'].includes(proyecto.proponedor.rol)">Universidad / Titulación: </span>
+                            <span *ngIf="['ROL_ESTUDIANTE'].includes(proyecto.proponedor.rol)">Sector: </span>
+                        </i></b>
+                        {{ proyecto.proponedor.additionalInfoPlain || 'Sin información'}}
+                    </li>
+                    <li><b><i>Rol en la aplicación: </i></b>{{ proyecto.proponedor.displayRol}}</li>
+                </ul>
+
+
+            </div>
+
+
+
+            <header class="mb-2 border card-header d-flex justify-content-between" *ngIf="tienePermisoEdicion()">
+                <h6 class="mb-0 title"><b>Escribir Mensaje</b></h6>
+            </header>
+
+            <header class="mb-2 border card-header d-flex justify-content-between" *ngIf="!tienePermisoEdicion()">
+                <h6 class="mb-0 title"><b>El proyecto no está abierto ni en curso y no se pueden escribir mensajes </b></h6>
+            </header>
+
+            <div class="p-3 my-2 card" *ngIf="tienePermisoEdicion()">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label for="mensaje">Mensaje</label>
+                        <textarea id="mensaje" name="mensaje" class="form-control" placeholder="Escribe un mensaje" rows="3" [(ngModel)]="mensaje"></textarea>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <input type="submit" class="float-right btn btn-success" [value]="'Enviar mensaje'" [disabled]="this.mensaje == ''" (click)="enviarMensaje()">
+                </div>
+            </div>
+
+            <header class="mb-2 border card-header d-flex justify-content-between">
+                <h6 class="mb-0 title"><b>Histórico de mensajes del proyecto</b></h6>
+            </header>
+
+
+            <div class="p-3 my-2 card" *ngIf="!numeroMensajes()">
+                Aún no hay ningún mensaje...
+            </div>
+
+            <div class="p-3 my-2 card" *ngFor="let mensaje of proyecto.mensajes">
+                <div class="d-flex justify-content-between">
+                    <div><b>Autor:</b> {{ mensaje.nombre }} {{ mensaje.apellidos }} <{{ mensaje.email }}> [{{ mensaje.rol}}]</div>
+                    <div><b>Fecha:</b> {{ parseFecha(mensaje.fecha) }}</div>
+                </div>
+                <hr />
+                <p>{{ mensaje.texto }}</p>
+            </div>
+
+        </div>
+
+        <div class="col-3">
+
+            <div class="card">
+
+                <div class="filtro">
+                    <header class="border card-header">
+                        <h6 class="mb-0 title">Estado </h6>
+                    </header>
+
+                    <div class="card-body">
+                        <div>
+                            <div class="mb-4 text-center font-weight-bold">{{proyecto.estado}}</div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="filtro" *ngIf="this.usuarioService.usuario && (this.usuarioService.usuario.esProfesor || this.usuarioService.usuario.esGestor)">
+                    <header class="card-header border-top rounded-0">
+                        <h6 class="mb-0 title">Cancelar Proyecto </h6>
+                    </header>
+
+                    <div class="card-body">
+                        <div>
+                            <button *ngIf="tienePermisoEdicion() && this.usuarioService.usuario && (this.usuarioService.usuario.esProfesor || this.usuarioService.usuario.esGestor) && proyecto.estado == 'Abierto'" class="mb-2 border-white btn btn-success btn-sm w-100 font-weight-bold" (click)="cambiarEstado('En curso')" role="button">Comenzar (en curso)</button>
+                            <button *ngIf="tienePermisoEdicion() && this.usuarioService.usuario && (this.usuarioService.usuario.esProfesor || this.usuarioService.usuario.esGestor) && (proyecto.estado == 'Abierto' || proyecto.estado == 'En curso')" class="mb-2 border-white btn btn-warning btn-sm w-100 font-weight-bold" (click)="cambiarEstado('Finalizado')" role="button">Cerrar - Finalizado</button>
+                            <button *ngIf="tienePermisoEdicion() && this.usuarioService.usuario && (this.usuarioService.usuario.esProfesor || this.usuarioService.usuario.esGestor) && (proyecto.estado == 'Abierto' || proyecto.estado == 'En curso')" class="mb-2 border-white btn btn-danger btn-sm w-100 font-weight-bold" (click)="cambiarEstado('Cancelado')" role="button">Cerrar - Suspendido</button>
+
+                            <button *ngIf="tienePermisoEdicion() && this.usuarioService.usuario && this.usuarioService.usuario.esGestor && proyecto.estado != 'En curso'" class="mb-2 border-white btn btn-success btn-sm w-100 font-weight-bold" (click)="cambiarEstado('En curso')" role="button">Reabrir Proyecto</button>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="filtro" *ngIf="tienePermisoEdicion() && this.usuarioService.usuario && this.usuarioService.usuario.esGestor && (proyecto.estado != 'Abierto' ||  proyecto.estado != 'En curso')">
+                    <header class="card-header border-top rounded-0">
+                        <h6 class="mb-0 title">Recomenzar Proyecto </h6>
+                    </header>
+
+                    <div class="card-body">
+                        <div>
+                            <button class="mb-2 border-white btn btn-success btn-sm w-100 font-weight-bold" (click)="cambiarEstado('Abierto')" *ngIf="proyecto.estado != 'Abierto'" role="button">Pasar a Estado "Abierto"</button>
+                            <button class="mb-2 border-white btn btn-success btn-sm w-100 font-weight-bold" (click)="cambiarEstado('En curso')" *ngIf="proyecto.estado != 'En curso'" role="button">Pasar a Estado "En curso"</button>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="filtro">
+                    <header class="card-header border-top rounded-0">
+                        <h6 class="mb-0 title">Archivos de interés </h6>
+                    </header>
+
+                    <div class="card-body">
+                        <p *ngIf="proyecto.archivos.length === 0">No se ha subido ningún archivo para este proyecto</p>
+                        <ul *ngIf="proyecto.archivos.length > 0" class="list-group">
+                            <li *ngFor="let archivo of proyecto.archivos" class="list-group-item">
+                                <a href="{{ archivo.url }}" target="_blank">{{ archivo.client_name }}</a>
+                                <span class="float-right remove-image-btn" aria-label="Borrar Fichero" (click)="borrarFichero(archivo._id)" *ngIf="this.usuarioService.usuario.esGestor">(x)</span>
+                            </li>
+                        </ul>
+
+
+
+                        <div class="row" *ngIf="tienePermisoEdicion()">
+                            <div class="col-12 justify-content-between">
+                                <div class="form-group">
+                                    <label for="file-upload-2" class="custom-file-upload">
+                                        <i class="fa fa-cloud-upload"></i> Subir Fichero (solo pdf)
+                                    </label>
+                                    <input id="file-upload-2" type="file" (change)="subirFichero($event.target.files[0])"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filtro" *ngIf="this.usuarioService.usuario && (this.usuarioService.usuario.esGestor || this.usuarioService.usuario.esProfesor || this.usuarioService.usuario.esEntidad)">
+                    <header class="card-header border-top rounded-0">
+                        <h6 class="mb-0 title">Partenariado origen </h6>
+                    </header>
+
+                    <div class="card-body">
+
+                        <ul class="list-group">
+                            <li class="list-group-item"><a [routerLink]="['/partenariados/ver/', proyecto.partenariado]">Ver Partenariado Origen</a></li>
+                        </ul>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+
+
+    </div>
+
+</div>
+<app-footer></app-footer>

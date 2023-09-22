@@ -1,0 +1,167 @@
+<app-navbar></app-navbar>
+<div class="container mt-4 animate__animated animate__fadeIn animate__faster">
+
+    <div class="mb-4">
+        <app-carousel></app-carousel>
+    </div>
+
+    <div class="py-4 text-center">
+      <h2 class="my-3">CÓMO PARTICIPAR</h2>
+      <hr>
+    </div>
+
+    <div class="d-md-flex mx-n2">
+
+        <div class="px-2 mb-5 col-md-4 d-flex flex-column">
+          <div class="text-center">
+            <fa-icon [icon]="['fas', 'user-graduate']" class="text-dark" size="6x"></fa-icon>
+            <p class="mt-2"><b>ESTUDIANTES</b></p>
+          </div>
+
+          <div class="px-2 text-center text-dark">
+              <ul class="py-0 pl-2 pr-0 list-unstyled">
+                  <li>Participa en un proyecto ApS integrado en una asignatura.</li>
+                  <li>Sugiere una iniciativa ApS para una comunidad, ONG, etc.</li>
+              </ul>
+          </div>
+
+          <a [routerLink]="['/como-participar/estudiantes']" class="px-4 mx-auto mt-auto text-white btn btn-sm btn-secondary align-self-end">VER</a>
+        </div>
+
+        <div class="px-2 mb-5 col-md-4 d-flex flex-column">
+          <div class="text-center">
+            <fa-icon [icon]="['fas', 'chalkboard-teacher']" class="text-dark" size="6x"></fa-icon>
+            <p class="mt-2"><b>PROFESORES</b></p>
+          </div>
+
+          <div class="px-2 text-center text-dark">
+              <ul class="py-0 pl-2 pr-0 list-unstyled">
+                  <li>Respalda una iniciativa de ApS.</li>
+                  <li>Oferta un servicio de carácter ApS.</li>
+              </ul>
+          </div>
+
+          <a [routerLink]="['/como-participar/profesores']" class="px-4 mx-auto mt-auto text-white btn btn-sm btn-secondary align-self-end">VER</a>
+        </div>
+
+        <div class="px-2 mb-5 col-md-4 d-flex flex-column">
+          <div class="text-center">
+            <fa-icon [icon]="['fas', 'university']" class="text-dark" size="6x"></fa-icon>
+            <p class="mt-2"><b>Socios comunitarios</b></p>
+          </div>
+
+          <div class="px-2 text-center text-dark">
+              <ul class="py-0 pl-2 pr-0 list-unstyled">
+                  <li>Acepta un servicio ApS de la Universidad.</li>
+                  <li>Presenta una iniciativa ApS para una comunidad, ONG, etc.</li>
+              </ul>
+          </div>
+
+          <a [routerLink]="['/como-participar/socioscomunitarios']" class="px-4 mx-auto mt-auto text-white btn btn-sm btn-secondary align-self-end">VER</a>
+        </div>
+
+    </div>
+
+    <div class="py-4 my-3 text-center">
+      <h2>DESTACADOS</h2>
+      <hr>
+    </div>
+
+    <div class="d-md-flex mx-n2">
+
+        <div class="px-2 mb-4 col-md-4">
+            <div class="text-center w-100 h-100">
+              <h2 class="font-weight-bold font-3">{{ count_proyectos }}</h2>
+              <p class="mb-0 font-weight-bold">PROYECTOS</p>
+              <p class="mb-0">registrados en el</p>
+              <p>Portal ApS</p>
+              <a [routerLink]="['/proyectos']" class="px-4 text-white btn btn-sm btn-secondary align-self-end">VER</a>
+            </div>
+        </div>
+
+        <div class="px-2 mb-4 col-md-4">
+          <div class="text-center w-100 h-100">
+            <h2 class="font-weight-bold font-3">{{ count_partenariados }}</h2>
+            <p class="mb-0 font-weight-bold">PARTENARIADOS</p>
+            <p class="mb-0">registrados en el</p>
+            <p>Portal ApS</p>
+            <a [routerLink]="['/partenariados']" class="px-4 text-white btn btn-sm btn-secondary align-self-end">VER</a>
+          </div>
+        </div>
+
+        <div class="px-2 mb-4 col-md-4">
+          <div class="text-center w-100 h-100">
+            <h2 class="font-weight-bold font-3">{{ count_iniciativas }}</h2>
+            <p class="mb-0 font-weight-bold">INICIATIVAS</p>
+            <p class="mb-0">registradas en el</p>
+            <p>Portal ApS</p>
+            <a [routerLink]="['/iniciativas']" class="px-4 text-white btn btn-sm btn-secondary align-self-end">VER</a>
+          </div>
+        </div>
+
+    </div>
+
+    <div class="py-4 my-3 text-center">
+      <h2>NOTICIAS</h2>
+      <hr>
+    </div>
+
+    <div class="d-md-flex mx-n2">
+
+        <div class="px-2 mb-2 col-md-4">
+
+          <div class="card w-100 h-100">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">Portal ApS UNED activo</h5>
+              <p class="card-text">La UNED ha lanzado un nuevo portal para gestionar proyectos de Aprendizaje Servicio.</p>
+              <div class="d-flex justify-content-between align-items-end">
+                <a [routerLink]="['/']" class="mt-auto leading-none text-white btn btn-sm btn-secondary align-self-start">VER</a>
+                <small class="text-muted">(esta web)</small>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="px-2 mb-2 col-md-4">
+
+          <div class="card w-100 h-100">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">UNED - Oficina ApS</h5>
+              <p class="card-text">Os invitamos a conocer la oficina ApS de la UNED, con vídeos, webinars ¡y mucho más!</p>
+              <div class="d-flex justify-content-between align-items-end">
+                <a href="https://blogs.uned.es/aps/" target="_blank" class="mt-auto leading-none text-white btn btn-sm btn-secondary align-self-start">VER</a>
+                <small class="text-muted">(https://blogs.uned.es/aps/)</small>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="px-2 mb-2 col-md-4">
+
+          <div class="card w-100 h-100">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">Red Española Aprendizaje-Servicio</h5>
+              <p class="card-text">Hay nuevas informaciones en el blog de aprendizajeservicio.net, ¡pásate a verlas!</p>
+              <div class="d-flex justify-content-between align-items-end">
+                <a href="https://www.aprendizajeservicio.net" target="_blank" class="mt-auto leading-none text-white btn btn-sm btn-secondary align-self-start">VER</a>
+                <small class="text-muted">(https://www.aprendizajeservicio.net)</small>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+    </div>
+
+    <div class="my-4 border-0 card bg-uned-green">
+      <div class="card-body text-light">
+        <app-newsletter-subscribe></app-newsletter-subscribe>
+      </div>
+    </div>
+
+
+
+</div>
+<app-footer></app-footer>

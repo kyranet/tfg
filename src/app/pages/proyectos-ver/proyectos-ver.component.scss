@@ -1,0 +1,32 @@
+label {
+    font-weight: bold;
+}
+
+fieldset {
+    border: 1px solid gray;
+
+    legend {
+        width: auto;
+    }
+}
+
+input[type="file"] {
+    display: none;
+}
+.custom-file-upload {
+    text-align: center;
+    border: 1px solid #ccc;
+    display: inline-block;
+    padding: 6px 12px;
+    width: 100%;
+    cursor: pointer;
+}
+
+.remove-image-btn {
+    color: red;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    font-size: x-small;
+    text-decoration: underline;
+}

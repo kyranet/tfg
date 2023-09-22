@@ -1,0 +1,205 @@
+<app-navbar></app-navbar>
+<div class="container mt-4 animate__animated animate__fadeIn animate__faster">
+    <h5 class="px-4 py-2 mb-4 text-white display-block bg-secondary d-flex justify-content-between">
+        <b>Iniciativas</b>
+        <a *ngIf="iniciativaCrearGuard.canActivate(null,null)" class="btn btn-primary border-light btn-sm" [routerLink]="['/iniciativas/crear']" role="button">Crear Iniciativa</a>
+    </h5>
+
+    <div class="alert alert-warning" role="alert" *ngIf="!this.usuarioService.usuario">
+        <b>Atención: </b> Estás en la aplicación como <b>INVITADO</b>. Sólo Profesores y Entidades pueden presentar, respaldar o sumarse a INICIATIVAS.
+    </div>
+
+    <div class="alert alert-warning" role="alert" *ngIf="this.usuarioService.usuario && this.usuarioService.usuario.esEstudiante">
+        <b>Atención: </b> Estás en la aplicación como <b>ESTUDIANTE</b>. Sólo Profesores y Entidades pueden presentar, respaldar o sumarse a INICIATIVAS.
+    </div>
+
+    <div class="row">
+        <div class="col-3">
+
+            <header class="card-header mb-2 rounded border"><h6 class="title mb-0">Filtros</h6></header>
+
+            <div class="card">
+
+                <div class="filtro">
+                    <header class="card-header">
+                        <h6 class="title mb-0">Búsqueda </h6>
+                    </header>
+
+                    <div class="card-body">
+                        <input [(ngModel)]="terminoBusqueda" (keyup)="cargarIniciativas()" (search)="cargarIniciativas()" type="search" class="form-control float-right mb-4" placeholder="Buscar por título...">
+                    </div>
+                </div>
+
+
+                <div class="filtro">
+                    <header class="card-header border-top rounded-0">
+                        <h6 class="title mb-0">Rama de conocimiento </h6>
+                    </header>
+
+                    <div class="card-body">
+                        <label *ngFor="let RAMA of RAMAS" class="form-check">
+                            <input class="form-check-input" type="checkbox" [value]="true" (change)="cargarIniciativas()" [(ngModel)]="filterRamas[RAMA]">
+                            <span class="form-check-label">{{ RAMA }}</span>
+                        </label>
+                    </div>
+                </div>
+
+
+                <div class="filtro">
+                    <header class="card-header border-top rounded-0">
+                        <h6 class="title mb-0">Ciudad </h6>
+                    </header>
+
+                    <div class="card-body">
+                        <label *ngFor="let CIUDAD of CIUDADES" class="form-check">
+                            <input class="form-check-input" type="checkbox" [value]="true" (change)="cargarIniciativas()" [(ngModel)]="filterCiudades[CIUDAD]">
+                            <span class="form-check-label">{{ CIUDAD }}</span>
+                        </label>
+                    </div>
+                </div>
+
+
+                <div class="filtro">
+                    <header class="card-header border-top rounded-0">
+                        <h6 class="title mb-0">Estado </h6>
+                    </header>
+
+                    <div class="card-body">
+                        <label class="form-check">
+                            <input class="form-check-input" type="radio" name="ESTADO_INICIATIVA" value="" (change)="cargarIniciativas()" [(ngModel)]="filterEstado">
+                            <span class="form-check-label">Todos</span>
+                        </label>
+
+                        <label *ngFor="let ESTADO_INICIATIVA of ESTADOS_INICIATIVAS" class="form-check">
+                            <input class="form-check-input" type="radio" name="ESTADO_INICIATIVA" value="{{ ESTADO_INICIATIVA }}" (change)="cargarIniciativas()" [(ngModel)]="filterEstado">
+                            <span class="form-check-label">Iniciativas {{ ESTADO_INICIATIVA }}s</span>
+                        </label>
+                    </div>
+                </div>
+
+
+                <div class="filtro">
+                    <header class="card-header border-top rounded-0">
+                        <h6 class="title mb-0">Proponedor </h6>
+                    </header>
+
+                    <div class="card-body">
+                        <label class="form-check">
+                            <input class="form-check-input" type="radio" name="proponedor" value="" (change)="cargarIniciativas()" [(ngModel)]="filterProponedor">
+                            <span class="form-check-label">Todos</span>
+                        </label>
+
+                        <label class="form-check">
+                            <input class="form-check-input" type="radio" name="proponedor" value="ROL_PROFESOR" (change)="cargarIniciativas()" [(ngModel)]="filterProponedor">
+                            <span class="form-check-label">Profesor</span>
+                        </label>
+
+                        <label class="form-check">
+                            <input class="form-check-input" type="radio" name="proponedor" value="ROL_ENTIDAD" (change)="cargarIniciativas()" [(ngModel)]="filterProponedor">
+                            <span class="form-check-label">Entidad</span>
+                        </label>
+                    </div>
+                </div>
+                <!--
+                <div class="filtro">
+                    <header class="card-header border-top rounded-0">
+                        <h6 class="title mb-0">Creador </h6>
+                    </header>
+
+                    <div class="card-body">
+                        <label class="form-check">
+                            <input class="form-check-input" type="radio" name="creador" value="" (change)="cargarIniciativas()" [(ngModel)]="filterCreador">
+                            <span class="form-check-label">Todas</span>
+                        </label>
+
+                        <label class="form-check">
+                            <input class="form-check-input" type="radio" name="creador" [value]="usuarioService.usuario.uid" (change)="cargarIniciativas()" [(ngModel)]="filterCreador">
+                            <span class="form-check-label">Ver mis iniciativas</span>
+                        </label>
+                    </div>
+                </div>
+                -->
+
+
+            </div>
+        </div>
+
+
+        <div class="col-9">
+
+            <header class="card-header mb-2 rounded border d-flex justify-content-between">
+                <h6 class="title mb-0">Listado de Iniciativas <span class="leading-none" *ngIf="totalIniciativasBuscados != totalIniciativas"><small class="font-weight-bold">(total: {{ totalIniciativas }})</small></span></h6>
+
+                <span class="leading-none" *ngIf="totalIniciativasBuscados == totalIniciativas">Total de iniciativas: {{ totalIniciativas }} (mostrando del {{ firstPageRecord }} al {{ lastPageRecord }})</span>
+                <span class="leading-none" *ngIf="totalIniciativasBuscados != totalIniciativas">Iniciativas que coinciden con el filtro: {{ totalIniciativasBuscados }} (mostrando del {{ firstPageRecord }} al {{ lastPageRecord }})</span>
+            </header>
+
+
+            <div class="card my-2">
+
+                <!-- Info de cargando -->
+                <div *ngIf="cargando" class="mb-0 alert alert-info text-center animate__animated animate__fadeIn animate__fast" role="alert">
+                    <h4>Cargando iniciativas</h4>
+                    <fa-icon [icon]="['fas', 'sync']" [spin]="true"></fa-icon>
+                    <p class="mb-">Por favor, espere</p>
+                </div>
+
+                <!-- Tabla cargada -->
+                <div class="card-body" *ngIf="!cargando">
+
+                    <div class="text-right mb-3">
+                        <button (click)="cambiarPagina(prevLimit)" class="btn btn-outline-secondary">Anteriores</button>
+                        &nbsp;
+                        <button (click)="cambiarPagina(nextLimit)" class="btn btn-outline-secondary">Siguientes</button>
+                    </div>
+
+                    <table class="table table-sm table-bordered">
+
+                        <thead>
+                            <tr class="">
+                                <th scope="col" class="w-100px">Origen</th>
+                                <th scope="col" class="w-200px">Entidad/Profesor</th>
+                                <th scope="col">Iniciativa</th>
+                                <th scope="col" class="w-140px">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let iniciativa of iniciativas" class="">
+                                <td>{{ iniciativa.displayProponedorRol }}</td>
+                                <td>
+                                    {{ iniciativa.displayProponedorTableInfo }}
+                                    <div *ngIf="iniciativa.proponedor && iniciativa.proponedor.rol === 'ROL_ENTIDAD' && iniciativa.proponedor.sector"><br />{{ iniciativa.proponedor.sector }}</div>
+                                    <div *ngIf="iniciativa.proponedor && iniciativa.proponedor.rol === 'ROL_PROFESOR' && iniciativa.proponedor.universidad"><br />{{ iniciativa.proponedor.universidad }}</div>
+                                    <div *ngIf="iniciativa.proponedor && iniciativa.proponedor.rol === 'ROL_PROFESOR' && iniciativa.proponedor.titulacion"><br />{{ iniciativa.proponedor.titulacion }}</div>
+                                <td>
+                                    <b>Rama: </b>{{ iniciativa.rama }}<br />
+                                    <b>Ciudad: </b>{{ iniciativa.ciudad }}<br />
+                                    <b>Título: </b>{{ iniciativa.titulo }}
+                                </td>
+
+                                <td class="h-100 p-0">
+                                    <div class="border-bottom p-2 text-center">{{ iniciativa.parsedCreatedAt }}</div>
+                                    <div class="border-bottom p-2 text-center">{{ iniciativa.estado }}</div>
+                                    <div class="d-flex justify-content-around p-2">
+                                        <fa-icon [icon]="['fas', 'eye']" class="text-primary cursor-pointer" [routerLink]="['/iniciativas/ver', iniciativa._id]" title="Ver iniciativa"></fa-icon>
+                                        <fa-icon *ngIf="iniciativa.estado === 'Abierta' && (usuarioService.usuario?.esGestor || iniciativa.proponedor.uid === usuarioService.usuario?.uid)" [icon]="['fas', 'edit']" class="text-primary cursor-pointer" [routerLink]="['/iniciativas/editar', iniciativa._id]" title="Editar iniciativa"></fa-icon>
+                                        <fa-icon *ngIf="iniciativa.estado === 'Abierta' && (usuarioService.usuario?.esGestor || iniciativa.proponedor.uid === usuarioService.usuario?.uid)" [icon]="['fas', 'archive']" class="cursor-pointer" [ngClass]="{ 'text-danger': true }" title="Archivar iniciativa" (click)="archivarIniciativa(iniciativa)"></fa-icon>
+                                        <fa-icon *ngIf="iniciativa.estado !== 'Abierta' && usuarioService.usuario?.esGestor" [icon]="['fas', 'archive']" class="cursor-pointer" [ngClass]="{ 'text-success': true }" title="Desarchivar iniciativa" (click)="desarchivarIniciativa(iniciativa)"></fa-icon>
+                                    </div>
+
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+</div>
+<app-footer></app-footer>

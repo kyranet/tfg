@@ -1,0 +1,31 @@
+
+.carousel .carousel-item {
+
+    max-height: 450px;
+
+    img {
+        max-height: 450px;
+        min-width: auto;
+    }
+}
+
+.carousel-caption {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    padding: 0 15%;
+    padding-bottom: 45px;
+    color: #fff;
+    text-align: center;
+    background-color: rgba(0,0,0,.35);
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    pointer-events: none;
+    @media screen and (max-width: 767px) {
+      .h3-responsive { font-size: 1.3rem; }
+    }
+}

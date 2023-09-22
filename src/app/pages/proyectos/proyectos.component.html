@@ -1,0 +1,182 @@
+<app-navbar></app-navbar>
+<div class="container mt-4 animate__animated animate__fadeIn animate__faster">
+    <h5 class="px-4 py-2 mb-4 text-white display-block bg-secondary d-flex justify-content-between">
+        <b>Proyectos</b>
+    </h5>
+
+    <div class="alert alert-warning" role="alert" *ngIf="!this.usuarioService.usuario">
+        <b>Atención: </b> Estás en la aplicación como <b>usuario invitado</b>. Sólo los Estudiantes, Profesores y Entidades pueden participar en los PROYECTOS.
+    </div>
+
+    <div class="row">
+        <div class="col-3">
+
+            <header class="card-header mb-2 rounded border"><h6 class="title mb-0">Filtros</h6></header>
+
+            <div class="card">
+
+                <div class="filtro">
+                    <header class="card-header border">
+                        <h6 class="title mb-0">Búsqueda </h6>
+                    </header>
+
+                    <div class="card-body">
+                        <input [(ngModel)]="terminoBusqueda" (keyup)="cargarProyectos()" (search)="cargarProyectos()" type="search" class="form-control float-right mb-4" placeholder="Buscar por título...">
+                    </div>
+                </div>
+
+
+                <div class="filtro">
+                    <header class="card-header border-top rounded-0">
+                        <h6 class="title mb-0">Rama de conocimiento </h6>
+                    </header>
+
+                    <div class="card-body">
+                        <label *ngFor="let RAMA of RAMAS" class="form-check">
+                            <input class="form-check-input" type="checkbox" [value]="true" (change)="cargarProyectos()" [(ngModel)]="filterRamas[RAMA]">
+                            <span class="form-check-label">{{ RAMA }}</span>
+                        </label>
+                    </div>
+                </div>
+
+
+                <div class="filtro">
+                    <header class="card-header border-top rounded-0">
+                        <h6 class="title mb-0">Ciudad </h6>
+                    </header>
+
+                    <div class="card-body">
+                        <label *ngFor="let CIUDAD of CIUDADES" class="form-check">
+                            <input class="form-check-input" type="checkbox" [value]="true" (change)="cargarProyectos()" [(ngModel)]="filterCiudades[CIUDAD]">
+                            <span class="form-check-label">{{ CIUDAD }}</span>
+                        </label>
+                    </div>
+                </div>
+
+
+                <div class="filtro">
+                    <header class="card-header border">
+                        <h6 class="title">Estado </h6>
+                    </header>
+
+                    <div class="card-body">
+                        <label class="form-check">
+                            <input class="form-check-input" type="radio" name="ESTADO_PROYECTO" value="" (change)="cargarProyectos()" [(ngModel)]="filterEstado">
+                            <span class="form-check-label">Todos</span>
+                        </label>
+
+                        <label *ngFor="let ESTADO_PROYECTO of ESTADOS_PROYECTOS" class="form-check">
+                            <input class="form-check-input" type="radio" name="ESTADO_PROYECTO" value="{{ ESTADO_PROYECTO }}" (change)="cargarProyectos()" [(ngModel)]="filterEstado">
+                            <span class="form-check-label">{{ ESTADO_PROYECTO }}</span>
+                        </label>
+                    </div>
+                </div>
+
+
+                <!--
+                <div class="filtro">
+                    <header class="card-header border">
+                        <h6 class="title">Creador </h6>
+                    </header>
+
+                    <div class="card-body">
+                        <label class="form-check">
+                            <input class="form-check-input" type="radio" name="creador" value="" (change)="cargarProyectos()" [(ngModel)]="filterCreador">
+                            <span class="form-check-label">Todas</span>
+                        </label>
+
+                        <label class="form-check">
+                            <input class="form-check-input" type="radio" name="creador" [value]="usuarioService.usuario.uid" (change)="cargarProyectos()" [(ngModel)]="filterCreador">
+                            <span class="form-check-label">Ver mis proyectos</span>
+                        </label>
+                    </div>
+                </div>
+                -->
+
+
+            </div>
+        </div>
+
+
+        <div class="col-9">
+
+            <header class="card-header mb-2 rounded border d-flex justify-content-between">
+                <h6 class="title mb-0">Listado de Proyectos <span class="leading-none" *ngIf="totalProyectosBuscados != totalProyectos"><sub>(total: {{ totalProyectos }})</sub></span></h6>
+
+                <span class="leading-none" *ngIf="totalProyectosBuscados == totalProyectos">Total de proyectos: {{ totalProyectos }} (mostrando del {{ firstPageRecord }} al {{ lastPageRecord }})</span>
+                <span class="leading-none" *ngIf="totalProyectosBuscados != totalProyectos">Proyectos que coinciden con el filtro: {{ totalProyectosBuscados }} (mostrando del {{ firstPageRecord }} al {{ lastPageRecord }})</span>
+            </header>
+
+
+            <div class="card my-2">
+
+                <!-- Info de cargando -->
+                <div *ngIf="cargando" class="mb-0 alert alert-info text-center animate__animated animate__fadeIn animate__fast" role="alert">
+                    <h4>Cargando proyectos</h4>
+                    <fa-icon [icon]="['fas', 'sync']" [spin]="true"></fa-icon>
+                    <p class="mb-">Por favor, espere</p>
+                </div>
+
+                <!-- Tabla cargada -->
+                <div class="card-body" *ngIf="!cargando">
+
+                    <div class="text-right mb-3">
+                        <button (click)="cambiarPagina(prevLimit)" class="btn btn-outline-secondary">Anteriores</button>
+                        &nbsp;
+                        <button (click)="cambiarPagina(nextLimit)" class="btn btn-outline-secondary">Siguientes</button>
+                    </div>
+
+                    <table class="table table-sm table-bordered">
+
+                        <thead>
+                            <tr class="">
+                                <th scope="col" class="w-200px">Profesores</th>
+                                <th scope="col" class="w-200px">Entidades</th>
+                                <th scope="col" class="w-200px">Estudiantes</th>
+                                <th scope="col">Proyecto</th>
+                                <th scope="col" class="w-140px">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let proyecto of proyectos" class="">
+                                <td>
+                                    <p *ngIf="!proyecto.profesores.filter(notNull).length">Esperando profesores...</p>
+                                    <p *ngFor="let profesor of proyecto.profesores.filter(notNull)">{{ profesor.email}}</p>
+                                </td>
+                                <td>
+                                    <p *ngIf="!proyecto.entidades.filter(notNull).length">Esperando entidades...</p>
+                                    <p *ngFor="let entidad of proyecto.entidades.filter(notNull)">{{ entidad.email}}</p>
+                                </td>
+                                <td>
+                                    <p *ngIf="!proyecto.estudiantes.filter(notNull).length">Esperando estudiantes...</p>
+                                    <p *ngFor="let estudiante of proyecto.estudiantes.filter(notNull)">{{ estudiante.email}}</p>
+                                </td>
+                                <td>
+                                    <b>Rama: </b>{{ proyecto.rama }}<br />
+                                    <b>Ciudad: </b>{{ proyecto.ciudad }}<br />
+                                    <b>Título: </b>{{ proyecto.titulo }}
+                                </td>
+
+                                <td class="h-100 p-0">
+                                    <div class="border-bottom mb-2 p-2 text-center">{{ proyecto.parsedCreatedAt }}</div>
+                                    <div class="mb-2 p-2 text-center">{{ proyecto.estado }}</div>
+                                    <div class="d-flex justify-content-around border-top" *ngIf="tienePermisoEdicion(proyecto)">
+                                        <fa-icon [icon]="['fas', 'edit']" class="text-primary cursor-pointer" [routerLink]="['/proyectos/ver', proyecto._id]" title="Ver proyecto"></fa-icon>
+                                    </div>
+                                </td>
+
+                            </tr>
+                        </tbody>
+                    </table>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+</div>
+<app-footer></app-footer>

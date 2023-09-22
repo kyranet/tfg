@@ -1,0 +1,21 @@
+.dropdown-menu.profile-dropdown {
+    right: 0;
+}
+
+#navbarDropdownMenuLink {
+    color: #000;
+
+    div {
+        min-width: 130px;
+    }
+
+    &.dropdown-toggle::after {
+        position: absolute;
+        top: 25px;
+        right: 0;
+    }
+}
+
+.nav-link.dropdown-toggle {
+    cursor: pointer;
+}

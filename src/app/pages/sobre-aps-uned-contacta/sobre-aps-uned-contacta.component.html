@@ -1,0 +1,81 @@
+<app-navbar></app-navbar>
+<div class="container mt-4 animate__animated animate__fadeIn animate__faster">
+    <h5 class="px-4 py-2 mb-4 text-white display-block bg-secondary"><b>Sobre ApS UNED - Contacta</b></h5>
+
+
+    <div class="card">
+        <div class="card-body">
+            <p>Por favor, rellena el siguiente formulario para contactar con nosotros.</p>
+            <hr class="mb-4" />
+
+            <form
+                class="col-12"
+                id="form-contacto"
+                role="form"
+                autocomplete="off"
+                *ngIf="contactForm"
+                [formGroup]="contactForm"
+                (ngSubmit)="enviarMailContacto()">
+
+
+                <div class="d-flex">
+                    <div class="flex-fill alert alert-danger mr-3" role="alert" *ngIf="this.contactForm.invalid && this.formSubmitted">
+                        <div *ngIf="campoNoValido('email')" class="col">{{ campoNoValido('email') }}</div>
+                        <div *ngIf="campoNoValido('nombre')" class="col">{{ campoNoValido('nombre') }}</div>
+                        <div *ngIf="campoNoValido('apellidos')" class="col">{{ campoNoValido('apellidos') }}</div>
+                        <div *ngIf="campoNoValido('area')" class="col">{{ campoNoValido('area') }}</div>
+                        <div *ngIf="campoNoValido('mensaje')" class="col">{{ campoNoValido('mensaje') }}</div>
+                    </div>
+                </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="nombre">Nombre</label>
+                                <input id="nombre" type="text" name="nombre" class="form-control" placeholder="Introduce tu nombre" formControlName="nombre">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="apellidos">Apellidos</label>
+                                <input id="apellidos" type="text" name="apellidos" class="form-control" placeholder="Introduce tus apellidos" formControlName="apellidos">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="email">Correo electrónico</label>
+                                <input id="email" type="email" name="email" class="form-control" placeholder="Introduce tu correo electrónico (para poder contactar contigo)" formControlName="email">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="area-pregunta">Área sobre la que trata el mensaje</label>
+                                <select id="area-pregunta" name="area" class="form-control" formControlName="area">
+                                    <option value="Pregunta sin categorizar">Pregunta sin categorizar</option>
+                                    <option value="Sugerir Iniciativa">Sugerir Iniciativa</option>
+                                    <option value="Problema con la aplicación">Problema con la aplicación</option>
+                                    <option value="Relacionado con el sistema de registro y login">Relacionado con el sistema de registro y login</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="mensaje">Mensaje</label>
+                                <textarea id="mensaje" name="mensaje" class="form-control" placeholder="Escribe lo que quieras contarnos" rows="4" formControlName="mensaje"></textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <input type="submit" class="btn btn-success float-right" [value]="this.formSending ? 'Enviando...' : 'Enviar mensaje'" [disabled]="this.formSending || (this.formSubmitted && this.contactForm.invalid)">
+                        </div>
+
+                    </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+<app-footer></app-footer>
