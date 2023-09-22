@@ -5,13 +5,14 @@
     >
         <strong>{{ pageTitle }}</strong>
         <a
-            *ngIf="ofertaCrearGuard.canActivate(null, null)"
-            [routerLink]="['/ofertas/crear']"
-            class="btn btn-primary border-light btn-sm"
-            role="button"
-        >
-            Crear Oferta
-        </a>
+        *ngIf="ofertaCrearGuard.canActivate(null, null) && (!this.usuarioService.usuario || !this.usuarioService.usuario.esSocioComunitario)"
+        [routerLink]="['/ofertas/crear']"
+        class="btn btn-primary border-light btn-sm"
+        role="button"
+      >
+        Crear Oferta
+      </a>
+      
     </h5>
 
     <div
@@ -33,10 +34,11 @@
         class="alert alert-warning"
         role="alert"
     >
-        <strong>Atención:</strong>
-        Estás en la aplicación como
-        <strong>INVITADO</strong>
-        . Sólo Profesores pueden presentar OFERTAS.
+        <strong>Atención: </strong> Estás en la aplicación como <strong>INVITADO</strong>. Solo podrás acceder a
+        esta información después de hacer login en <a [routerLink]="['/login']">esta página de
+        login</a>. Si no estás registrado, regístrate en <a [routerLink]="['/registro']">esta página
+        de registro</a>
+
     </div>
 
     <div
@@ -75,16 +77,17 @@
                     </div>
                 </div>
 
-                <div class="filtro">
+                <div class="filtro" *ngIf="!(pageTitle === 'Mis Ofertas')">
                     <header class="card-header border-top rounded-0">
                         <h6 class="title mb-0">Profesor</h6>
                     </header>
                     <div class="card-body">
                         <ng-multiselect-dropdown
                                 [data]="profesores"
-                                [placeholder]="'Seleccione el profedor'"
+                                [placeholder]="'Seleccione el profesor'"
                                 [settings]="dropdownSettings"
-                                (onSelect)="onItemProfesor($event)" 
+                                [(ngModel)]="filterProfesores"
+                                (ngModelChange)="cargarOfertas()"
                             >
                                 <ng-template
                                     #optionsTemplate
@@ -176,7 +179,8 @@
                                 [data]="areasServicio"
                                 [placeholder]="'Seleccione el area de implementación'"
                                 [settings]="dropdownSettings"
-                                (onSelect)="onItemSelectedArea($event)"
+                                [(ngModel)]="filterAreaServicio"
+                                (ngModelChange)="cargarOfertas()"
                                 name="area_servicio"
                             >
                                 <ng-template
@@ -224,13 +228,16 @@
                     </div>
                 </div>
 
-                <div class="filtro">
+                <!--<div class="filtro">
                     <header class="card-header border-top rounded-0">
                         <h6 class="title mb-0">Año Académico</h6>
                     </header>
                     <div class="card-body">
                         <input
-                            aria-label="FEcha"
+                            (keyup)="cargarOfertas()"
+                            (search)="cargarOfertas()"
+                            [(ngModel)]="Fecha"
+                            aria-label="Fecha"
                             class="form-control"
                             id="fecha"
                             name="fecha"
@@ -238,7 +245,7 @@
                             value="2021"
                         />
                     </div>
-                </div>
+                </div>-->
 
                 <div class="filtro">
                     <header class="card-header border-top rounded-0">

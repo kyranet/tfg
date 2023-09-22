@@ -3,17 +3,21 @@ import {Router, ActivationEnd} from '@angular/router';
 import {filter, map} from 'rxjs/operators';
 import {Subscription} from 'rxjs';
 import {UsuarioService} from '../../../services/usuario.service';
+import { Notificacion } from 'src/app/models/notificacion.model';
+import { NotificacionService } from 'src/app/services/notificacion.service';
 
 @Component({
     selector: 'app-navbar',
     templateUrl: './navbar.component.html',
-    styleUrls: ['./navbar.component.scss']
+    styleUrls: ['./navbar.component.scss'
+            ]
 })
 export class NavbarComponent implements OnDestroy {
-
+    public totalNotificaciones = 0;
     public routeExtraData$: Subscription;
+    public notificaciones: Notificacion[];
 
-    constructor(public usuarioService: UsuarioService, private router: Router) {
+    constructor(public usuarioService: UsuarioService, private router: Router, public notificacionService: NotificacionService) {
         this.routeExtraData$ = this.getRouteExtraData()
             .subscribe(({titulo}) => {
                 document.title = titulo;
@@ -58,12 +62,21 @@ export class NavbarComponent implements OnDestroy {
 
     mostrarDemandasDeServicio() {
         return this.usuarioService.usuario && (this.usuarioService.usuario.esGestor
-            || this.usuarioService.usuario.esProfesor
-            || this.usuarioService.usuario.esSocioComunitario);
+            || this.usuarioService.usuario.esProfesor);
     }
 
     mostrarPartenariados() {
         return this.usuarioService.usuario && (this.usuarioService.usuario.esGestor
             || this.usuarioService.usuario.esSocioComunitario);
     }
+
+    cargarNotificacion(){
+        this.notificacionService.cargarNotificaciones(this.usuarioService.usuario.uid).subscribe(({ total,  notificaciones }) => {
+            this.totalNotificaciones = total.valueOf();
+            this.notificaciones = notificaciones;
+            this.notificaciones.map(n => n.leido == "1");
+        });
+
+    }
+
 }

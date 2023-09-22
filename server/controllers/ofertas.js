@@ -45,10 +45,13 @@ const crearOferta = async (req, res = response) => {
 
         let ofertaId = await daoOferta.crearOferta(oferta);
         oferta.id = ofertaId;
-        for (tagName of req.body.tags) {
-            await daoUtils.createAndLinkedTags(tagName, ofertaId, 'oferta');
+        if(req.body.tags != undefined){
+            for (tagName of req.body.tags) {
+                await daoUtils.createAndLinkedTags(tagName, ofertaId, 'oferta');
+            }
         }
-
+        console.log(oferta);
+        
         return res.status(200).json({
             ok: true,
             oferta: oferta,

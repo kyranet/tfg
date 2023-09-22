@@ -105,6 +105,8 @@ import { CheckboxNotificacionesComponent } from './pages/checkbox-notificaciones
 import { ProyectosCardComponent } from './pages/proyectos-card/proyectos-card.component';
 import { ServicioOfertadoComponent } from './pages/servicio-ofertado/servicio-ofertado.component';
 import {OfertaRespaldadaComponent} from './pages/oferta-respaldada/oferta-respaldada.component';
+import {NotificacionComponent} from './pages/notificacion/notificacion.component';
+import { PerfilComponent } from './pages/perfil/perfil.component';
 
 TagInputModule.withDefaults({
     tagInput: {
@@ -196,9 +198,11 @@ TagInputModule.withDefaults({
         CheckboxNotificacionesComponent,
         ProyectosCardComponent,
         ServicioOfertadoComponent,
+        NotificacionComponent,
+        PerfilComponent,
     ],
     imports: [
-        BrowserModule,
+    BrowserModule,
         CommonModule,
         RouterModule,
         NgMultiSelectDropDownModule.forRoot(),

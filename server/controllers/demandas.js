@@ -129,6 +129,7 @@ const crearDemanda = async (req, res = response) => {//continuar
             req.body.comunidadBeneficiaria,
             0
         );
+        console.log(demanda);
         let demandaId = await daoDemanda.crearDemanda(demanda);
         demanda.id = demandaId;
 
@@ -149,7 +150,7 @@ const crearDemanda = async (req, res = response) => {//continuar
 
 const obtenerDemandas = async (req, res = response) => {
     try {
-        let demandas = await daoDemanda.obtenerTodasDemandasServicio();
+        let demandas = await daoDemanda.obtenerTodasDemandasServicio(req.query.limit, req.query.skip, req.query.filtros);
         let total = await daoDemanda.contarTodasDemandasServicio();
         return res.status(200).json({
             ok: true,
@@ -168,6 +169,7 @@ const obtenerDemandas = async (req, res = response) => {
 const obtenerDemanda = async (req, res) => {
     try {
         const demanda = await daoDemanda.obtenerDemandaServicio(req.params.id);
+        console.log(demanda);
         return res.status(200).json({
             ok: true,
             demanda

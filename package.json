@@ -4,6 +4,7 @@
     "scripts": {
         "ng": "ng",
         "start": "nodemon server/server.js",
+        "matching": "node server/gather_matching.js",
         "start:dev": "node server/server.js",
         "build": "ng build",
         "build:prod": "ng build --configuration production --stats-json --source-map=false",
@@ -63,8 +64,9 @@
         "ngx-chips": "^2.2.2",
         "ngx-mat-autocomplete-control": "^2.0.3",
         "ngx-mat-select-search": "^3.2.0",
+        "node": "^19.0.1",
         "nodemailer": "^6.4.15",
-        "nodemon": "^2.0.6",
+        "nodemon": "^2.0.20",
         "popper.js": "^1.16.1",
         "postcss": "^8.1.7",
         "postcss-loader": "^4.0.4",

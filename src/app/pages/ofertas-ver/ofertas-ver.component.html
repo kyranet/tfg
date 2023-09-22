@@ -8,7 +8,11 @@
 
 
     <div *ngIf='!this.usuarioService.usuario' class='alert alert-warning' role='alert'>
-        <strong>Atención: </strong> Estás en la aplicación como <strong>INVITADO</strong>. Sólo Profesores pueden presentar OFERTAS.
+        <strong>Atención: </strong> Estás en la aplicación como <strong>INVITADO</strong>Solo podrás acceder a
+        esta información después de hacer login en <a [routerLink]="['/login']">esta página de
+        login</a>. Si no estás registrado, regístrate en <a [routerLink]="['/registro']">esta página
+        de registro</a>
+
     </div>
 
     <div *ngIf='this.usuarioService.usuario && this.usuarioService.usuario.esEstudiante' class='alert alert-warning'
@@ -70,7 +74,7 @@
                 <button [routerLink]="['/ofertas']" class='btn btn-info' style='width: 200px' type='button'>Volver
                     al listado
                 </button>
-                <button (click)='crearPartenariado()' class='btn btn-info' style='width: 200px' type='button'>Crear partenariado</button>
+                <button *ngIf="!this.usuarioService.usuario.esProfesor && !this.usuarioService.usuario.esEstudiante" (click)='aceptarOferta()' class='btn btn-info' style='width: 200px' type='button'>Aceptar oferta</button>
             </div>
         </div>
     </div>

@@ -1,0 +1,12 @@
+.notificacion{
+    padding: 1rem;
+    color: black;
+}
+.notificacion:hover{
+    background: gray;
+}
+
+.list-group-scrollable {
+    max-height: 300px;
+    overflow-y: auto;
+  }

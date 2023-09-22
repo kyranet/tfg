@@ -3,15 +3,15 @@
 
     <h5 class="px-4 py-2 mb-4 text-white display-block bg-secondary d-flex justify-content-between align-items-center">
         <strong>Ver Partenariado</strong>
-        <a [routerLink]="['/mis-partenariados']" class="btn btn-primary border-white btn-sm" role="button">Volver a Mis Partenariados</a>
+        
     </h5>
-
+     <!-- Info de cargando
     <div *ngIf="partenariado?.proponedor.rol === 'ROL_SOCIO_COMUNITARIO' && this.usuarioService.usuario && this.usuarioService.usuario.esSocioComunitario" class="alert alert-warning" role="alert">
         <strong>Atención: </strong> Estás en la aplicación como <strong>Socio comunitario</strong>. Sólo un Profesor puede convertir este partenariado en PROYECTO.
-    </div>
+    </div>-->
 
-    <div *ngIf="partenariado?.estado !== 'En negociación' " class="alert alert-warning" role="alert">
-        <strong>Atención: </strong> Esta PARTENARIADO ya no está en negociación. Se puede seguir viendo a modo de consulta. Si crees que este partenariado se ha cerrado por error, por favor, <a [routerLink]="['/sobre-ApS-UNED/contacta']" class="font-weight-bold">contacta con el Gestor</a> para que evalúe si puede proceder a abrirlo de nuevo.
+    <div *ngIf="partenariado?.estado !== 'EN_NEGOCIACION' " class="alert alert-warning" role="alert">
+        <strong>Atención: </strong> Este PARTENARIADO ya no está en negociación. Se puede seguir viendo a modo de consulta. Si crees que este partenariado se ha cerrado por error, por favor, <a [routerLink]="['/sobre-ApS-UNED/contacta']" class="font-weight-bold">contacta con el Gestor</a> para que evalúe si puede proceder a abrirlo de nuevo.
     </div>
 
 
@@ -21,9 +21,9 @@
         <fa-icon [icon]="['fas', 'sync']" [spin]="true"></fa-icon>
         <p class="mb-">Por favor, espere</p>
     </div>
+    
 
-
-    <div *ngIf="partenariado" class="row">
+    <div *ngIf="partenariado?.estado !== 'EN_CREACION'"  class="row">
 
         <div class="col-9">
 
@@ -34,69 +34,35 @@
 
             <div class="card my-2 p-3">
                 <div class="d-flex justify-content-between">
-                    <div><strong>Rama de conocimiento:</strong> {{ partenariado.rama }}</div>
+                    <div><strong>Rama de conocimiento:</strong> {{ partenariado.idresponsable.area_conocimiento[0] }}</div>
                     <div><strong>Ciudad:</strong> {{ partenariado.ciudad }}</div>
                 </div>
                 <hr/>
 
-                <p><strong>Fecha de registro de la partenariado:</strong> {{ partenariado.parsedCreatedAt }}</p>
+                <p><strong>Fecha de registro del partenariado:</strong> {{ partenariado.idresponsable.createdAt | date:"dd-MM-yyyy" }}</p>
                 <p><strong>Descripción:</strong> {{ partenariado.descripcion }}</p>
-                <p><strong>¿Quién es el responsable de la partenariado?:</strong></p>
+                <p><strong>Responsable del partenariado:</strong></p>
                 <ul>
-                    <li><strong><em>Nombre y Apellidos: </em></strong>{{ partenariado.proponedor.nombre}} {{ partenariado.proponedor.apellidos}}</li>
+                    <li><strong><em>Nombre y Apellidos: </em></strong>{{ partenariado.idresponsable.nombre}} {{ partenariado.idresponsable.apellidos}}</li>
                     <li>
                         <strong><em>
-                            <span *ngIf="['ROL_ESTUDIANTE', 'ROL_PROFESOR', 'ROL_GESTOR'].includes(partenariado.proponedor.rol)">Universidad / Titulación: </span>
-                            <span *ngIf="['ROL_ESTUDIANTE'].includes(partenariado.proponedor.rol)">Sector: </span>
+                            <span *ngIf="['ROL_ESTUDIANTE', 'ROL_PROFESOR', 'ROL_GESTOR'].includes(partenariado.idresponsable.rol)">Universidad / Titulación: </span>
+                            <span *ngIf="['ROL_ESTUDIANTE'].includes(partenariado.idresponsable.rol)">Sector: </span>
                         </em></strong>
-                        {{ partenariado.proponedor.additionalInfoPlain || 'Sin información'}}
                     </li>
-                    <li><strong><em>Rol en la aplicación: </em></strong>{{ partenariado.proponedor.displayRol}}</li>
+                    <!-- <li><strong><em>Rol en la aplicación: </em></strong>{{ partenariado.idResponsable.rol}}</li> -->
                 </ul>
 
 
             </div>
+            
+            <a *ngIf="['ROL_SOCIO_COMUNITARIO'].includes(this.usuarioService.usuario.rol)" aria-label="Chat on WhatsApp" href="https://wa.me/{{this.partenariado.idresponsable.telefono}}"> <img alt="Chat on WhatsApp" src="./assets/img/chatlogo.png" width="200" height="200"/> </a>
 
+            <a *ngIf="['ROL_PROFESOR'].includes(this.usuarioService.usuario.rol)" aria-label="Chat on WhatsApp" href="https://wa.me/{{this.socio.telefono}}"> <img alt="Chat on WhatsApp" src="./assets/img/chatlogo.png" width="200" height="200"/> </a>
 
-            <header *ngIf="partenariado.estado == 'En negociación'" class="card-header mb-2 border d-flex justify-content-between">
-                <h6 class="title mb-0"><strong>Escribir Mensaje</strong></h6>
-            </header>
+            <button [routerLink]="['/partenariados']" class='btn btn-info' style="width: 200px; margin-left: auto;" type='button'>Volver al listado</button>
 
-            <header *ngIf="partenariado.estado != 'En negociación'" class="card-header mb-2 border d-flex justify-content-between">
-                <h6 class="title mb-0"><strong>El partenariado ya no está en negociación y no se pueden escribir mensajes </strong></h6>
-            </header>
-
-            <div *ngIf="partenariado.estado == 'En negociación'" class="card my-2 p-3">
-                <div class="col-md-12">
-                    <div class="form-group">
-                        <label for="mensaje">Mensaje</label>
-                        <textarea [(ngModel)]="mensaje" class="form-control" id="mensaje" name="mensaje" placeholder="Escribe un mensaje" rows="3"></textarea>
-                    </div>
-                </div>
-                <div class="col-md-12">
-                    <input (click)="enviarMensaje()" [disabled]="this.mensaje == ''" [value]="'Enviar mensaje'" class="btn btn-success float-right" type="submit">
-                </div>
-            </div>
-
-            <header class="card-header mb-2 border d-flex justify-content-between">
-                <h6 class="title mb-0"><strong>Histórico de mensajes del partenariado</strong></h6>
-            </header>
-
-
-            <div *ngIf="!numeroMensajes()" class="card my-2 p-3">
-                Aún no hay ningún mensaje...
-            </div>
-
-            <div *ngFor="let mensaje of partenariado.mensajes" class="card my-2 p-3">
-                <div class="d-flex justify-content-between">
-                    <div><strong>Autor:</strong> {{ mensaje.nombre }} {{ mensaje.apellidos }} <{{ mensaje.email }}> [{{ mensaje.rol}}]</div>
-                    <div><strong>Fecha:</strong> {{ parseFecha(mensaje.fecha) }}</div>
-                </div>
-                <hr/>
-                <p>{{ mensaje.texto }}</p>
-            </div>
-
-        </div>
+        </div> 
 
         <div class="col-3">
 
@@ -192,7 +158,7 @@
                 </div>
 
             </div>
-        </div>
+        </div> 
     </div>
 </div>
 <app-footer></app-footer>

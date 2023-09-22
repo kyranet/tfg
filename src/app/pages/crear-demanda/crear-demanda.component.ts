@@ -9,6 +9,8 @@ import Swal from 'sweetalert2';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Oferta } from '../../models/oferta.model';
 import { map } from 'rxjs/operators';
+import { ThrowStmt } from '@angular/compiler';
+import { NotificacionService } from 'src/app/services/notificacion.service';
 
 //HACER EN EL HTML UNA FUNCION FECHAS NO VALIDAS COMO LA DEL PERFIL,
 @Component({
@@ -30,6 +32,7 @@ export class crearDemandaComponent implements OnInit {
     public aux_area: string;
     public htmlStr: string;
     public dropdownSettings: any = {};
+    public idDemanda:Demanda;
 
 
 //   constructor(public fb: FormBuilder, public usuarioService: UsuarioService, public fileUploadService: FileUploadService, public router: Router, private DemandaService: DemandaService, public Demanda: Demanda, public activatedRoute: ActivatedRoute) {
@@ -40,7 +43,7 @@ export class crearDemandaComponent implements OnInit {
 //     }
 //   }
 
-    constructor(public fb: FormBuilder, public usuarioService: UsuarioService, public fileUploadService: FileUploadService, public router: Router, public DemandaService: DemandaService, public activatedRoute: ActivatedRoute) {
+    constructor(public fb: FormBuilder, public usuarioService: UsuarioService, public fileUploadService: FileUploadService, public router: Router, public DemandaService: DemandaService, public activatedRoute: ActivatedRoute, public notificacionService: NotificacionService) {
         if (this.usuarioService.usuario.esGestor) {
             this.usuarioService.cargarUsuarios(0, 99999999, { terminoBusqueda: '' }).subscribe(({ total, filtradas, usuarios }) => {
                 this.USUARIOS = usuarios.filter(usuario => ['ROL_SOCIO_COMUNITARIO', 'ROL_PROFESOR', 'ROL_GESTOR'].includes(usuario.rol));
@@ -53,6 +56,7 @@ export class crearDemandaComponent implements OnInit {
         await this.obtenerAreasServicio();
         await this.obtenerNecesidades();
         await this.obtenerTitulaciones();
+        console.log(this.areaServicio);
         this.dropdownSettings = {
             singleSelection: false,
             idField: 'id',
@@ -67,16 +71,16 @@ export class crearDemandaComponent implements OnInit {
             descripcion: [this.Demanda.descripcion || '', Validators.required],
             imagen: this.Demanda.imagen,
             area_servicio: [this.Demanda.area_servicio || '', Validators.required],
-            ciudad: [this.Demanda.ciudad || '', Validators.required],
+            ciudad: [this.Demanda.ciudad || ''],
             objetivo: [this.Demanda.objetivo || '', Validators.required],
-            fechaDefinicionIni: [this.Demanda.periodoDefinicionIni || '', Validators.required],
-            fechaDefinicionFin: [this.Demanda.periodoDefinicionFin || '', Validators.required],
-            fechaEjecucionIni: [this.Demanda.periodoEjecucionIni || '', Validators.required],
-            fechaEjecucionFin: [this.Demanda.periodoDefinicionFin || '', Validators.required],
-            fechaFin: [this.Demanda.fechaFin || '', Validators.required],
+            fechaDefinicionIni: [this.Demanda.periodoDefinicionIni || null],
+            fechaDefinicionFin: [this.Demanda.periodoDefinicionFin || null],
+            fechaEjecucionIni: [this.Demanda.periodoEjecucionIni || null],
+            fechaEjecucionFin: [this.Demanda.periodoDefinicionFin || null],
+            fechaFin: [this.Demanda.fechaFin || null],
             necesidad_social: [this.Demanda.necesidad_social || '', Validators.required],
             comunidadBeneficiaria: [this.Demanda.comunidadBeneficiaria || '', Validators.required],
-            titulacion_local: [this.Demanda.titulacion_local || '', Validators.required],
+            titulacion_local: [this.Demanda.titulacion_local || ''],
             observaciones: this.Demanda.observacionesTemporales
         }, {
             validator: this.dateRangeValidator('fechaDefinicionIni', 'fechaDefinicionFin', 'fechaEjecucionIni', 'fechaEjecucionFin', 'fechaFin')
@@ -222,10 +226,9 @@ export class crearDemandaComponent implements OnInit {
                 ? Swal.fire('Ok', 'Demanda actualizada correctamente', 'success')
                 : Swal.fire('Ok', 'Demanda creada correctamente', 'success');
 
-
-            if (this.activatedRoute.snapshot.queryParams.oferta_id !== undefined) {
-                console.log('id de la demandaaaaaa ', resp.demanda.id);
-                this.router.navigate(['/partenariados/profesor/crear'], { queryParams: { oferta: this.activatedRoute.snapshot.queryParams.oferta_id, demanda: resp.demanda.id } });
+            console.log(this.activatedRoute.snapshot.queryParams.idOferta);
+            if (this.activatedRoute.snapshot.queryParams.idOferta != undefined) {
+                this.router.navigate(['/partenariados/profesor/crear'], { queryParams: { oferta: this.activatedRoute.snapshot.queryParams.idOferta, demanda: resp.demanda.id, Partenariado: this.activatedRoute.snapshot.queryParams.idPartenariado} });
                 return;
             }
 
@@ -251,6 +254,7 @@ export class crearDemandaComponent implements OnInit {
             this.formSending = false;
         });
     }
+
 
     //  noAreaMatch() {
     //   let accept=true;

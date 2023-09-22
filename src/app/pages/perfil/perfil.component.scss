@@ -1,0 +1,24 @@
+fieldset {
+    border: 1px solid gray;
+
+    legend {
+        width: auto;
+    }
+}
+
+
+.text-decoration-underline {
+    text-decoration: underline;
+}
+
+
+fieldset input {
+    display: block;
+    width: 100%;
+    border-radius: 5px;
+    border: 1px gray;
+    border-style: solid;
+    padding: 7px 10px;
+    background-color: whitesmoke;
+}
+

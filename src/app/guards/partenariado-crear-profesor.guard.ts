@@ -19,7 +19,7 @@ export class PartenariadoCrearProfesorGuard implements CanActivate {
       }
 
       return  this.usuarioService.usuario.esGestor
-              || this.usuarioService.usuario.esProfesor;
+              || this.usuarioService.usuario.esProfesor || this.usuarioService.usuario.esSocioComunitario;
               
   }
 

@@ -1,0 +1,7 @@
+{
+"pesoFechas": 0.3,
+"pesoTitulaciones": 0.3,
+"pesoAreaServicio": 0.2,
+"pesoDescripcion": 0.1,
+"pesoTemp": 0.1
+}

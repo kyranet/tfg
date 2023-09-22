@@ -62,6 +62,10 @@ export class Demanda {
         return info.join(' ');
     }
 
+    get AreaServicio(){
+        return this.area_servicio;
+    }
+
     displayUsuarioRol(user: Usuario) {
 
         if(!user) {

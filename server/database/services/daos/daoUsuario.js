@@ -1084,6 +1084,22 @@ function obtenerSocioComunitario(id) {
     });
 }
 
+function obtenerSociosComunitarios(){
+  return knex("socio_comunitario")
+  .join(
+    "datos_personales_externo",
+    "socio_comunitario.datos_personales_Id",
+    "=",
+    "datos_personales_externo.id"
+  ).select("socio_comunitario.id")
+  .select("datos_personales_externo.nombre")
+  .select("datos_personales_externo.apellidos")
+  .catch((err) => {
+    console.log(err);
+    console.log("Se ha producido un error al obtener todos los socios");
+  });
+}
+
 function obtenerProfesor(id) {
   return knex("profesor")
     .where({ id: id })
@@ -2135,5 +2151,6 @@ module.exports = {
   obtenerUniversidades,
   obtenerAreasConocimiento,
   updateAvatar,
+  obtenerSociosComunitarios,
   knex,
 };

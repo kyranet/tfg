@@ -27,6 +27,7 @@ export class Partenariado {
         public creador: Usuario,
         public idDemanda:Number,
         public idOferta:Number,
+        public idresponsable:Number
 
 
     ) {}

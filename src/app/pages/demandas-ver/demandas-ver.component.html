@@ -4,19 +4,17 @@
         <strong>Ver Demanda</strong>
     </h5>
 
+    <!-- Alertas según el rol del usuario -->
     <div *ngIf='!this.usuarioService.usuario' class='alert alert-warning' role='alert'>
         <strong>Atención: </strong> Estás en la aplicación como <strong>INVITADO</strong>. Sólo Profesores pueden presentar OFERTAS.
     </div>
-
+    <!--<div *ngIf='this.usuarioService.usuario && this.usuarioService.usuario.esProfesor ' class='alert alert-warning' role='alert'>
+        <strong>Atención: </strong> Estás en la aplicación como <strong>PROFESOR</strong>, pero esta oferta ha sido presentada por otro profesor.
+    </div>-->
     <div *ngIf='this.usuarioService.usuario && this.usuarioService.usuario.esEstudiante ' class='alert alert-warning' role='alert'>
         <strong>Atención: </strong> Estás en la aplicación como <strong>ESTUDIANTE</strong>. Sólo Profesores pueden presentar OFERTAS.
     </div>
-
-    <div class='alert alert-warning' role='alert'>
-        <strong>Atención: </strong> Estás en la aplicación como <strong>PROFESOR</strong>, pero esta oferta ha sido presentada por otro profesor.
-    </div>
-
-    <div class='alert alert-warning' role='alert'>
+    <div *ngIf='this.usuarioService.usuario && this.usuarioService.usuario.esSocioComunitario ' class='alert alert-warning' role='alert'>
         <strong>Atención: </strong> Estás en la aplicación como <strong>ENTIDAD</strong>. Sólo Profesores pueden presentar OFERTAS.
     </div>
 
@@ -70,13 +68,29 @@
                 <ul>
                     <li>
                         <strong><em>Nombre y Apellidos: </em></strong
-                        >{{ demanda.creador }}
+                        >{{ demanda.creador.nombre }} {{demanda.creador.apellidos}}
                     </li>
                 </ul>
+                <p>
+                    <strong>Necesidad Social: </strong
+                    >{{ demanda.necesidad_social || "" }}
+                </p>
                 <p>
                     <strong>Observaciones: </strong
                     >{{ demanda.observacionesTemporales || "Sin observaciones" }}
                 </p>
+                <strong><em>Area servicio: </em></strong>
+                <ul>
+                    <li *ngFor="let are of area">
+                        {{ are }}
+                    </li>
+                </ul>
+                <strong><em>Titulaciones necesarias: </em></strong>
+                <ul>
+                    <li *ngFor="let t of demanda.titulacion_local">
+                        {{ t }}
+                    </li>
+                </ul>
                 <p class='mt-3'><strong>Imagen de la oferta:</strong></p>
                 <img [src]='demanda.imagen' alt='oferta-imagen' class='img-fluid' />
 
@@ -86,7 +100,7 @@
                     <button [routerLink]="['/demandas']" class='btn btn-info' style='width: 200px' type='button'>Volver
                         al listado
                     </button>
-                    <button (click)='crearPartenariado()' class='btn btn-info' style='width: 200px' type='button'>Crear partenariado</button>
+                    <button *ngIf="!(this.usuarioService.usuario && this.usuarioService.usuario.esSocioComunitario)" (click)='crearPartenariado()' class='btn btn-info' style='width: 200px' type='button'>Crear partenariado</button>
                 </div>
             </div>
         </div>

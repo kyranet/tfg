@@ -17,38 +17,10 @@ const crearPartenariadoProfesor = async (req, res = response) => {
 
         let data = req.body;
         let id_oferta = data.id_oferta;
-
-        if (id_oferta == undefined) {
-            //Caso: no existe oferta
-            let areasServicio = [];
-            data.ofertaAreaServicio.forEach((dato) => {
-                areasServicio.push(dato.id);
-            });
-            let oferta = new TOfertaServicio(
-                null,
-                data.titulo,
-                data.descripcion,
-                data.imagen,
-                null,
-                null,
-                data.asignaturaObjetivo,
-                data.cuatrimestre,
-                data.anioAcademico,
-                data.fecha_limite,
-                data.ofertaObservacionesTemporales,
-                req.current_user.uid,
-                areasServicio,
-                req.current_user.uid,
-                1
-            );
-            id_oferta = await dao_tentativa.crearOferta(oferta);
-        }
-
         let profesores = [];
         data.profesores.forEach((dato) => {
             profesores.push(dato.id);
         });
-
         let partenariado = new TPartenariado(
             null,
             data.titulo,
@@ -60,12 +32,11 @@ const crearPartenariadoProfesor = async (req, res = response) => {
             id_oferta,
             'EN_CREACION'
         );
-        await dao_colaboracion.crearPartenariado(partenariado);
-        dao_colaboracion.crearPrevioPartenariado(data.id_demanda, id_oferta, 1, 0);
+        let id = await dao_colaboracion.crearPartenariado(partenariado);
 
         return res.status(200).json({
             ok: true,
-            partenariado: partenariado
+            id: id
         });
     } catch (error) {
         console.error(error);
@@ -167,7 +138,6 @@ const crearPartenariadoSocioComunitario = async (req, res = response) => {
 const getPartenariados = async (req, res) => {
     try {
         let partenariados = await daoPartenariados.obtenerPartenariados(req.query.limit, req.query.skip, req.query.filtros);
-        console.log("total de partenariados"); 
         return res.status(200).json({
             ok: true,
             partenariados,
@@ -201,77 +171,12 @@ const getPartenariado = async (req, res) => {
 const cambiarEstadoPartenariado = async (req, res) => {
     try {
         const id = req.params.id;
-        const partenariado = await Partenariado.findById(id)
-            .populate(
-                'profesores',
-                '_id nombre apellidos email sector universidad titulacion rol'
-            )
-            .populate(
-                'entidades',
-                '_id nombre apellidos email sector universidad titulacion rol'
-            )
-            .populate(
-                'proponedor',
-                '_id nombre apellidos email sector universidad titulacion rol'
-            )
-            .populate(
-                'creador',
-                '_id nombre apellidos email sector universidad titulacion rol'
-            )
-            .populate('archivos', '_id client_name');
-
-        const estado = req.body.estado;
-
-        if (!ESTADOS_PARTENARIADOS.includes(estado)) {
-            return res.status(200).json({
-                ok: false,
-                msg: 'El estado ' + estado + ' no es un estado admitido'
-            });
-        }
-
-        if (estado === 'En negociación' && !esGestor(req)) {
-            return res.status(200).json({
-                ok: false,
-                msg: 'Solo el gestor puede volver a abrir el partenariado'
-            });
-        }
-
-        partenariado.estado = estado;
-        await partenariado.save();
-
-        if (estado === 'Acordado') {
-            // creamos el proyecto a partir del partenariado
-            const proyecto = new Proyecto();
-
-            proyecto.estado = 'Abierto';
-            proyecto.titulo = partenariado.titulo;
-            proyecto.descripcion = partenariado.descripcion;
-            proyecto.rama = partenariado.rama;
-            proyecto.ciudad = partenariado.ciudad;
-            proyecto.partenariado = partenariado._id;
-            proyecto.profesores = partenariado.profesores;
-            proyecto.sociosComunitarios = partenariado.sociosComunitarios;
-            proyecto.mensajes = [];
-            proyecto.archivos = [];
-            proyecto.proponedor = partenariado.proponedor;
-            proyecto.creador = req.current_user.uid;
-
-            await proyecto.save();
-
-            // referencia cruzada
-            partenariado.proyecto = proyecto._id;
-            await partenariado.save();
-
-            return res.status(200).json({
-                ok: true,
-                partenariado,
-                proyecto
-            });
-        }
-
+        let partenariado = await dao_colaboracion.obtenerPartenariado(id);
+        partenariado.setEstado(req.body.estado);
+        await dao_colaboracion.actualizarEstado(partenariado);
+        console.log(partenariado);
         return res.status(200).json({
-            ok: true,
-            partenariado
+            ok: true
         });
     } catch (error) {
         console.error(error);
@@ -329,11 +234,37 @@ const enviarMensajePartenariado = async (req, res) => {
     }
 };
 
+
+const actualizarPartenariado = async (req, res) =>{
+    try {
+        let partenariado = await dao_colaboracion.obtenerPartenariado(req.params.id);
+        let data = req.body;
+        partenariado.id_demanda = data.id_demanda;
+        partenariado.titulo = data.titulo;
+        partenariado.descripcion = data.descripcion;
+        partenariado.admite_externos = data.externos;
+        partenariado.profesores = data.profesores;
+        await dao_colaboracion.actualizarPartenariado(partenariado);
+        return res.status(200).json({
+            ok: true
+        });
+        
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            ok: false,
+            msg: UNEXPECTED_ERROR
+        });
+        
+    }
+}
+
 module.exports = {
     getPartenariados,
     getPartenariado,
     cambiarEstadoPartenariado,
     enviarMensajePartenariado,
     crearPartenariadoProfesor,
-    crearPartenariadoSocioComunitario
+    crearPartenariadoSocioComunitario,
+    actualizarPartenariado
 };

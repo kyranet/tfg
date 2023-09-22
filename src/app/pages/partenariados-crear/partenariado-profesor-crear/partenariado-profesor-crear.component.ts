@@ -6,12 +6,14 @@ import { Partenariado } from '../../../models/partenariado.model';
 import * as moment from 'moment';
 import { PartenariadoService } from '../../../services/partenariado.service';
 import Swal from 'sweetalert2';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, CanLoad } from '@angular/router';
 import { Oferta } from '../../../../app/models/oferta.model';
 import { OfertaService } from '../../../../app/services/oferta.service';
 import { DemandaService } from '../../../../app/services/demanda.service';
-import { first } from 'rxjs/operators';
+import { first, filter } from 'rxjs/operators';
 import { Demanda } from '../../../../app/models/demanda.model';
+import { NotificacionService } from 'src/app/services/notificacion.service';
+import { Notificacion } from './../../../models/notificacion.model';
 
 @Component({
     selector: 'app-partenariado-crear-profesor',
@@ -28,12 +30,23 @@ export class PartenariadoCrearProfesorComponent implements OnInit {
     public partenariado: Partenariado;
     public oferta: Oferta;
     public demanda: Demanda;
+    public notificacion: Notificacion;
     public imagenSubir: File;
     public imagenPreview: any = null;
     public responsable_data: any;
     public crearPartenariadoProfesorForm: FormGroup;
+    public crearDemandaForm: FormGroup;
+    public crearOfertaForm:FormGroup;
+    public crearNotificacionDemandaRespaldada:FormGroup;
+    public writeProfesor: boolean;
+    public areaServicio: any;
+    public necesidadSocial: any;
+    public titulacionLocal: any;
+    public areaServiciodropdownSettings: { singleSelection: boolean; idField: string; textField: string; selectAllText: string; unSelectAllText: string; itemsShowLimit: number; allowSearchFilter: boolean; };
 
-    constructor(public fb: FormBuilder, public demandaService: DemandaService, public ofertaService: OfertaService, public partenariadoService: PartenariadoService, public usuarioService: UsuarioService, public fileUploadService: FileUploadService, public router: Router, public activatedRoute: ActivatedRoute) {
+
+    constructor(public fb: FormBuilder, public demandaService: DemandaService, public ofertaService: OfertaService, public partenariadoService: PartenariadoService, public usuarioService: UsuarioService, public fileUploadService: FileUploadService, public router: Router, public activatedRoute: ActivatedRoute
+        ,public notificacionService : NotificacionService) {
     }
 
     dropdownSettings: any = {};
@@ -41,47 +54,143 @@ export class PartenariadoCrearProfesorComponent implements OnInit {
     public selProfesores: any;
 
     async ngOnInit() {
+        this.writeProfesor = this.usuarioService.usuario.rol == 'ROL_SOCIO_COMUNITARIO' ? true : false;
         this.activatedRoute.params.subscribe(({ id }) => {
-            this.load(this.activatedRoute.snapshot.queryParams.demanda, this.activatedRoute.snapshot.queryParams.oferta);
+            if(this.activatedRoute.snapshot.queryParams.oferta != undefined && this.activatedRoute.snapshot.queryParams.demanda_id != undefined){
+                //Caso en que el matching ha sido aceptada
+                this.loadMatching(this.activatedRoute.snapshot.queryParams.oferta, this.activatedRoute.snapshot.queryParams.demanda_id);
+            }
+            else if(this.activatedRoute.snapshot.queryParams.notificacion != undefined){
+                //En el caso de que el profesor recibe la peticion del socio y acepta empieza creando el partenariado
+                this.load_oferta(this.activatedRoute.snapshot.queryParams.notificacion)
+                
+            }
+            else if(this.activatedRoute.snapshot.queryParams.idPartenariado != undefined && this.activatedRoute.snapshot.queryParams.idOferta != undefined){
+                //Caso de que el socio recibe que su peticion es aceptada entonces completa el partenariado e crea la demanda
+                this.loadPartenariado(this.activatedRoute.snapshot.queryParams.idPartenariado, this.activatedRoute.snapshot.queryParams.idOferta);
+            }
+            else if(this.activatedRoute.snapshot.queryParams.demanda_id != undefined){ 
+                //Caso de que el profesor respalda, envia un notificacion e crea la oferta
+                this.load_demanda(this.activatedRoute.snapshot.queryParams.demanda_id ); 
+            }
+            else if(this.activatedRoute.snapshot.queryParams.idPartenariado != undefined){
+                //Caso de que el socio recibe el notificacion del demanda respaldada, completa el partenariado
+                this.load(this.activatedRoute.snapshot.queryParams.idPartenariado);
+
+            }
+            else{
+                //Nunca se usa
+                //this.load(this.activatedRoute.snapshot.queryParams.demanda, this.activatedRoute.snapshot.queryParams.oferta);
+            }
         });
     }
-
-    async load(demanda: number, oferta: number) {
-        await this.cargarPartenariado();
-        await this.obtenerOferta(oferta);
+    async loadMatching(oferta, demanda) {
         await this.obtenerDemanda(demanda);
-        await this.obtenerProfesores();
-
-        // TODO: only to testing
-        this.oferta.area_servicio = ['1'];
-
+        await this.obtenerOferta(oferta);
         this.crearPartenariadoProfesorForm = this.fb.group({
             anioAcademico: [this.oferta.anio_academico || '', Validators.required],
             titulo: [this.demanda.titulo + ' | ' + this.oferta.titulo || '', Validators.required],
             descripcion: [this.demanda.descripcion + ' | ' + this.oferta.descripcion || '', Validators.required],
             socio: [this.demanda.creador || ''],
-            necesidadSocial: [this.demanda.necesidad_social],
-            finalidad: [this.demanda.objetivo],
-            comunidadBeneficiaria: [this.demanda.comunidadBeneficiaria],
+            necesidadSocial: [this.demanda.necesidad_social || ''],
+            finalidad: [this.demanda.objetivo || ''],
+            comunidadBeneficiaria: [this.demanda.comunidadBeneficiaria || ''],
             cuatrimestre: [this.oferta.cuatrimestre || '', Validators.required],
             responsable: ['', Validators.required],
-            ciudad: [this.demanda.ciudad],
+            ciudad: [this.demanda.ciudad || ''],
             externos: [false],
-            id_demanda: [this.demanda.id],
+            id_demanda: [this.demanda.id || ''],
             id_oferta: [this.oferta.id || ''],
             ofertaObservacionesTemporales: [this.oferta.observaciones, Validators.required],
-            demandaObservacionesTemporales: [this.demanda.observacionesTemporales],
-            asignaturaObjetivo: [this.oferta.asignatura_objetivo, Validators.required],
-            titulacionesLocales: [this.demanda.titulacion_local],
+            demandaObservacionesTemporales: [this.demanda.observacionesTemporales || ''],
+            asignaturaObjetivo: [this.oferta.asignatura_objetivo || 'Nada', Validators.required],
+            titulacionesLocales: [this.demanda.titulacion_local || ''],
             ofertaAreaServicio: [this.oferta.area_servicio, Validators.required],
-            demandaAreaServicio: [this.demanda.area_servicio],
-            periodo_definicion_fin: [this.demanda.periodoDefinicionFin],
-            periodo_definicion_ini: [this.demanda.periodoDefinicionIni],
-            periodo_ejecucion_fin: [this.demanda.periodoEjecucionFin],
-            periodo_ejecucion_ini: [this.demanda.periodoEjecucionIni],
+            demandaAreaServicio: [this.demanda.area_servicio || ''],
+            periodo_definicion_fin: [this.demanda.periodoDefinicionFin || ''],
+            periodo_definicion_ini: [this.demanda.periodoDefinicionIni || ''],
+            periodo_ejecucion_fin: [this.demanda.periodoEjecucionFin || ''],
+            periodo_ejecucion_ini: [this.demanda.periodoEjecucionIni || ''],
             profesores: [new FormControl(''), Validators.required],
             fecha_limite: [this.oferta.fecha_limite, Validators.required],
-            fecha_fin: [this.demanda.fechaFin]
+            fecha_fin: [this.demanda.fechaFin || ''],
+        });
+
+        this.dropdownSettings = {
+            singleSelection: false,
+            idField: 'id',
+            textField: 'nombreCompleto',
+            selectAllText: 'Select All',
+            unSelectAllText: 'UnSelect All',
+            itemsShowLimit: 10,
+            allowSearchFilter: true
+        };
+
+    }
+
+    async load_oferta(notificacion: string){
+        await this.notificacionService.cargarNotificacion(notificacion).pipe(first()).toPromise().then((resp: any) =>{
+            this.notificacion = this.notificacionService.mapearNotificaciones([resp])[0];
+        });
+        await this.obtenerOferta(Number(this.notificacion.idOferta));
+        await this.obtenerProfesores();
+        this.crearPartenariadoProfesorForm = this.fb.group({
+            anioAcademico: [this.oferta.anio_academico || '', Validators.required],
+            titulo: [this.oferta.titulo || '', Validators.required],
+            descripcion: [this.oferta.descripcion || '', Validators.required],
+            cuatrimestre: [this.oferta.cuatrimestre || '', Validators.required],
+            responsable: ['', Validators.required],
+            externos: [false],
+            id_oferta: [this.oferta.id || '', Validators.required],
+            ofertaObservacionesTemporales: [this.oferta.observaciones],
+            asignaturaObjetivo: [this.oferta.asignatura_objetivo || 'Nada', Validators.required],
+            ofertaAreaServicio: [this.oferta.area_servicio, Validators.required],
+            profesores: [new FormControl(''), Validators.required],
+            fecha_limite: [this.oferta.fecha_limite, Validators.required],
+        });
+        this.dropdownSettings = {
+            singleSelection: false,
+            idField: 'id',
+            textField: 'nombreCompleto',
+            selectAllText: 'Select All',
+            unSelectAllText: 'UnSelect All',
+            itemsShowLimit: 10,
+            allowSearchFilter: true
+        };
+        
+    }
+
+    async load(partenariado:string){
+        await this.obtenerPartenariado(partenariado);
+        await this.obtenerOferta(Number(this.partenariado.idOferta));
+        await this.obtenerDemanda(Number(this.partenariado.idDemanda));
+        this.crearPartenariadoProfesorForm = this.fb.group({
+            anioAcademico: [this.oferta.anio_academico || '', Validators.required],
+            titulo: [this.partenariado.titulo || '', Validators.required],
+            descripcion: [this.partenariado.descripcion || '', Validators.required],
+            socio: [this.usuarioService.usuario.nombre + ' ' + this.usuarioService.usuario.apellidos || ''],
+            necesidadSocial: [this.demanda.necesidad_social || ''],
+            finalidad: [this.demanda.objetivo || ''],
+            comunidadBeneficiaria: [this.demanda.comunidadBeneficiaria || ''],
+            cuatrimestre: [this.oferta.cuatrimestre || '', Validators.required],
+            responsable: [this.oferta.creador.nombre +" " +this.oferta.creador.apellidos, Validators.required],
+            ciudad: [this.demanda.ciudad || ''],
+            externos: [false],
+            id_demanda: [this.demanda.id || ''],
+            id_oferta: [this.oferta.id || ''],
+            ofertaObservacionesTemporales: [this.oferta.observaciones || " "],
+            demandaObservacionesTemporales: [this.demanda.observacionesTemporales || ''],
+            asignaturaObjetivo: [this.oferta.asignatura_objetivo || 'Nada', Validators.required],
+            titulacionesLocales: [this.demanda.titulacion_local || ''],
+            ofertaAreaServicio: [this.oferta.area_servicio, Validators.required],
+            demandaAreaServicio: [this.demanda.area_servicio || ''],
+            periodo_definicion_fin: [this.demanda.periodoDefinicionFin || ''],
+            periodo_definicion_ini: [this.demanda.periodoDefinicionIni || ''],
+            periodo_ejecucion_fin: [this.demanda.periodoEjecucionFin || ''],
+            periodo_ejecucion_ini: [this.demanda.periodoEjecucionIni || ''],
+            profesores: [new FormControl(''), Validators.required],
+            fecha_limite: [this.oferta.fecha_limite, Validators.required],
+            fecha_fin: [this.demanda.fechaFin || ''],
         });
 
         this.dropdownSettings = {
@@ -95,12 +204,163 @@ export class PartenariadoCrearProfesorComponent implements OnInit {
         };
     }
 
+    /*async load(demanda: number, oferta: number) {
+        await this.cargarPartenariado();
+        await this.obtenerOferta(oferta);
+        await this.obtenerDemanda(demanda);
+        await this.obtenerProfesores();
+
+        // TODO: only to testing
+        this.oferta.area_servicio = ['1'];
+
+        this.crearPartenariadoProfesorForm = this.fb.group({
+            anioAcademico: [this.oferta.anio_academico || '', Validators.required],
+            titulo: [this.demanda.titulo + ' | ' + this.oferta.titulo || '', Validators.required],
+            descripcion: [this.demanda.descripcion + ' | ' + this.oferta.descripcion || '', Validators.required],
+            socio: [this.demanda.creador || ''],
+            necesidadSocial: [this.demanda.necesidad_social || ''],
+            finalidad: [this.demanda.objetivo || ''],
+            comunidadBeneficiaria: [this.demanda.comunidadBeneficiaria || ''],
+            cuatrimestre: [this.oferta.cuatrimestre || '', Validators.required],
+            responsable: ['', Validators.required],
+            ciudad: [this.demanda.ciudad || ''],
+            externos: [false],
+            id_demanda: [this.demanda.id || ''],
+            id_oferta: [this.oferta.id || ''],
+            ofertaObservacionesTemporales: [this.oferta.observaciones, Validators.required],
+            demandaObservacionesTemporales: [this.demanda.observacionesTemporales || ''],
+            asignaturaObjetivo: [this.oferta.asignatura_objetivo || 'Nada', Validators.required],
+            titulacionesLocales: [this.demanda.titulacion_local || ''],
+            ofertaAreaServicio: [this.oferta.area_servicio, Validators.required],
+            demandaAreaServicio: [this.demanda.area_servicio || ''],
+            periodo_definicion_fin: [this.demanda.periodoDefinicionFin || ''],
+            periodo_definicion_ini: [this.demanda.periodoDefinicionIni || ''],
+            periodo_ejecucion_fin: [this.demanda.periodoEjecucionFin || ''],
+            periodo_ejecucion_ini: [this.demanda.periodoEjecucionIni || ''],
+            profesores: [new FormControl(''), Validators.required],
+            fecha_limite: [this.oferta.fecha_limite, Validators.required],
+            fecha_fin: [this.demanda.fechaFin || ''],
+        });
+
+        this.dropdownSettings = {
+            singleSelection: false,
+            idField: 'id',
+            textField: 'nombreCompleto',
+            selectAllText: 'Select All',
+            unSelectAllText: 'UnSelect All',
+            itemsShowLimit: 10,
+            allowSearchFilter: true
+        };
+    }*/
+
+    async loadPartenariado(idPartenariado, idOferta){
+        await this.obtenerPartenariado(idPartenariado);
+        await this.obtenerOferta(Number(idOferta));
+        await this.obtenerProfesores();
+        await this.obtenerOpcionesDemanda();
+        this.demanda = new Demanda(null,null,null,null, null,null, null, null,null,null,null,null,null,null,null,null,null,null,null);
+        console.log(this.partenariado.idresponsable["id"])
+
+        this.crearPartenariadoProfesorForm = this.fb.group({
+            anioAcademico: [this.oferta.anio_academico || '', Validators.required],
+            titulo: [this.partenariado.titulo || '', Validators.required],
+            descripcion: [this.partenariado.descripcion || '', Validators.required],
+            socio: [this.usuarioService.usuario.nombre + ' ' + this.usuarioService.usuario.apellidos || ''],
+            necesidadSocial: [this.demanda.necesidad_social || ''],
+            finalidad: [this.demanda.objetivo || ''],
+            comunidadBeneficiaria: [this.demanda.comunidadBeneficiaria || ''],
+            cuatrimestre: [this.oferta.cuatrimestre || '', Validators.required],
+            responsable: [this.obtenerNombreResponsable(this.partenariado.idresponsable["id"]).nombreCompleto , Validators.required],
+            ciudad: [this.demanda.ciudad || ''],
+            externos: [false],
+            id_demanda: [this.demanda.id || ''],
+            id_oferta: [this.oferta.id || ''],
+            ofertaObservacionesTemporales: [this.oferta.observaciones || " "],
+            demandaObservacionesTemporales: [this.demanda.observacionesTemporales || ''],
+            asignaturaObjetivo: [this.oferta.asignatura_objetivo || 'Nada', Validators.required],
+            titulacionesLocales: [this.demanda.titulacion_local || ''],
+            ofertaAreaServicio: [this.oferta.area_servicio, Validators.required],
+            demandaAreaServicio: [this.demanda.area_servicio || '', Validators.required],
+            periodo_definicion_fin: [this.demanda.periodoDefinicionFin || '',  Validators.required],
+            periodo_definicion_ini: [this.demanda.periodoDefinicionIni || '', Validators.required],
+            periodo_ejecucion_fin: [this.demanda.periodoEjecucionFin || '', Validators.required],
+            periodo_ejecucion_ini: [this.demanda.periodoEjecucionIni || '', Validators.required],
+            profesores: [new FormControl(''), Validators.required],
+            fecha_limite: [this.oferta.fecha_limite, Validators.required],
+            fecha_fin: [this.demanda.fechaFin || '', Validators.required],
+        });
+
+        this.dropdownSettings = {
+            singleSelection: false,
+            idField: 'id',
+            textField: 'nombreCompleto',
+            selectAllText: 'Select All',
+            unSelectAllText: 'UnSelect All',
+            itemsShowLimit: 10,
+            allowSearchFilter: true
+        };
+
+    }
+
+    async load_demanda(demanda: string){
+
+        await this.obtenerDemanda(Number(demanda));
+        await this.obtenerProfesores();
+        await this.obtenerAreasServicio();
+        console.log(this.demanda);
+        this.oferta = new Oferta (null,null, null, null,null,null,null, null, null, null, null, null, null, null, null);
+        this.crearPartenariadoProfesorForm = this.fb.group({
+            anioAcademico: [this.oferta.anio_academico || '', Validators.required],
+            titulo: [this.demanda.titulo, Validators.required],
+            descripcion: [this.demanda.descripcion || '', Validators.required],
+            socio: [this.demanda.creador.nombre + ' ' + this.demanda.creador.apellidos || ''],
+            necesidadSocial: [this.demanda.necesidad_social || ''],
+            finalidad: [this.demanda.objetivo || ''],
+            comunidadBeneficiaria: [this.demanda.comunidadBeneficiaria || ''],
+            cuatrimestre: [this.oferta.cuatrimestre || '', Validators.required],
+            responsable: [null, Validators.required],
+            ciudad: [this.demanda.ciudad || ''],
+            externos: [false],
+            id_demanda: [this.demanda.id || ''],
+            id_oferta: [this.oferta.id || ''],
+            ofertaObservacionesTemporales: [this.oferta.observaciones || " "],
+            demandaObservacionesTemporales: [this.demanda.observacionesTemporales || ''],
+            asignaturaObjetivo: [this.oferta.asignatura_objetivo || 'Nada', Validators.required],
+            titulacionesLocales: [this.demanda.titulacion_local || ''],
+            ofertaAreaServicio: [this.oferta.area_servicio, Validators.required],
+            demandaAreaServicio: [this.demanda.area_servicio || ''],
+            periodo_definicion_fin: [this.demanda.periodoDefinicionFin || ''],
+            periodo_definicion_ini: [this.demanda.periodoDefinicionIni || ''],
+            periodo_ejecucion_fin: [this.demanda.periodoEjecucionFin || ''],
+            periodo_ejecucion_ini: [this.demanda.periodoEjecucionIni || ''],
+            profesores: [new FormControl(''), Validators.required],
+            fecha_limite: [this.oferta.fecha_limite, Validators.required],
+            fecha_fin: [this.demanda.fechaFin || ''],
+        });
+        this.dropdownSettings = {
+            singleSelection: false,
+            idField: 'id',
+            textField: 'nombreCompleto',
+            selectAllText: 'Select All',
+            unSelectAllText: 'UnSelect All',
+            itemsShowLimit: 10,
+            allowSearchFilter: true
+        };
+        
+    }
 
     async cargarPartenariado() {
-        this.partenariado = new Partenariado('', '', '', '', '', '', '', '', null, null, null, null, null, null,null,null);
+        this.partenariado = new Partenariado('', '', '', '', '', '', '', '', null, null, null, null, null, null,null,null, null);
+    }
+
+    async obtenerPartenariado(id: string ){
+        await this.partenariadoService.cargarPartenariado(id).pipe(first()).toPromise().then((resp: any) =>{
+            this.partenariado = resp;
+        });
     }
 
     async obtenerOferta(id: number) {
+
 
         await this.ofertaService.obtenerOferta(id).pipe(first()).toPromise().then((resp: any) => {
             let value = resp.oferta;
@@ -112,11 +372,13 @@ export class PartenariadoCrearProfesorComponent implements OnInit {
                 });
             }
             this.selProfesores = arrayP;
+            console.log(this.selProfesores);
 
             let fecha_fin = moment(value.fecha_limite).format('YYYY-MM-DD');
             this.oferta = new Oferta(value.id, value.titulo, value.descripcion, value.imagen, value.created_at, value.upload_at, value.cuatrimestre,
                 value.anio_academico, fecha_fin, value.observaciones_temporales, value.creador, value.area_servicio, value.asignatura_objetivo, value.profesores, value.tags)
             ;
+            console.log(this.oferta);
         });
     }
 
@@ -151,8 +413,214 @@ export class PartenariadoCrearProfesorComponent implements OnInit {
 
     }
 
-    observableEnviarPartenariado() {
-        return this.partenariadoService.crearPartenariadoProfesor(this.crearPartenariadoProfesorForm.value);
+    async obtenerOpcionesDemanda(){
+        await this.obtenerAreasServicio();
+        await this.obtenerNecesidades();
+        await this.obtenerTitulaciones();
+
+    }
+    async obtenerAreasServicio() {
+        this.areaServiciodropdownSettings = {
+            singleSelection: false,
+            idField: 'id',
+            textField: 'nombre',
+            selectAllText: 'Select All',
+            unSelectAllText: 'UnSelect All',
+            itemsShowLimit: 10,
+            allowSearchFilter: true
+        };
+        return this.demandaService.obtenerAreasServicio()
+            .subscribe((resp: any) => {
+                this.areaServicio = resp.areasServicio;
+                console.log(this.areaServicio);
+                return this.areaServicio;
+            });
+    }
+
+    async obtenerNecesidades() {
+        return this.demandaService.obtenerNecesidades()
+            .subscribe((resp: any) => {
+                this.necesidadSocial = resp.necesidadSocial;
+                console.log(this.necesidadSocial);
+                return this.necesidadSocial;
+            });
+    }
+
+    async obtenerTitulaciones() {
+        return this.demandaService.obtenerTitulaciones()
+            .subscribe((resp: any) => {
+                this.titulacionLocal = resp.titulacionLocal;
+                return this.titulacionLocal;
+            });
+    }
+
+
+    async crearDemanda(){
+        let value = this.crearPartenariadoProfesorForm.value
+        this.crearDemandaForm = this.fb.group({
+            titulo: [value.titulo , Validators.required],
+            descripcion: [value.descripcion, Validators.required],
+            area_servicio: [value.demandaAreaServicio, Validators.required],
+            comunidadBeneficiaria: [value.comunidadBeneficiaria , Validators.required],
+            imagen:[value.imagen, Validators.required],
+            ciudad:[value.ciudad, Validators.required],
+            objetivo:[value.finalidad, Validators.required],
+            fechaDefinicionIni:[value.periodo_definicion_ini, Validators.required],
+            fechaDefinicionFin:[value.periodo_definicion_fin, Validators.required],
+            fechaEjecucionIni:[value.periodo_ejecucion_ini, Validators.required],
+            fechaEjecucionFin:[value.periodo_ejecucion_fin, Validators.required],
+            fechaFin:[value.fecha_fin, Validators.required],
+            observaciones:[value.demandaObservacionesTemporales, Validators.required],
+            necesidad_social:[this.obtenerIdNecesidad(value.necesidadSocial), Validators.required],
+            titulacion_local:[value.titulacionesLocales, Validators.required]
+        });
+        await this.demandaService.crearDemanda(this.crearDemandaForm.value).pipe(first()).toPromise().then((resp: any) => {
+            this.crearPartenariadoProfesorForm.get('id_demanda').setValue(resp.demanda.id);
+        }, err => {
+            console.log(err);
+            let msg = [];
+            if (err.error.errors) {
+                Object.values(err.error.errors).forEach(error_entry => {
+                    msg.push(error_entry['msg']);
+                });
+            } else {
+                msg.push(err.error.msg);
+            }
+            Swal.fire('Error', msg.join('<br>'), 'error');
+            this.formSubmitted = false;
+            this.formSending = false;
+        });
+    }
+
+    async crearOferta()
+    {
+        let value = this.crearPartenariadoProfesorForm.value;
+        this.crearOfertaForm = this.fb.group({
+            titulo: [value.titulo, Validators.required],
+            descripcion:[value.descripcion, Validators.required],
+            imagen:[value.imagen, Validators.required],
+            asignatura:[value.asignaturaObjetivo, Validators.required],
+            cuatrimestre:[this.valorCuatrimestre(value.cuatrimestre), Validators.required],
+            anio_academico:[value.anioAcademico, Validators.required],
+            fecha_limite:[value.fecha_limite, Validators.required],
+            observaciones:[value.ofertaObservacionesTemporales, Validators.required],
+            area_servicio:[value.ofertaAreaServicio, Validators.required],
+            creador:[this.usuarioService.usuario.uid]
+
+
+        });
+
+        await this.ofertaService.crearOferta(this.crearOfertaForm.value).pipe(first()).toPromise().then((resp: any) => {
+            this.crearPartenariadoProfesorForm.get('id_oferta').setValue(resp.oferta.id[0]);
+
+        }, err => {
+            console.log(err);
+            let msg = [];
+            if (err.error.errors) {
+                Object.values(err.error.errors).forEach(error_entry => {
+                    msg.push(error_entry['msg']);
+                });
+            } else {
+                msg.push(err.error.msg);
+            }
+            Swal.fire('Error', msg.join('<br>'), 'error');
+            this.formSubmitted = false;
+            this.formSending = false;
+        });
+
+    }
+
+    async observableEnviarPartenariado() {
+        if(this.oferta.id == null)  await this.crearOferta();
+        this.partenariadoService.crearPartenariadoProfesor(this.crearPartenariadoProfesorForm.value).subscribe(async resp => {
+            if(resp.ok){
+                Swal.fire('Ok', 'Partenariado creado correctamente', 'success');
+                this.router.routeReuseStrategy.shouldReuseRoute = () => false;
+                this.router.onSameUrlNavigation = 'reload';
+                if(this.activatedRoute.snapshot.queryParams.demanda_id == null){
+                    this.notificacionService.AceptarSocio(this.notificacion.id, resp.id[0]).subscribe((ok)=>{
+
+                    });
+                }
+                else{
+                    //resp.id id partenariado
+                    this.crearNotificacionDemandaRespaldada = this.fb.group({
+                        idDestino:[this.demanda.creador],
+                        emailOrigen:[this.usuarioService.usuario.email],
+                        idDemanda:[this.demanda.id],
+                        idPartenariado:[resp.id],
+                        tituloAnuncio:[this.demanda.titulo]
+                    });
+                    console.log(this.crearNotificacionDemandaRespaldada.value);
+                    this.notificacionService.RespaldarDemanda(this.crearNotificacionDemandaRespaldada.value).subscribe((ok)=>{
+                    });
+                    this.partenariadoService.cambiarEstado(resp.id, "EN_NEGOCIACION").subscribe(ok=>{
+
+                    });
+                }
+                this.router.navigate(['/']);
+
+                this.formSubmitted = false;
+                this.formSending = false;
+
+            }
+
+            
+        }, err => {
+            console.log(err);
+
+            let msg = [];
+            if (err.error.errors) {
+                Object.values(err.error.errors).forEach(error_entry => {
+                    msg.push(error_entry['msg']);
+                });
+            } else {
+                msg.push(err.error.msg);
+            }
+
+            Swal.fire('Error', msg.join('<br>'), 'error');
+            this.formSubmitted = false;
+            this.formSending = false;
+        });
+    }
+
+    async actualizarPartenariado() {
+        if(this.demanda.id == null)  await this.crearDemanda();
+        this.partenariadoService.actualizarPartenariado(this.crearPartenariadoProfesorForm.value, this.partenariado._id).subscribe(async resp => {
+            if(resp){
+                this.notificacionService.crearpartenariadoRellenado(this.partenariado._id).subscribe(async ok =>{
+
+                });
+                this.partenariadoService.cambiarEstado(this.partenariado._id, "EN_NEGOCIACION").subscribe(ok =>{
+
+                });
+                Swal.fire('Ok', 'Partenariado actualizado correctamente', 'success');
+                this.router.routeReuseStrategy.shouldReuseRoute = () => false;
+                this.router.onSameUrlNavigation = 'reload';
+                this.router.navigate(['/']);
+
+                this.formSubmitted = false;
+                this.formSending = false;
+
+            }
+
+            
+        }, err => {
+            console.log(err);
+
+            let msg = [];
+            if (err.error.errors) {
+                Object.values(err.error.errors).forEach(error_entry => {
+                    msg.push(error_entry['msg']);
+                });
+            } else {
+                msg.push(err.error.msg);
+            }
+
+            Swal.fire('Error', msg.join('<br>'), 'error');
+            this.formSubmitted = false;
+            this.formSending = false;
+        });
     }
 
     enviarPartenariado() {
@@ -173,35 +641,11 @@ export class PartenariadoCrearProfesorComponent implements OnInit {
         }
         this.crearPartenariadoProfesorForm.get('responsable').setValue(id_responsable);
         this.formSending = true;
-        this.observableEnviarPartenariado()
-            .subscribe(resp => {
-                Swal.fire('Ok', 'Partenariado creado correctamente', 'success');
 
-                this.router.routeReuseStrategy.shouldReuseRoute = () => false;
-                this.router.onSameUrlNavigation = 'reload';
-                this.router.navigate(['/']);
-
-                this.formSubmitted = false;
-                this.formSending = false;
-            }, err => {
-                console.log(err);
-
-                let msg = [];
-                if (err.error.errors) {
-                    Object.values(err.error.errors).forEach(error_entry => {
-                        msg.push(error_entry['msg']);
-                    });
-                } else {
-                    msg.push(err.error.msg);
-                }
-
-                Swal.fire('Error', msg.join('<br>'), 'error');
-                this.formSubmitted = false;
-                this.formSending = false;
-            });
-
-
+        this.partenariado == undefined ? this.observableEnviarPartenariado() : this.actualizarPartenariado();
     }
+
+
 
     obtenerIdResponsable() {
         let i = 0;
@@ -211,6 +655,14 @@ export class PartenariadoCrearProfesorComponent implements OnInit {
             i++;
         }
         return (i < this.selProfesores.length) ? this.selProfesores[i].id : -1;
+    }
+
+    obtenerNombreResponsable(id){
+        return this.selProfesores.filter(n => n.id == id)[0];
+    }
+
+    obtenerIdNecesidad(nombreNecesidad){
+        return this.necesidadSocial.filter(n=> n.nombre == nombreNecesidad)[0].id
     }
 
     campoNoValido(campo): String {
@@ -301,12 +753,32 @@ export class PartenariadoCrearProfesorComponent implements OnInit {
             });
     }
 
+    valorCuatrimestre(cuatrimestre:string):Number{
+        if (cuatrimestre == 'Primer cuatrimestre') {
+            return 1;
+        } else if (cuatrimestre == 'segundo') {
+            return 2;
+        } else {
+            return 3;
+        }
+    }
+
     get getItems() {
         return this.profesoresList.reduce((acc, curr) => {
             acc[curr.id] = curr;
             return acc;
         }, {});
     }
+
+    
+    get getAreas() {
+        return this.areaServicio.reduce((acc, curr) => {
+            acc[curr.id] = curr;
+            return acc;
+        }, {});
+    }
+
+
 
     onItemSelect(item: any) {
         console.log('onItemSelect', item);

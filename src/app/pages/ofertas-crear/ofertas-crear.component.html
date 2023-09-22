@@ -423,29 +423,11 @@
                                 >
                                     {{ campoNoValido("asignatura") }}
                                 </div>
-                                <div
-                                    *ngIf="campoNoValido('fecha_limite')"
-                                    class='col'
-                                >
-                                    {{ campoNoValido("fecha_limite") }}
-                                </div>
-                                <div
-                                    *ngIf="campoNoValido('cuatrimestre')"
-                                    class='col'
-                                >
-                                    {{ campoNoValido("cuatrimestre") }}
-                                </div>
-                                <div
-                                    *ngIf="campoNoValido('anio_academico')"
-                                    class='col'
-                                >
-                                    {{ campoNoValido("anio_academico") }}
-                                </div>
                                 <!-- <div *ngIf="campoNoValido('observaciones')" class="col">{{ campoNoValido('observaciones') }}</div> -->
                                 <!-- <div *ngIf="campoNoValido('terminos_aceptados')" class="col">{{ campoNoValido('terminos_aceptados') }}</div> -->
                             </div>
 
-                            <div class='ml-auto mb-2'>
+                            <div class='mr-auto mb-2'>
                                 <input
                                     *ngIf='!this.oferta_id'
                                     [disabled]='
@@ -476,6 +458,9 @@
                                     class='btn btn-default btn-secondary m-4'
                                     type='submit'
                                 />
+                            </div>
+                            <div class='mb-2'>
+                                <a [routerLink]="['/ofertas']" class='btn btn-default btn-secondary m-4' role="button">Volver</a>
                             </div>
                         </div>
                     </div>

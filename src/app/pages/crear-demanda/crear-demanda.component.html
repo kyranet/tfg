@@ -82,7 +82,7 @@
 
                                 <div class='form-group flex-fill ml-2'>
                                     <label for='ciudad'>Localización/es donde se va/n a realizar el servicio; si va a ser de manera remota, escriba online</label>
-                                    <input [class.is-invalid]="createDemandForm.get('ciudad').invalid && createDemandForm.get('ciudad').touched" autocapitalize='none' autocorrect='off' class='form-control' formControlName='ciudad' id='ciudad' name='ciudad' placeholder='Introduzca la ciudad' spellcheck='false' type='text'>
+                                    <input autocapitalize='none' autocorrect='off' class='form-control' formControlName='ciudad' id='ciudad' name='ciudad' placeholder='Introduzca la ciudad' spellcheck='false' type='text'>
                                 </div>
 
                                 <div class='form-group flex-fill ml-2'>
@@ -94,34 +94,34 @@
                                 <div class='form-group flex-fill ml-2'>
                                     <label for='fechaDefinicionIni'>Comienzo del periodo de disponibilidad para trabajar en la definición
                                         de un proyecto ApS</label>
-                                    <input [class.is-invalid]="createDemandForm.get('fechaDefinicionIni').invalid && createDemandForm.get('fechaDefinicionIni').touched" class='form-control' formControlName='fechaDefinicionIni' id='fechaDefinicionIni' name='fechaDefinicionIni' type='date'>
+                                    <input class='form-control' formControlName='fechaDefinicionIni' id='fechaDefinicionIni' name='fechaDefinicionIni' type='date'>
 
                                 </div>
 
                                 <div class='form-group flex-fill ml-2'>
                                     <label for='fechaDefinicionFin'>Fin del periodo de disponibilidad para trabajar en la definición de un
                                         proyecto ApS</label>
-                                    <input [class.is-invalid]="createDemandForm.get('fechaDefinicionFin').invalid && createDemandForm.get('fechaDefinicionFin').touched" class='form-control' formControlName='fechaDefinicionFin' id='fechaDefinicionFin' name='fechaDefinicionFin' type='date'>
+                                    <input class='form-control' formControlName='fechaDefinicionFin' id='fechaDefinicionFin' name='fechaDefinicionFin' type='date'>
 
                                 </div>
 
                                 <div class='form-group flex-fill ml-2'>
                                     <label for='fechaEjecucionIni'>Comienzo del periodo de disponibilidad para trabajar en la realización
                                         del proyecto ApS</label>
-                                    <input [class.is-invalid]="createDemandForm.get('fechaEjecucionIni').invalid && createDemandForm.get('fechaEjecucionIni').touched" class='form-control' formControlName='fechaEjecucionIni' id='fechaEjecucionIni' name='fechaEjecucionIni' type='date'>
+                                    <input class='form-control' formControlName='fechaEjecucionIni' id='fechaEjecucionIni' name='fechaEjecucionIni' type='date'>
 
                                 </div>
 
                                 <div class='form-group flex-fill ml-2'>
                                     <label for='fechaEjecucionFin'>Fin del periodo de disponibilidad para trabajar en la realización
                                         del proyecto ApS</label>
-                                    <input [class.is-invalid]="createDemandForm.get('fechaEjecucionFin').invalid && createDemandForm.get('fechaEjecucionFin').touched" class='form-control' formControlName='fechaEjecucionFin' id='fechaEjecucionFin' name='fechaEjecucionFin' type='date'>
+                                    <input class='form-control' formControlName='fechaEjecucionFin' id='fechaEjecucionFin' name='fechaEjecucionFin' type='date'>
 
                                 </div>
 
                                 <div class='form-group flex-fill ml-2'>
                                     <label for='fechaFin'>Fecha límite para el fin de la realización del proyecto ApS</label>
-                                    <input [class.is-invalid]="createDemandForm.get('fechaFin').invalid && createDemandForm.get('fechaFin').touched" class='form-control' formControlName='fechaFin' id='fechaFin' name='fechaFin' type='date'>
+                                    <input class='form-control' formControlName='fechaFin' id='fechaFin' name='fechaFin' type='date'>
 
                                 </div>
 
@@ -219,10 +219,13 @@
                                     <div *ngIf="campoNoValido('titulacionLocal')" class='col'>{{ campoNoValido('titulacionLocal') }}</div>
                                 </div>
 
-                                <div class='ml-auto mb-2'>
+                                <div class='mr-auto mb-2'>
                                     <input *ngIf='!this.Demanda_id' [disabled]='this.formSending || (this.formSubmitted && this.createDemandForm.invalid)' [value]="this.formSending ? 'Creando...' : 'Crear demanda'" class='btn btn-default btn-secondary m-4' type='submit'>
                                     <input *ngIf='this.Demanda_id' [disabled]='this.formSending || (this.formSubmitted && this.createDemandForm.invalid)' [value]="this.formSending ? 'Actualizando...' : 'Actualizar demanda'" class='btn btn-default btn-secondary m-4' type='submit'>
                                     <label *ngIf='createDemandForm.errors'>{{ createDemandForm.errors?.dates | json }}</label>
+                                </div>
+                                <div class='mb-2'>
+                                    <a [routerLink]="['/demandas']" class='btn btn-default btn-secondary m-4' role="button">Volver</a>
                                 </div>
                             </div>
 

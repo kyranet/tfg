@@ -74,6 +74,7 @@ function obtenerAnuncioServicio(id_anuncio) {
                 for (area of areas_servicio) {
                     areas.push(area['nombre']);
                 }
+                console.log(id_anuncio);
                 return new transferAnuncioServicio(
                     id_anuncio,
                     anuncio[0]['titulo'],
@@ -172,6 +173,7 @@ function crearDemanda(demanda) {
                                 'Se ha introducido la demanda con id ',
                                 id_anuncio[0]
                             );
+                            return id_anuncio[0];
                         });
                 })
                 .catch((err) => {
@@ -229,27 +231,33 @@ function obtenerDemandaServicio(id_demanda) {
                                             titulaciones_ref.push(titulacion['nombre']);
                                         }
                                         necesidad_social = necesidad_social[0]['nombre'];
-                                        return new transferDemandaServicio(
-                                            demanda[0]['id'],
-                                            anuncio.getTitulo(),
-                                            anuncio.getDescripcion(),
-                                            anuncio.getImagen(),
-                                            anuncio.getCreated_at(),
-                                            anuncio.getUpdated_at(),
-                                            socio.getNombre() + ' ' + socio.getApellidos(),
-                                            demanda[0]['ciudad'],
-                                            demanda[0]['finalidad'],
-                                            demanda[0]['periodo_definicion_ini'],
-                                            demanda[0]['periodo_definicion_fin'],
-                                            demanda[0]['periodo_ejecucion_ini'],
-                                            demanda[0]['periodo_ejecucion_fin'],
-                                            demanda[0]['fecha_fin'],
-                                            demanda[0]['observaciones_temporales'],
-                                            necesidad_social,
-                                            titulaciones_ref,
-                                            demanda[0]['comunidad_beneficiaria'],
-                                            anuncio.dummy
-                                        );
+                                        return obtenerAreaServicio(id_demanda).then(areasServicio=>{
+                                            let areas =[];
+                                            areasServicio.forEach(n => areas.push(n.nombre));
+                                            return new transferDemandaServicio(
+                                                demanda[0]['id'],
+                                                anuncio.getTitulo(),
+                                                anuncio.getDescripcion(),
+                                                anuncio.getImagen(),
+                                                anuncio.getCreated_at(),
+                                                anuncio.getUpdated_at(),
+                                                socio,
+                                                demanda[0]['ciudad'],
+                                                demanda[0]['finalidad'],
+                                                demanda[0]['periodo_definicion_ini'],
+                                                demanda[0]['periodo_definicion_fin'],
+                                                demanda[0]['periodo_ejecucion_ini'],
+                                                demanda[0]['periodo_ejecucion_fin'],
+                                                demanda[0]['fecha_fin'],
+                                                demanda[0]['observaciones_temporales'],
+                                                necesidad_social,
+                                                titulaciones_ref,
+                                                areas,
+                                                demanda[0]["comunidad_beneficiaria"],
+                                                anuncio.dummy
+                                            );
+                                            
+                                        })
                                     });
                                 });
                         });
@@ -272,7 +280,8 @@ function contarTodasDemandasServicio() {
         });
 }
 
-function obtenerTodasDemandasServicio() {
+function obtenerTodasDemandasServicio(limit, offset, filters) {
+    let fil = JSON.parse(filters);
     return knex('anuncio_servicio')
         .join('demanda_servicio', 'anuncio_servicio.id', '=', 'demanda_servicio.id')
         .join(
@@ -307,6 +316,20 @@ function obtenerTodasDemandasServicio() {
             'datos_personales_externo.nombre',
             'datos_personales_externo.apellidos'
         )
+        .where("titulo", "like", "%" + fil.terminoBusqueda +"%")
+        .modify((queryBuilder) => {
+            if (fil.necesidadSocial && fil.necesidadSocial.length > 0) {
+                queryBuilder.where("necesidad_social.nombre", fil.necesidadSocial[0].nombre);
+            }
+        })
+        .modify(function(queryBuilder) {
+            if (fil.creador) {
+                queryBuilder.where('creador', fil.creador);
+            }
+            if(fil.entidadDemandante && fil.entidadDemandante.length > 0){
+                queryBuilder.where('creador', fil.entidadDemandante[0].id);
+            }
+        }) 
         .then((datos_demandas) => {
             return knex('areaservicio_anuncioservicio')
                 .join(
@@ -319,6 +342,11 @@ function obtenerTodasDemandasServicio() {
                     'areaservicio_anuncioservicio.id_anuncio',
                     'area_servicio.nombre as area'
                 )
+                .modify((queryBuilder) => {
+                    if (fil.areaServicio && fil.areaServicio.length > 0) {
+                        queryBuilder.where("area_servicio.nombre", fil.areaServicio[0].nombre);
+                    }
+                })
                 .then((areas) => {
                     return knex('titulacionlocal_demanda')
                         .join(
@@ -333,6 +361,16 @@ function obtenerTodasDemandasServicio() {
                         )
                         .then((titulaciones) => {
                             let transfer_demandas = [];
+                            datos_demandas = datos_demandas.filter((demanda) => {
+                                let encontrado = false;
+                                areas.some((n) => {
+                                  if (demanda["id"] === n.id_anuncio) {
+                                    encontrado = true;
+                                    return true;
+                                  }
+                                });
+                                return encontrado ? demanda : null;
+                              });
                             datos_demandas.forEach((datos) => {
                                 let nombre = datos['nombre'];
                                 let apellidos = datos['apellidos'];
@@ -498,6 +536,10 @@ function obtenerTitulacionLocal(id_demanda) {
             );
             throw err;
         });
+}
+
+function obtenerAreaServicioDemanda(demanda){
+    return knex('areaservicio_anuncioservicio').where({id_anuncio:demanda});
 }
 
 function obtenerListaTitulacionLocal() {

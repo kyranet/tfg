@@ -18,10 +18,9 @@ export class PartenariadoService {
  
    mapearPartenariados( partenariados: any ): Partenariado[] {
     return partenariados.map( (partenariado) => {
-  
         return new Partenariado( 
           '',
-          partenariado._id,
+          partenariado.id,
           partenariado.estado,
           partenariado.titulo,
           partenariado.descripcion,
@@ -29,7 +28,7 @@ export class PartenariadoService {
           partenariado.ciudad,
           //meter atributos 
           '',
-          [],
+          partenariado.profesores,
           null,
           '',
           [],  
@@ -37,36 +36,46 @@ export class PartenariadoService {
           partenariado.createdAt,
           partenariado.id_demanda,
           partenariado.id_oferta,
+          partenariado.responsable,
 
         );
     });
   }  
 
   crearPartenariadoProfesor(body: Object) {
-    return this.http.post<{ ok: boolean, parteneriado: Partenariado}>(`${ base_url }/partenariados/crearProfesor`, body, this.usuarioService.headers)
+    return this.http.post<{ ok: boolean, id: string}>(`${ base_url }/partenariados/crearProfesor`, body, this.usuarioService.headers)
                     .pipe(
                       map( (resp) => { return resp; } )
                     );
   }
 
- /*  cargarPartenariado(id: string) {
+  actualizarPartenariado(body: Object, idPartenariado) {
+    return this.http.post<{ok:boolean}>(`${base_url}/partenariados/actualizar/${ idPartenariado }`, body, this.usuarioService.headers)
+                    .pipe(
+                      map((resp) =>{return resp;})
+                    );
+  }
+
+
+  cargarPartenariado(id: string) {
     return this.http.get<{ ok: boolean, partenariado: Partenariado}>(`${ base_url }/partenariados/${ id }`, this.usuarioService.headers)
                     .pipe(
-                      map( (resp: {ok: boolean, partenariado: Partenariado}) => this.mapearPartenariados([resp.partenariado])[0] )
+                      map( (resp: {ok: boolean, partenariado: Partenariado}) => {return this.mapearPartenariados([resp.partenariado])[0];} )
                     );
-  } */
+  } 
 
   cargarPartenariados(skip: number, limit: number, filtros: Object) {
     return this.http.get<{ total: Number, filtradas: Number, partenariados: Partenariado[]}>(`${ base_url }/partenariados?skip=${ skip }&limit=${ limit }&filtros=${ encodeURIComponent( JSON.stringify(filtros)) }`, this.usuarioService.headers)
                     .pipe(
                       map( resp => {
+                        console.log(resp.partenariados);
                          return { total: resp.total, filtradas: resp.filtradas, partenariados: this.mapearPartenariados(resp.partenariados) }; 
                         })
                     );
   } 
 
-  cambiarEstado(partenariado: Partenariado, estado: string) {
-    return this.http.put<{ ok: boolean, partenariado: Partenariado}>(`${ base_url }/partenariados/modificar-estado/${ partenariado._id }`, {estado}, this.usuarioService.headers)
+  cambiarEstado(id:string, estado: string) {
+    return this.http.put<{ ok: boolean, partenariado: Partenariado}>(`${ base_url }/partenariados/modificar-estado/${ id }`, {estado}, this.usuarioService.headers)
                     .pipe(
                       map( (resp) => { return resp; } )
                     );

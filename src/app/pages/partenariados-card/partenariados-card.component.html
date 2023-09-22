@@ -9,14 +9,14 @@
             [icon]="['fas', 'eye']"
             [routerLink]="['/partenariados/ver/', partenariado._id]"
             class="text-primary cursor-pointer"
-            title="Ver oferta"
+            title="Ver partenariado"
         ></fa-icon>
         <fa-icon
             *ngIf="usuarioService.usuario?.esGestor"
             [icon]="['fas', 'edit']"
             [routerLink]="['/partenariados/editar', partenariado._id]"
             class="text-primary cursor-pointer"
-            title="Editar oferta"
+            title="Editar partenariado"
         ></fa-icon>
     </div>  
 </div>

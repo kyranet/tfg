@@ -8,14 +8,20 @@ const transferPartenariado = require("../transfers/TPartenariado");
 function obtenerPartenariados(limit, offset, filters) {
     let fil = JSON.parse(filters); // tomamos los tags name para buscarlo en la tabla de relaciones si esta vacio este array entonces lo que vot hacer es usar un pivote de -1 para conseguir un true en la parte dekl condcional
     let query =
-        "select * from partenariado p inner join oferta_servicio of on (p.id_oferta = of.id) inner join demanda_servicio ds on (p.id_demanda = ds.id)";
+    "SELECT p.id AS partenariado_id, p.*, of.*, ds.*, c.*" +
+    "FROM partenariado p " +
+    "INNER JOIN oferta_servicio of ON p.id_oferta = of.id " +
+    "INNER JOIN demanda_servicio ds ON p.id_demanda = ds.id "+
+    "INNER JOIN colaboracion c ON p.id = c.id";
     query = !fil.creador
         ? query
         : query + ` where of.creador=${fil.creador} or ds.creador=${fil.creador}`;
     return knex
         .raw(query)
         .then((res) => { 
-            return res[0].map(x => new transferPartenariado(x.id,x.finalidad,x.observaciones_temporales,false,x.creador,[],x.id_demanda,x.id_oferta,x.estado));
+            return res[0].map(x =>(
+                console.log(x),
+                new transferPartenariado(x.partenariado_id,x.titulo,x.descripcion,false,x.creador,[],x.id_demanda,x.id_oferta,x.estado)));
         })
         .catch((err) => {
             console.log(err);

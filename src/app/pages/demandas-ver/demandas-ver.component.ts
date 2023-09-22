@@ -13,6 +13,7 @@ import Swal from 'sweetalert2';
 export class DemandasVerComponent implements OnInit {
 
     public demanda: Demanda;
+    public area: any;
 
     constructor(public demandaService: DemandaService, public activatedRoute: ActivatedRoute, public router: Router, public usuarioService: UsuarioService) {
     }
@@ -31,15 +32,12 @@ export class DemandasVerComponent implements OnInit {
                 return this.router.navigateByUrl(`/demandas`);
             }
             this.demanda = this.demandaService.mapearDemandas([demanda])[0];
+            this.area = demanda.area_servicio;
+            console.log(this.demanda)
         });
     }
 
     crearPartenariado() {
-        Swal.fire(
-            'Atención',
-            'Antes de crear un partenariado debes completar los datos de la oferta',
-            'warning'
-        );
-        return this.router.navigate(['/ofertas/crear'], { queryParams: { demanda_id: this.demanda.id } });
+        return this.router.navigate(['/partenariados/profesor/crear'], { queryParams: { demanda_id: this.demanda.id } });
     }
 }

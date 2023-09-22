@@ -228,8 +228,7 @@ function obtenerTodasOfertasServicio(limit, offset, filters) {
     let fil = JSON.parse(filters);
     let creator_id = fil.creador || true;
     let tag_filter = fil.tags.length ? fil.tags : []; // tomamos los tags name para buscarlo en la tabla de relaciones si esta vacio este array entonces lo que vot hacer es usar un pivote de -1 para conseguir un true en la parte dekl condcional
-    
-
+    console.log(fil);
     return knex("anuncio_servicio")
         .join(
             "oferta_servicio",
@@ -271,6 +270,9 @@ function obtenerTodasOfertasServicio(limit, offset, filters) {
             if (fil.creador) {
                 queryBuilder.where('creador', fil.creador);
             }
+            if(fil.profesores && fil.profesores.length > 0){
+                queryBuilder.where('creador', fil.profesores[0].id);
+            }
         }) 
         .where(tag_filter.length, "=", 0)
         .orWhere(0,'<', function() {
@@ -279,7 +281,7 @@ function obtenerTodasOfertasServicio(limit, offset, filters) {
             .join('tags','tags.id','=','oferta_demanda_tags.tag_id')
             .whereRaw(`oferta_demanda_tags.object_id = oferta_servicio.id`)
             .whereIn('tags.nombre', tag_filter)
-        }) 
+        })
         .limit(limit)
         .offset(offset)
         .modify(function(queryBuilder) {
@@ -299,6 +301,11 @@ function obtenerTodasOfertasServicio(limit, offset, filters) {
                     "areaservicio_anuncioservicio.id_anuncio",
                     "area_servicio.nombre as area"
                 )
+                .modify((queryBuilder) => {
+                    if (fil.areaServicio && fil.areaServicio.length > 0) {
+                        queryBuilder.where("area_servicio.nombre", fil.areaServicio[0].nombre);
+                    }
+                })
                 .then((areas) => {
                     return knex
                         .select("*")
@@ -308,6 +315,17 @@ function obtenerTodasOfertasServicio(limit, offset, filters) {
                                 .readByOfertaIDs(datos_ofertas.map((x) => x.id)) // tomamos solo los tags que nos interesa dependiendo de las ofetas
                                 .then((tags) => {
                                     let transfer_ofertas = [];
+                                    console.log(datos_ofertas);
+                                    datos_ofertas = datos_ofertas.filter((oferta) => {
+                                        let encontrado = false;
+                                        areas.some((n) => {
+                                          if (oferta["id"] === n.id_anuncio) {
+                                            encontrado = true;
+                                            return true;
+                                          }
+                                        });
+                                        return encontrado ? oferta : null;
+                                      });
 
                                     datos_ofertas.forEach((datos) => {
                                         let nombre = datos["nombre"];
@@ -373,6 +391,30 @@ function obtenerTodasOfertasServicio(limit, offset, filters) {
                 "Se ha producido un error al intentar obtener de la base de datos todas las ofertas de servicio "
             );
         });
+}
+
+function obtenerTodasOfertasServicioMatching(){
+    return knex("anuncio_servicio")
+    .join(
+        "oferta_servicio",
+        "anuncio_servicio.id",
+        "=",
+        "oferta_servicio.id"
+    ).then(async result=> {
+        let ofertas = [];
+        for(let Oferta of result){
+            ofertas.push(await obtenerOfertaServicio(Oferta["id"]));
+        }
+        return ofertas;
+
+    })
+    .catch((err) => {
+        console.log(err);
+        console.log(
+            "Se ha producido un error al intentar obtener de la base de datos todas las ofertas de servicio "
+        );
+    });
+
 }
 
 function actualizarOfertaServicio(oferta) {
@@ -613,7 +655,7 @@ function obtenerAreaServicio(id_anuncio) {
             for (id_area of id_areas) {
                 areas.push(id_area["id_area"]);
             }
-            return knex.select("*").from("anuncio_servicio").whereIn("id", areas);
+            return knex('area_servicio').select("*").whereIn("id", areas);
         })
         .catch((err) => {
             console.log(
@@ -757,4 +799,6 @@ module.exports = {
     eliminarAnuncio,
     contarTodasOfertasServicio,
     obtenerAnuncioPorAreaServicio,
+    obtenerTodasOfertasServicioMatching,
+    obtenerCreadorOferta
 };

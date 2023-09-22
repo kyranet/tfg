@@ -146,6 +146,7 @@ export class PartenariadosComponent implements OnInit {
           //this.totalPartenariadosBuscados = filtradas.valueOf();
           this.partenariados = partenariados;
           this.cargando = false;
+          console.log(partenariados);
         }); 
   }
 

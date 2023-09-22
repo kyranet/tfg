@@ -303,6 +303,41 @@ function obtenerListaNecesidadSocial() {
     });
 }
 
+function obtenerAreaServicioTitulacionPorArea(servicios) {
+  return knex
+      .select("titulacion")
+      .from("matching_areaservicio_titulacion")
+      .whereIn("area_servicio", servicios)
+      .catch((err) => {
+          console.log(err);
+          console.log(
+              "Se ha producido un error al intentar obtener datos de la tabla matching_areaservicio_titulacion"
+          );
+      });
+}
+
+function obtenerAreaServicioConocimientoPorArea(servicios) {
+  return knex
+      .select("area_conocimiento")
+      .from("matching_areas")
+      .whereIn("area_servicio", servicios)
+      .catch((err) => {
+          console.log(err);
+          console.log(
+              "Se ha producido un error al intentar obtener datos de la tabla matching_areas"
+          );
+      });
+}
+
+function existe(id_oferta, id_demanda){
+  return knex.from("matching").where("id_oferta" ,"=", id_oferta).andWhere("id_demanda", "=", id_demanda).catch((err) => {
+    console.log(err);
+    console.log(
+        "Se ha producido un error al intentar obtener datos de la tabla matching_areas"
+    );
+  });
+}
+
 module.exports = {
   crearIniciativa,
   crearMatch,
@@ -311,4 +346,8 @@ module.exports = {
   actualizarIniciativa,
   obtenerListaNecesidadSocial,
   eliminarIniciativa,
+  obtenerAreaServicioTitulacionPorArea,
+  obtenerAreaServicioConocimientoPorArea,
+  existe
+
 };

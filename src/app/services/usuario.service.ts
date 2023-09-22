@@ -6,6 +6,7 @@ import { RegisterForm } from '../interfaces/register-form.interface';
 import { LoginForm } from '../interfaces/login-form.interface';
 import { Router } from '@angular/router';
 import { Usuario } from '../models/usuario.model';
+import { Profesor } from '../models/profesor.model';
 
 declare const gapi: any;
 
@@ -51,6 +52,13 @@ export class UsuarioService {
                     this.setTokenInfo(resp);
                  })
                );
+  }
+
+  cargarUsuarioPorEmail(email:string){
+    return this.http.get<{ ok: boolean, usuario: Usuario}>(`${ base_url}/usuarios/email/${email}`, this.headers)
+                    .pipe(
+                      map((resp: {ok:boolean, usuario: Usuario}) => resp.usuario)
+                    );
   }
 
   actualizarUsuario(usuario: Usuario) {
@@ -141,7 +149,25 @@ googleInit() {
     return usuarios.map(
       (user) => {
         if(!user) { return null; }
-        return new Usuario(user.uid || user.id || user._id, user.rol, user.email, user.nombre, user.apellidos, user.origin_login, user.origin_img || '', user.universidad || '', user.titulacion || '', user.sector || '',user.nombreS || '', user.terminos_aceptados || false, user.telefono || null);
+        //return new Usuario(user.uid || user.id || user._id, user.rol, user.email, user.nombre, user.apellidos, user.origin_login, user.origin_img || '', user.universidad || '', user.titulacion || '', user.sector || '',user.nombreS || '', user.terminos_aceptados || false, user.telefono || null);
+        return new Usuario(user.uid || user.id || user._id,
+          user.rol,
+          user.correo,
+          user.nombre, 
+          user.apellidos,
+          user.origin_login || '',
+          user.origin_img || undefined,
+          user.universidad || null,
+          user.titulacion || null,
+          user.sector || null,
+          user.facultad || null,
+          user.areaConocimiento || null,
+          user.nombre_socioComunitario || null,
+          user.terminos_aceptados,
+          user.telefono || null,
+          user.url || null,
+          user.mision || null,
+          user.avatar || null);
       }
 
     );
@@ -177,6 +203,12 @@ googleInit() {
                     .pipe(
                       map( (resp: {ok: boolean, path: string}) => resp.path )
                     );
+  }
+
+  getSocios(){
+    return this.http.get<{ ok: boolean, socios: Profesor[]}>(`${ base_url }/usuarios/socios`, this.headers)
+                    .pipe(
+                      map(resp =>{return {ok:resp.ok, socios: resp.socios}}));
   }
  
 }

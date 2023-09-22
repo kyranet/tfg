@@ -30,5 +30,23 @@ class TPartenariado extends TColaboracion {
     setEstado(estado_part){
         this.estado = estado_part;
     }
+    getDescripcion(){
+        return this.descripcion;
+    }
+    setDescripcion(descripcion){
+        this.descripcion = descripcion;
+    }
+    getAdmite(){
+        return this.admite_externos;
+    }
+    setAdmite(admite_externos){
+        this.admite_externos = admite_externos;
+    }
+    getProfesores(){
+        return this.profesores;
+    }
+    setProfesores(profesor){
+        this.profesores = profesor; 
+    }
 }
 module.exports = TPartenariado;

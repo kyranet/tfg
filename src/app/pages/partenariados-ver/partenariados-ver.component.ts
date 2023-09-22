@@ -6,6 +6,9 @@ import { Router, ActivatedRoute } from '@angular/router';
 import Swal from 'sweetalert2';
 import * as moment from 'moment';
 import { FileUploadService } from 'src/app/services/file-upload.service';
+import { Usuario } from './../../models/usuario.model';
+import { DemandaService } from './../../services/demanda.service';
+import { Demanda } from 'src/app/models/demanda.model';
 
 @Component({
   selector: 'app-partenariados-ver',
@@ -15,21 +18,22 @@ import { FileUploadService } from 'src/app/services/file-upload.service';
 export class PartenariadosVerComponent implements OnInit {
 
   public partenariado: Partenariado;
-  public partenariados: Partenariado[];
   public offset = 0;
   public limit = 50;
   public mensaje: string;
+  private socio;
+  private profesorResponsable;
 
   public filterCreador = '';
 
-  constructor(public partenariadoService: PartenariadoService, public fileUploadService: FileUploadService, public usuarioService: UsuarioService, public router: Router, public activatedRoute: ActivatedRoute) {
+  constructor(public partenariadoService: PartenariadoService, public fileUploadService: FileUploadService, public usuarioService: UsuarioService, public demandaService: DemandaService, public router: Router, public activatedRoute: ActivatedRoute) {
     this.mensaje = '';
     this.filterCreador = this.usuarioService.usuario.uid
   }
 
   ngOnInit(): void {
-     this.activatedRoute.params.subscribe( ({ }) => {
-      this.cargarPartenariado();
+     this.activatedRoute.params.subscribe( ({id }) => {
+      this.cargarPartenariado(id);
     }); 
   } 
 
@@ -40,14 +44,34 @@ export class PartenariadosVerComponent implements OnInit {
   }
 
   
-  cargarPartenariado() {
+  cargarPartenariado(id:string) {
 
     // ver o editar la partenariado
-    this.partenariadoService.cargarPartenariados(this.offset, this.limit, this.getFiltros())
-    .subscribe(({ total, filtradas, partenariados }) => { 
-      this.partenariados = partenariados 
+    this.partenariadoService.cargarPartenariado(id).subscribe((partenariado : Partenariado) =>{
+      if(!partenariado){
+        return this.router.navigateByUrl(`/mi-resumen`);
+      }
+      this.partenariado = partenariado;
+      this.cargarNombreProfesorResponsable(this.partenariado.idresponsable);
+      console.log(this.partenariado);
+      this.cargarSocioPorDemanda(this.partenariado.idDemanda);
+
     });
-  }  
+  }
+  
+  cargarNombreProfesorResponsable(id){
+    this.usuarioService.cargarUsuario(id).subscribe((usuario: Usuario)=>{
+      this.profesorResponsable = usuario;
+    })
+  }
+
+  cargarSocioPorDemanda(idDemanda){
+    this.demandaService.cargarDemanda(idDemanda).subscribe((demanda: Demanda) =>{
+      this.socio = demanda.creador;
+    });
+  }
+
+
 /* 
   cambiarEstado(estado: string) {
     this.partenariadoService.cambiarEstado(this.partenariado, estado)

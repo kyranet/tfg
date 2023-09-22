@@ -86,11 +86,10 @@ export class OfertasCrearComponent implements OnInit {
                 this.oferta.asignatura_objetivo || '',
                 Validators.required
             ],
-            fecha_limite: [this.oferta.fecha_limite || '', Validators.required],
-            cuatrimestre: [this.oferta.cuatrimestre || '', Validators.required],
+            fecha_limite: [this.oferta.fecha_limite || null],
+            cuatrimestre: [this.oferta.cuatrimestre || null],
             anio_academico: [
-                this.oferta.anio_academico || '',
-                Validators.required
+                this.oferta.anio_academico || null
             ],
             observaciones: this.oferta.observaciones,
             tags: this.tags
