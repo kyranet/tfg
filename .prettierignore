@@ -1,0 +1,7 @@
+.nuxt/
+.output/
+.yarn/
+.turbo/
+dist/
+functions/
+node_modules/
