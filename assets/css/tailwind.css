@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	body {
+		@apply bg-base-100;
+	}
+
+	abbr {
+		text-decoration-thickness: 1px;
+		text-underline-offset: 2px;
+	}
+}
+
+@layer components {
+	.layout-container {
+		@apply mx-4 sm:mx-auto sm:w-5/6 lg:max-w-5xl xl:max-w-7xl;
+	}
+}
