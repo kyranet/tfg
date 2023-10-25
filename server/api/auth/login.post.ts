@@ -3,18 +3,25 @@ export default eventHandler(async (event) => {
 	if (typeof email !== 'string' || typeof password !== 'string') {
 		throwValidationError('Invalid body parameters');
 	}
-
-	// TODO(Sebastianrza): Hook this with the DB and define what will be exposed
-	// const data = await fetchAccessToken(email, password);
-	// if (!data) {
-	// 	throw createError({ message: 'Failed to fetch the token', statusCode: 500 });
-	// }
-
-	// const session = await useAuthSession(event);
-	// await session.update({ id: data.id, /* session.data (AuthSession at /server/utils/session.ts) */ });
-	// return session.data;
-
-	throw createError({ message: 'Not implemented', statusCode: 500 });
+	try {
+		// Autenticar al usuario y obtener el token de acceso
+		const token = await fetchAccessToken(email, password);
+	
+		if (!token) {
+		  throw createError({ message: 'Authentication failed', statusCode: 401 });
+		}
+	
+		// La autenticación fue exitosa, ahora actualizamos la sesión del usuario
+		const session = await useAuthSession(event);
+		await session.update({ id: token.userId, /* revisión */ });
+		//revisón que podemos devolver aqui
+		return {
+		  message: 'Login successful',
+		  token: token.accessToken, // Puedes devolver el token de acceso al cliente
+		};
+	  } catch (error) {
+		throw createError({ message: 'Login failed', statusCode: 500 });
+	  }
 });
 
 interface OAuth2BodyData {
