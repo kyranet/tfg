@@ -12,12 +12,12 @@
 					<li>Participa en un proyecto ApS integrado en una asignatura.</li>
 					<li>Sugiere una iniciativa ApS para una comunidad, ONG, etc.</li>
 				</ul>
-				<nuxt-link
+				<NuxtLink
 					href="/como-participar/estudiantes"
 					class="mt-2 inline-block w-fit rounded-md bg-gray-500 px-4 py-1 uppercase text-white hover:bg-gray-600"
 				>
 					Ver
-				</nuxt-link>
+				</NuxtLink>
 			</div>
 			<div class="flex flex-col items-center gap-2">
 				<Icon name="fa6-solid:chalkboard-user" size="96" />
@@ -26,12 +26,12 @@
 					<li>Respalda una demanda de servicio ApS.</li>
 					<li>Oferta un servicio de ApS.</li>
 				</ul>
-				<nuxt-link
+				<NuxtLink
 					href="/como-participar/profesores"
 					class="mt-2 inline-block w-fit rounded-md bg-gray-500 px-4 py-1 uppercase text-white hover:bg-gray-600"
 				>
 					Ver
-				</nuxt-link>
+				</NuxtLink>
 			</div>
 			<div class="flex flex-col items-center gap-2">
 				<Icon name="fa6-solid:landmark" size="96" />
@@ -41,12 +41,12 @@
 					<li>Acepta una oferta de servicio ApS de la Universidad.</li>
 					<li>Demanda un servicio ApS para una comunidad, ONG, etc.</li>
 				</ul>
-				<nuxt-link
+				<NuxtLink
 					href="/como-participar/socios-comunitarios"
 					class="mt-2 inline-block w-fit rounded-md bg-gray-500 px-4 py-1 uppercase text-white hover:bg-gray-600"
 				>
 					Ver
-				</nuxt-link>
+				</NuxtLink>
 			</div>
 		</div>
 	</section>
@@ -59,25 +59,25 @@
 				<span class="text-5xl font-extrabold">{{ stats?.proyectos ?? 0 }}</span>
 				<h3 class="font-semibold uppercase">Proyectos</h3>
 				<p>registrados en el Portal ApS</p>
-				<nuxt-link href="/proyectos" class="mt-2 inline-block rounded-md bg-gray-500 px-4 py-1 uppercase text-white hover:bg-gray-600">
+				<NuxtLink href="/proyectos" class="mt-2 inline-block rounded-md bg-gray-500 px-4 py-1 uppercase text-white hover:bg-gray-600">
 					Ver
-				</nuxt-link>
+				</NuxtLink>
 			</div>
 			<div>
 				<span class="text-5xl font-extrabold">{{ stats?.partenariados ?? 0 }}</span>
 				<h3 class="font-semibold uppercase">Partenariados</h3>
 				<p>registrados en el Portal ApS</p>
-				<nuxt-link href="/partenariados" class="mt-2 inline-block rounded-md bg-gray-500 px-4 py-1 uppercase text-white hover:bg-gray-600">
+				<NuxtLink href="/partenariados" class="mt-2 inline-block rounded-md bg-gray-500 px-4 py-1 uppercase text-white hover:bg-gray-600">
 					Ver
-				</nuxt-link>
+				</NuxtLink>
 			</div>
 			<div>
 				<span class="text-5xl font-extrabold">{{ stats?.ofertas ?? 0 }}</span>
 				<h3 class="font-semibold uppercase">Ofertas</h3>
 				<p>registrados en el Portal ApS</p>
-				<nuxt-link href="/ofertas" class="mt-2 inline-block rounded-md bg-gray-500 px-4 py-1 uppercase text-white hover:bg-gray-600">
+				<NuxtLink href="/ofertas" class="mt-2 inline-block rounded-md bg-gray-500 px-4 py-1 uppercase text-white hover:bg-gray-600">
 					Ver
-				</nuxt-link>
+				</NuxtLink>
 			</div>
 		</div>
 	</section>
@@ -90,9 +90,9 @@
 				<h3 class="mb-2 text-xl font-semibold">{{ entry.title }}</h3>
 				<p class="text-sm">{{ entry.description }}</p>
 				<div class="mt-4 flex justify-between">
-					<nuxt-link :href="entry.link">
+					<NuxtLink :href="entry.link">
 						<button class="rounded-md bg-gray-500 px-2 uppercase text-white hover:bg-gray-600">Ver</button>
-					</nuxt-link>
+					</NuxtLink>
 					<span class="text-sm opacity-75">{{ entry.link.startsWith('/') ? '(esta web)' : `(${entry.link})` }}</span>
 				</div>
 			</div>

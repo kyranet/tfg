@@ -2,9 +2,9 @@
 	<header class="mb-4 bg-base-200 p-2 drop-shadow-sm">
 		<div class="layout-container flex justify-between">
 			<nav class="flex gap-1">
-				<nuxt-link href="/" class="nav-item" tabindex="0">Inicio</nuxt-link>
-				<nuxt-link href="/info/que-es" class="nav-item" tabindex="0">¿Qué es el ApS?</nuxt-link>
-				<nuxt-link href="/proyectos" class="nav-item" tabindex="0">Proyectos</nuxt-link>
+				<NuxtLink href="/" class="nav-item" tabindex="0">Inicio</NuxtLink>
+				<NuxtLink href="/info/que-es" class="nav-item" tabindex="0">¿Qué es el ApS?</NuxtLink>
+				<NuxtLink href="/proyectos" class="nav-item" tabindex="0">Proyectos</NuxtLink>
 				<div class="hs-dropdown relative inline-flex">
 					<button
 						id="hs-dropdown-default"
@@ -19,14 +19,14 @@
 						class="hs-dropdown-menu z-10 mt-2 hidden w-72 min-w-[15rem] rounded-lg bg-white p-2 opacity-0 shadow-md transition-[opacity,margin] duration-[0.1ms] hs-dropdown-open:opacity-100 dark:divide-gray-700 dark:border dark:border-gray-700 dark:bg-gray-800"
 						aria-labelledby="hs-dropdown-default"
 					>
-						<nuxt-link
+						<NuxtLink
 							v-for="item of items"
 							:key="item.url"
 							class="flex items-center gap-x-3.5 rounded-md px-3 py-2 text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300"
 							:href="item.url"
 						>
 							{{ item.title }}
-						</nuxt-link>
+						</NuxtLink>
 					</div>
 				</div>
 			</nav>
@@ -34,8 +34,8 @@
 				<button class="nav-item" @click="authLogout()">Cerrar Sesión</button>
 			</nav>
 			<nav v-else class="flex gap-1">
-				<nuxt-link href="/registro" class="nav-item" tabindex="0">Registro</nuxt-link>
-				<nuxt-link href="/login" class="nav-item" tabindex="0">Login</nuxt-link>
+				<NuxtLink href="/registro" class="nav-item" tabindex="0">Registro</NuxtLink>
+				<NuxtLink href="/login" class="nav-item" tabindex="0">Login</NuxtLink>
 			</nav>
 		</div>
 	</header>

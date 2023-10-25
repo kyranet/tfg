@@ -1,14 +1,14 @@
 <template>
 	<div class="carousel" @keydown="onKeyDown">
-		<Transition name="fade" v-for="(item, i) of items" :key="i">
+		<Transition v-for="(item, i) of items" :key="i" name="fade">
 			<div
-				ref="slideTabs"
-				role="tabpanel"
-				:key="i"
+				v-show="i === slideIndex"
 				:id="`carousel-panel-${i}`"
+				ref="slideTabs"
+				:key="i"
+				role="tabpanel"
 				:aria-labelledby="`carousel-tab-${i}`"
 				:hidden="i !== slideIndex"
-				v-show="i === slideIndex"
 				tabindex="0"
 				class="relative"
 				draggable="false"
@@ -32,9 +32,9 @@
 			<div class="carousel-tabs" role="tablist" aria-label="Selector de pestañas">
 				<button
 					v-for="(item, i) of items"
+					:id="`carousel-tab-${i}`"
 					:key="i"
 					role="tab"
-					:id="`carousel-tab-${i}`"
 					:aria-label="`Navegar a &quot;${item.text}&quot;`"
 					:aria-selected="slideIndex === i"
 					:aria-controls="`carousel-panel-${i}`"
@@ -59,6 +59,7 @@ const slideTabs = ref<HTMLDivElement[]>();
 
 function changeSlideIndex(index: number) {
 	slideIndex.value = index;
+	// eslint-disable-next-line ts/no-use-before-define
 	start();
 	return index;
 }
@@ -79,7 +80,7 @@ function onKeyDown(event: KeyboardEvent) {
 
 	if (index !== null) {
 		console.log(slideTabs.value);
-		nextTick(() => slideTabs.value![index!].focus());
+		void nextTick(() => slideTabs.value![index!].focus());
 	}
 }
 

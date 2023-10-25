@@ -6,13 +6,13 @@
 
 			<form @submit.prevent="performUnedLogin">
 				<label for="login-uned-email" class="form-label mt-2">Correo electrónico</label>
-				<input v-model="unedUser" id="login-uned-email" type="email" class="form-input" placeholder="socio@uned.es" />
+				<input id="login-uned-email" v-model="unedUser" type="email" class="form-input" placeholder="socio@uned.es" />
 
 				<label for="login-uned-password" class="form-label mt-2">Contraseña</label>
-				<input v-model="unedPass" id="login-uned-password" type="password" class="form-input" placeholder="Introduzca su contraseña" />
+				<input id="login-uned-password" v-model="unedPass" type="password" class="form-input" placeholder="Introduzca su contraseña" />
 
 				<div class="mt-2 flex">
-					<input v-model="unedRemember" type="checkbox" class="form-checkbox" id="login-uned-remember" />
+					<input id="login-uned-remember" v-model="unedRemember" type="checkbox" class="form-checkbox" />
 					<label for="login-uned-remember" class="ml-3 text-sm text-gray-500 dark:text-gray-400">Recordar usuario</label>
 				</div>
 
@@ -23,21 +23,21 @@
 		<div class="rounded-xl border bg-base-200 p-4 drop-shadow-sm">
 			<h2 class="text-xl font-semibold">Login externo</h2>
 
-			<form @submit.prevent="performUnedLogin" class="h-full">
+			<form class="h-full" @submit.prevent="performUnedLogin">
 				<label for="login-external-email" class="form-label mt-2">Correo electrónico</label>
-				<input v-model="externalUser" id="login-external-email" type="email" class="form-input" placeholder="Introduzca su usuario" />
+				<input id="login-external-email" v-model="externalUser" type="email" class="form-input" placeholder="Introduzca su usuario" />
 
 				<label for="login-external-password" class="form-label mt-2">Contraseña</label>
 				<input
-					v-model="externalPass"
 					id="login-external-password"
+					v-model="externalPass"
 					type="password"
 					class="form-input"
 					placeholder="Introduzca su contraseña"
 				/>
 
 				<div class="mt-2 flex">
-					<input v-model="externalRemember" type="checkbox" class="form-checkbox" id="login-external-remember" />
+					<input id="login-external-remember" v-model="externalRemember" type="checkbox" class="form-checkbox" />
 					<label for="login-external-remember" class="ml-3 text-sm text-gray-500 dark:text-gray-400">Recordar usuario</label>
 				</div>
 

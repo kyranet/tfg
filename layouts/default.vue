@@ -1,12 +1,12 @@
 <template>
 	<div class="flex h-screen flex-col">
 		<div class="flex-auto justify-between">
-			<sections-app-header />
+			<SectionsAppHeader />
 			<main class="layout-container">
 				<slot></slot>
 			</main>
 		</div>
-		<sections-app-footer />
+		<SectionsAppFooter />
 	</div>
 </template>
 

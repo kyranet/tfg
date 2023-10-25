@@ -15,7 +15,7 @@ export default defineNuxtConfig({
 		db: {
 			host: process.env.DB_HOST ?? 'localhost',
 			port: process.env.DB_PORT ? Number(process.env.DB_HOST) : 3306,
-			user: process.env.DB_USER ??'admin',
+			user: process.env.DB_USER ?? 'admin',
 			password: process.env.DB_PASS ?? 'admin',
 			database: process.env.DB_DB ?? 'aps',
 			multipleStatements: true

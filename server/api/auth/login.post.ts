@@ -19,7 +19,15 @@ export default eventHandler(async (event) => {
 	}
 });
 
+function fetchAccessToken(_email: string, _password: string): Promise<AccessTokenResult | null> {
+	return Promise.resolve(null);
+}
+
 interface OAuth2BodyData {
 	email: string;
 	password: string;
+}
+
+interface AccessTokenResult {
+	userId: string;
 }
