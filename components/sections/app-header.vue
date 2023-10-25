@@ -1,66 +1,44 @@
 <template>
-	<header class="mb-4 flex justify-between border-b border-b-zinc-400 p-2">
-		<nav class="flex gap-1">
-			<nuxt-link href="/" class="nav-item" tabindex="0">Inicio</nuxt-link>
-			<nuxt-link href="/info/que-es" class="nav-item" tabindex="0">¿Qué es el ApS?</nuxt-link>
-			<nuxt-link href="/proyectos" class="nav-item" tabindex="0">Proyectos</nuxt-link>
-			<div class="hs-dropdown relative inline-flex">
-				<button
-					id="hs-dropdown-default"
-					type="button"
-					class="hs-dropdown-toggle nav-item inline-flex items-center justify-center gap-2 rounded align-middle"
-				>
-					ApS UNED
-					<Icon name="material-symbols:keyboard-arrow-down" size="16" class="text-gray-600 hs-dropdown-open:rotate-180" />
-				</button>
-
-				<div
-					class="hs-dropdown-menu z-10 mt-2 hidden w-72 min-w-[15rem] rounded-lg bg-white p-2 opacity-0 shadow-md transition-[opacity,margin] duration-[0.1ms] hs-dropdown-open:opacity-100 dark:divide-gray-700 dark:border dark:border-gray-700 dark:bg-gray-800"
-					aria-labelledby="hs-dropdown-default"
-				>
-					<nuxt-link
-						v-for="item of items"
-						:key="item.url"
-						class="flex items-center gap-x-3.5 rounded-md px-3 py-2 text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300"
-						:href="item.url"
+	<header class="mb-4 bg-base-200 p-2 drop-shadow-sm">
+		<div class="layout-container flex justify-between">
+			<nav class="flex gap-1">
+				<nuxt-link href="/" class="nav-item" tabindex="0">Inicio</nuxt-link>
+				<nuxt-link href="/info/que-es" class="nav-item" tabindex="0">¿Qué es el ApS?</nuxt-link>
+				<nuxt-link href="/proyectos" class="nav-item" tabindex="0">Proyectos</nuxt-link>
+				<div class="hs-dropdown relative inline-flex">
+					<button
+						id="hs-dropdown-default"
+						type="button"
+						class="hs-dropdown-toggle nav-item inline-flex items-center justify-center gap-2 rounded align-middle"
 					>
-						{{ item.title }}
-					</nuxt-link>
+						ApS UNED
+						<Icon name="material-symbols:keyboard-arrow-down" size="16" class="text-gray-600 hs-dropdown-open:rotate-180" />
+					</button>
+
+					<div
+						class="hs-dropdown-menu z-10 mt-2 hidden w-72 min-w-[15rem] rounded-lg bg-white p-2 opacity-0 shadow-md transition-[opacity,margin] duration-[0.1ms] hs-dropdown-open:opacity-100 dark:divide-gray-700 dark:border dark:border-gray-700 dark:bg-gray-800"
+						aria-labelledby="hs-dropdown-default"
+					>
+						<nuxt-link
+							v-for="item of items"
+							:key="item.url"
+							class="flex items-center gap-x-3.5 rounded-md px-3 py-2 text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+							:href="item.url"
+						>
+							{{ item.title }}
+						</nuxt-link>
+					</div>
 				</div>
-			</div>
-		</nav>
-		<nav v-if="auth.loggedIn.value">
-			<button class="nav-item" @click="authLogout()">Cerrar Sesión</button>
-		</nav>
-		<nav v-else class="flex gap-1">
-			<nuxt-link href="/registro" class="nav-item" tabindex="0">Registro</nuxt-link>
-			<nuxt-link href="/login" class="nav-item" tabindex="0">Login</nuxt-link>
-		</nav>
+			</nav>
+			<nav v-if="auth.loggedIn.value">
+				<button class="nav-item" @click="authLogout()">Cerrar Sesión</button>
+			</nav>
+			<nav v-else class="flex gap-1">
+				<nuxt-link href="/registro" class="nav-item" tabindex="0">Registro</nuxt-link>
+				<nuxt-link href="/login" class="nav-item" tabindex="0">Login</nuxt-link>
+			</nav>
+		</div>
 	</header>
-	<!-- <v-app-bar app>
-		<v-container class="mx-auto d-flex align-center justify-center">
-			<v-btn href="/">Inicio</v-btn>
-
-			<v-btn href="/info/que-es">¿Qué es el ApS?</v-btn>
-			<v-btn href="/proyectos">Proyectos</v-btn>
-			<v-btn>
-
-				ApS UNED
-				<v-menu activator="parent">
-					<v-list>
-						<v-list-item v-for="(item, index) of items" :key="item.title" :value="index">
-							<v-list-item-title>{{ item.title }}</v-list-item-title>
-						</v-list-item>
-					</v-list>
-				</v-menu>
-			</v-btn>
-
-			<v-spacer></v-spacer>
-
-			<v-btn text="Registro" variant="text"></v-btn>
-			<v-btn text="Login" variant="text"></v-btn>
-		</v-container>
-	</v-app-bar> -->
 </template>
 
 <script setup lang="ts">

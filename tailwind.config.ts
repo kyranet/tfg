@@ -1,7 +1,7 @@
 import type { Config } from 'tailwindcss';
 
 export default <Partial<Config>>{
-	plugins: [require('@tailwindcss/typography'), require('preline/plugin')],
+	plugins: [require('@tailwindcss/typography'), require('@tailwindcss/forms'), require('preline/plugin')],
 	darkMode: 'class',
 	content: ['node_modules/preline/dist/*.js'],
 	theme: {

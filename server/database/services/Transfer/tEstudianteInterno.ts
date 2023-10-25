@@ -1,85 +1,85 @@
-import TEstudiante from "./tEstudiante";
+import TEstudiante from './tEstudiante';
 
 class TEstudianteInterno extends TEstudiante {
-    private correo: string;
-    private nombre: string;
-    private apellidos: string;
-    private password: string;
-    private titulacion_local: string;
-    private telefono: string;
-    private rol: string;
+	private correo: string;
+	private nombre: string;
+	private apellidos: string;
+	private password: string;
+	private titulacion_local: string;
+	private telefono: string;
+	private rol: string;
 
-    constructor(
-        id: number,
-        correo: string,
-        nombre: string,
-        apellidos: string,
-        password: string,
-        origin_login: string,
-        origin_img: string,
-        createdAt: Date,
-        updatedAt: Date,
-        terminos_aceptados: boolean,
-        titulacion_local: string,
-        telefono: string
-    ) {
-        super(id, origin_login, origin_img, createdAt, updatedAt, terminos_aceptados);
-        this.titulacion_local = titulacion_local;
-        this.correo = correo;
-        this.nombre = nombre;
-        this.apellidos = apellidos;
-        this.password = password;
-        this.rol = "ROL_ESTUDIANTE";
-        this.telefono = telefono;
-    }
+	constructor(
+		id: number,
+		correo: string,
+		nombre: string,
+		apellidos: string,
+		password: string,
+		origin_login: string,
+		origin_img: string,
+		createdAt: Date,
+		updatedAt: Date,
+		terminos_aceptados: boolean,
+		titulacion_local: string,
+		telefono: string
+	) {
+		super(id, origin_login, origin_img, createdAt, updatedAt, terminos_aceptados);
+		this.titulacion_local = titulacion_local;
+		this.correo = correo;
+		this.nombre = nombre;
+		this.apellidos = apellidos;
+		this.password = password;
+		this.rol = 'ROL_ESTUDIANTE';
+		this.telefono = telefono;
+	}
 
-    getTelefono(): string {
-        return this.telefono;
-    }
+	getTelefono(): string {
+		return this.telefono;
+	}
 
-    setTelefono(telefono: string): void {
-        this.telefono = telefono;
-    }
-    
-    getNombre(): string {
-        return this.nombre;
-    }
+	setTelefono(telefono: string): void {
+		this.telefono = telefono;
+	}
 
-    setNombre(nombre: string): void {
-        this.nombre = nombre;
-    }
+	getNombre(): string {
+		return this.nombre;
+	}
 
-    getCorreo(): string {
-        return this.correo;
-    }
+	setNombre(nombre: string): void {
+		this.nombre = nombre;
+	}
 
-    setCorreo(correo: string): void {
-        this.correo = correo;
-    }
+	getCorreo(): string {
+		return this.correo;
+	}
 
-    getApellidos(): string {
-        return this.apellidos;
-    }
+	setCorreo(correo: string): void {
+		this.correo = correo;
+	}
 
-    setApellidos(apellidos: string): void {
-        this.apellidos = apellidos;
-    }
+	getApellidos(): string {
+		return this.apellidos;
+	}
 
-    getPassword(): string {
-        return this.password;
-    }
+	setApellidos(apellidos: string): void {
+		this.apellidos = apellidos;
+	}
 
-    setPassword(password: string): void {
-        this.password = password;
-    }
+	getPassword(): string {
+		return this.password;
+	}
 
-    getTitulacionLocal(): string {
-        return this.titulacion_local;
-    }
+	setPassword(password: string): void {
+		this.password = password;
+	}
 
-    setTitulacionLocal(titulacion_local: string): void {
-        this.titulacion_local = titulacion_local;
-    }
+	getTitulacionLocal(): string {
+		return this.titulacion_local;
+	}
+
+	setTitulacionLocal(titulacion_local: string): void {
+		this.titulacion_local = titulacion_local;
+	}
 }
 
 export default TEstudianteInterno;

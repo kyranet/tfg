@@ -11,7 +11,7 @@ export default {
 			}
 		},
 		{
-			files: ['README.md', 'apps/**/*.md', 'packages/**/*.md'],
+			files: ['README.md'],
 			options: {
 				tabWidth: 2,
 				useTabs: false,
