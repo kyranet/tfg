@@ -47,6 +47,7 @@
 	</section>
 	<div class="mt-4 rounded-xl border bg-base-200 p-4 drop-shadow-sm">
 		<h2 class="text-xl font-semibold"><abbr title="Single Sign-On">SSO</abbr> externo - Google (solo estudiantes)</h2>
+
 		TBD.
 	</div>
 </template>
