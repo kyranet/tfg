@@ -6,7 +6,6 @@ export default eventHandler(async (event) => {
 	try {
 		// Autenticar al usuario y obtener el token de acceso
 		const token = await fetchAccessToken(email, password);
-
 		if (!token) {
 			throw createError({ message: 'Authentication failed', statusCode: 401 });
 		}
@@ -14,11 +13,7 @@ export default eventHandler(async (event) => {
 		// La autenticación fue exitosa, ahora actualizamos la sesión del usuario
 		const session = await useAuthSession(event);
 		await session.update({ id: token.userId /* revisión */ });
-		//revisón que podemos devolver aqui
-		return {
-			message: 'Login successful',
-			token: token.accessToken // Puedes devolver el token de acceso al cliente
-		};
+		return session.data;
 	} catch (error) {
 		throw createError({ message: 'Login failed', statusCode: 500 });
 	}

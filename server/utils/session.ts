@@ -1,6 +1,6 @@
 import type { H3Event, SessionConfig } from 'h3';
 
-const sessionConfig = (useRuntimeConfig().auth || {}) as SessionConfig;
+const sessionConfig = useRuntimeConfig().auth as SessionConfig;
 
 // TODO(Sebastianrza): Define what will be exposed:
 export interface AuthSession {

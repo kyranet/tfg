@@ -1,28 +1,16 @@
-import { createConnection, Connection, ConnectionOptions, RowDataPacket } from 'mysql2/promise';
-//En proceso
+import type { RowDataPacket } from 'mysql2/promise';
 
 export default eventHandler(async () => {
 	// TODO(Sebastianrza): Hook this with the DB
 	try {
-		const access: ConnectionOptions = {
-			host: 'localhost',
-			port: 3306,
-			user: 'admin',
-			password: 'admin',
-			database: 'aps',
-			multipleStatements: true
-		};
-
-		const connection: Connection = await createConnection(access);
-
-		console.log('Conectado con el ID ' + connection.threadId);
+		const connection = await useDatabase();
+		console.log(`Conectado con el ID ${connection.threadId}`);
 
 		// Realizar la consulta
 		const [rows] = await connection.query<RowDataPacket[]>('SELECT * FROM usuarios');
-
 		console.log(rows);
 	} catch (err) {
-		console.error('Error de conexión: ' + err);
+		console.error('Error de conexión:', err);
 	}
 
 	return {
