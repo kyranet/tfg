@@ -29,14 +29,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@antfu/eslint-config@npm:^1.0.0-beta.28":
-  version: 1.0.0-beta.28
-  resolution: "@antfu/eslint-config@npm:1.0.0-beta.28"
+"@antfu/eslint-config@npm:^1.0.0-beta.29":
+  version: 1.0.0-beta.29
+  resolution: "@antfu/eslint-config@npm:1.0.0-beta.29"
   dependencies:
-    "@antfu/eslint-define-config": ^1.23.0-1
+    "@antfu/eslint-define-config": ^1.23.0-2
     "@stylistic/eslint-plugin": ^0.1.1
-    "@typescript-eslint/eslint-plugin": ^6.8.0
-    "@typescript-eslint/parser": ^6.8.0
+    "@typescript-eslint/eslint-plugin": ^6.9.0
+    "@typescript-eslint/parser": ^6.9.0
     eslint-config-flat-gitignore: ^0.1.1
     eslint-plugin-antfu: ^1.0.0-beta.12
     eslint-plugin-eslint-comments: ^3.2.0
@@ -50,20 +50,20 @@ __metadata:
     eslint-plugin-unicorn: ^48.0.1
     eslint-plugin-unused-imports: ^3.0.0
     eslint-plugin-vitest: ^0.3.8
-    eslint-plugin-vue: ^9.17.0
+    eslint-plugin-vue: ^9.18.0
     eslint-plugin-yml: ^1.10.0
     globals: ^13.23.0
-    jsonc-eslint-parser: ^2.3.0
+    jsonc-eslint-parser: ^2.4.0
     local-pkg: ^0.5.0
     vue-eslint-parser: ^9.3.2
     yaml-eslint-parser: ^1.2.2
   peerDependencies:
     eslint: ">=8.0.0"
-  checksum: d5d707c116517dce2e6e36da338b1caf69e0e72e10f1938b5a4bf74a3478e36dc6c7ef76647b910f763503153e2ca26ed2cb0045f563ecf881c86a0230f9808a
+  checksum: 09ded13225b079662d05aba0e476684055fdac77a232ad437e15549742c9adcc556fc40ec84e677215d1a04131cd3d3800cc8c04d21f4314124f177fd8f7cc1c
   languageName: node
   linkType: hard
 
-"@antfu/eslint-define-config@npm:^1.23.0-1":
+"@antfu/eslint-define-config@npm:^1.23.0-2":
   version: 1.23.0-2
   resolution: "@antfu/eslint-define-config@npm:1.23.0-2"
   checksum: f7934d3a6cae00e28156250c5e53b6cb4af957ca64fb3fbdf3b5801981808d6f4c4aa9e98a72c606f949aa75444760487ea514d434d62af50f9686df7127aecf
@@ -1956,7 +1956,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/mysql@npm:^2.15.22":
+"@types/mysql@npm:^2.15.23":
   version: 2.15.23
   resolution: "@types/mysql@npm:2.15.23"
   dependencies:
@@ -1965,7 +1965,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:^20.8.8":
+"@types/node@npm:*, @types/node@npm:^20.8.9":
   version: 20.8.9
   resolution: "@types/node@npm:20.8.9"
   dependencies:
@@ -2025,7 +2025,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/eslint-plugin@npm:^6.8.0":
+"@typescript-eslint/eslint-plugin@npm:^6.9.0":
   version: 6.9.0
   resolution: "@typescript-eslint/eslint-plugin@npm:6.9.0"
   dependencies:
@@ -2050,7 +2050,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/parser@npm:^6.8.0":
+"@typescript-eslint/parser@npm:^6.9.0":
   version: 6.9.0
   resolution: "@typescript-eslint/parser@npm:6.9.0"
   dependencies:
@@ -4667,9 +4667,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-vue@npm:^9.17.0":
-  version: 9.18.0
-  resolution: "eslint-plugin-vue@npm:9.18.0"
+"eslint-plugin-vue@npm:^9.18.0":
+  version: 9.18.1
+  resolution: "eslint-plugin-vue@npm:9.18.1"
   dependencies:
     "@eslint-community/eslint-utils": ^4.4.0
     natural-compare: ^1.4.0
@@ -4680,7 +4680,7 @@ __metadata:
     xml-name-validator: ^4.0.0
   peerDependencies:
     eslint: ^6.2.0 || ^7.0.0 || ^8.0.0
-  checksum: c5c1b1f6a430428abd22f65372942289bbcce7f860862da5f76e3f6772c45de0606c0c985f4f5eb2703961a462f93fecfdc170d9dea4175034732db00cf0f6c5
+  checksum: 774c1e91634f3fce33d5dcb8055959890f2b7620b558f9a5372175b2161d1341d69857d158bb9e97846252722d569126478c0be313bb4d3ac47beac875076f36
   languageName: node
   linkType: hard
 
@@ -6390,7 +6390,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsonc-eslint-parser@npm:^2.0.4, jsonc-eslint-parser@npm:^2.3.0":
+"jsonc-eslint-parser@npm:^2.0.4, jsonc-eslint-parser@npm:^2.4.0":
   version: 2.4.0
   resolution: "jsonc-eslint-parser@npm:2.4.0"
   dependencies:
@@ -7737,13 +7737,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nuxt-icon@npm:^0.6.0":
-  version: 0.6.0
-  resolution: "nuxt-icon@npm:0.6.0"
+"nuxt-icon@npm:^0.6.1":
+  version: 0.6.1
+  resolution: "nuxt-icon@npm:0.6.1"
   dependencies:
     "@iconify/vue": ^4.1.1
     "@nuxt/kit": ^3.8.0
-  checksum: 7ff2f905d8c8a5bbbfc1171fca6cd54910dcd1e003f273b600adfb3385d270c78f056a09742b9c8bec487f2fba56a5ea78c9703f1ecff1b94f665c473f467911
+  checksum: a0c48846f0fcf261e00d83167be2244de86d9491c90042bf21f254f6937e7d165c2e097a6d13dfa1211fb50b6ad1d252b8cd55e639c0683cc06f75c97509afb1
   languageName: node
   linkType: hard
 
@@ -8326,15 +8326,15 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "portal-aps@workspace:."
   dependencies:
-    "@antfu/eslint-config": ^1.0.0-beta.28
+    "@antfu/eslint-config": ^1.0.0-beta.29
     "@nuxt/devtools": 1.0.0
     "@nuxtjs/tailwindcss": ^6.8.1
     "@prettier/plugin-xml": ^3.2.1
     "@sapphire/prettier-config": ^2.0.0
     "@tailwindcss/forms": ^0.5.6
     "@tailwindcss/typography": ^0.5.10
-    "@types/mysql": ^2.15.22
-    "@types/node": ^20.8.8
+    "@types/mysql": ^2.15.23
+    "@types/node": ^20.8.9
     "@types/prettier": ^3.0.0
     "@vueuse/core": ^10.5.0
     "@vueuse/nuxt": ^10.5.0
@@ -8343,7 +8343,7 @@ __metadata:
     lint-staged: ^15.0.2
     mysql2: ^3.6.2
     nuxt: ^3.8.0
-    nuxt-icon: ^0.6.0
+    nuxt-icon: ^0.6.1
     nuxt-vue3-google-signin: ^0.0.9
     preline: ^1.9.0
     prettier: ^3.0.3
