@@ -8,16 +8,16 @@ export default defineNuxtConfig({
 		auth: {
 			name: 'aps-auth',
 			maxAge: 604800,
-			password: process.env.AUTH_SECRET ?? '',
+			password: process.env.NITRO_AUTH_PASSWORD ?? '',
 			cookie: { sameSite: 'lax' },
 			sessionHeader: false
 		} as const satisfies SessionConfig,
 		db: {
-			host: process.env.DB_HOST ?? 'localhost',
-			port: process.env.DB_PORT ? Number(process.env.DB_HOST) : 3306,
-			user: process.env.DB_USER ?? 'admin',
-			password: process.env.DB_PASS ?? 'admin',
-			database: process.env.DB_DB ?? 'aps',
+			host: process.env.NITRO_DB_HOST ?? 'localhost',
+			user: process.env.NITRO_DB_USER ?? 'admin',
+			password: process.env.NITRO_DB_PASSWORD ?? 'admin',
+			database: process.env.NITRO_DB_DATABASE ?? 'aps',
+			port: process.env.NITRO_DB_PORT ? Number(process.env.NITRO_DB_PORT) : 3306,
 			multipleStatements: true
 		} as const satisfies ConnectionOptions
 	}

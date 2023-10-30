@@ -1,0 +1,40 @@
+version: '3.9'
+
+services:
+    aps:
+        depends_on:
+            db:
+                condition: service_healthy
+        container_name: aps
+        build:
+            context: ./
+        ports:
+            - '3000:3000'
+        restart: always
+        environment:
+            NITRO_AUTH_PASSWORD: 'replace-me-with-a-secure-32-character-password'
+            NITRO_DB_HOST: 'host.docker.internal'
+            NITRO_DB_PORT: '3306'
+            NITRO_DB_USER: 'aps'
+            NITRO_DB_PASSWORD: 'aps'
+            NITRO_DB_DATABASE: 'aps'
+        env_file:
+            - .env
+
+    db:
+        container_name: mariadb
+        image: 'mariadb:11.1.2'
+        ports:
+            - '3306:3306'
+        restart: always
+        environment:
+            MARIADB_USER: 'aps'
+            MARIADB_PASSWORD: 'aps'
+            MARIADB_DATABASE: 'aps'
+            MARIADB_ROOT_PASSWORD: 'root-aps'
+        healthcheck:
+            test: ['CMD', 'healthcheck.sh', '--su-mysql', '--connect', '--innodb_initialized']
+            start_period: 1m
+            interval: 1m
+            timeout: 5s
+            retries: 3

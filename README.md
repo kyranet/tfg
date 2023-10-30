@@ -2,6 +2,15 @@
 
 Aplicación web de soporte al Aprendizaje-Servicio de la Universidad Complutense de Madrid.
 
+## Setup
+
+La aplicación hace uso de [🐋 Docker](https://www.docker.com), una herramienta que permite la fácil ejecución de la
+aplicación y sus dependencias. Para más información, por favor revise el
+[guía de contribución](.github/CONTRIBUTING.md).
+
+Para hostear la aplicación en el servidor de producción, se recomienda crear una copia del archivo
+[`docker-compose.yml`](./docker-compose.yml) y adaptarlo según las necesidades y variables del servidor.
+
 ## Versiones Previas
 
 Este trabajo es una continuación del TFG de David Jiménez del Rey y se ha empleado su código para su realización.
