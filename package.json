@@ -16,19 +16,20 @@
 		"postinstall": "nuxt prepare"
 	},
 	"dependencies": {
-		"mysql2": "^3.6.2",
+		"knex": "^3.0.1",
+		"mysql2": "^3.6.3",
 		"preline": "^1.9.0"
 	},
 	"devDependencies": {
-		"@antfu/eslint-config": "^1.0.0-beta.29",
+		"@antfu/eslint-config": "^1.1.0",
 		"@nuxt/devtools": "1.0.0",
-		"@nuxtjs/tailwindcss": "^6.8.1",
-		"@prettier/plugin-xml": "^3.2.1",
+		"@nuxtjs/tailwindcss": "^6.9.4",
+		"@prettier/plugin-xml": "^3.2.2",
 		"@sapphire/prettier-config": "^2.0.0",
 		"@tailwindcss/forms": "^0.5.6",
 		"@tailwindcss/typography": "^0.5.10",
 		"@types/mysql": "^2.15.23",
-		"@types/node": "^20.8.9",
+		"@types/node": "^20.8.10",
 		"@types/prettier": "^3.0.0",
 		"@vueuse/core": "^10.5.0",
 		"@vueuse/nuxt": "^10.5.0",
@@ -46,5 +47,5 @@
 		"*": "prettier --ignore-unknown --write",
 		"*.{mjs,js,ts,vue}": "eslint --fix"
 	},
-	"packageManager": "yarn@3.6.3"
+	"packageManager": "yarn@4.0.1"
 }

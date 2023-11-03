@@ -7,6 +7,6 @@ interface TUsuario {
 	terminos_aceptados: boolean;
 	displayRol(): string;
 	rol: string; // Asumiendo que 'rol' es una propiedad de solo lectura
-  }
-  
-  export default TUsuario;
+}
+
+export default TUsuario;
