@@ -1,6 +1,6 @@
-import type TUsuario from './tUsuario';
+import type tUsuario from './tUsuario';
 
-interface TProfesor extends TUsuario {
+interface tOficinaAps extends tUsuario {
 	id: number;
 	origin_login: string;
 	origin_img: string;
@@ -11,4 +11,4 @@ interface TProfesor extends TUsuario {
 	rol: string; // Asumiendo que 'rol' es una propiedad de solo lectura
 }
 
-export default TProfesor;
+export default tOficinaAps;
