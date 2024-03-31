@@ -8,7 +8,7 @@ interface TEstudianteExterno extends TEstudiante {
 	titulacion: string;
 	nombreUniversidad: string;
 	telefono: string;
-	rol: string; // Asumiendo que 'rol' es una propiedad de solo lectura
+	rol: string;
 }
 
 export default TEstudianteExterno;

@@ -1,3 +1,4 @@
+import tAreaServicioAnuncio from "./tAreaServicioAnuncio";
 interface TAnuncioServicio {
     id: number;
     titulo: string;
@@ -5,7 +6,7 @@ interface TAnuncioServicio {
     imagen: string;
     created_at: Date;
     updated_at: Date;
-    area_servicio: string;
+    area_servicio:tAreaServicioAnuncio[];
     dummy: any;
 }
 

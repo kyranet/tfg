@@ -1,5 +1,5 @@
 import TAnuncioServicio from './tAnuncioServicio';
-
+import TitulacionLocalDemanda from './tTitulacionLocalDemanda';
 interface TDemandaServicio extends TAnuncioServicio {
     creador: any;
     ciudad: string;
@@ -11,7 +11,7 @@ interface TDemandaServicio extends TAnuncioServicio {
     fecha_fin: Date;
     observaciones_temporales: string;
     necesidad_social: string;
-    titulacionlocal: string;
+    titulacionlocal: TitulacionLocalDemanda[];
     comunidad_beneficiaria: string;
     dummy: any;
 }
