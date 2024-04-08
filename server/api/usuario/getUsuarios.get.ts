@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
     const limit = Number(query.limit) || Number.MAX_SAFE_INTEGER;
     const filtros = JSON.parse(query.filtros as string || '{}');
     let conditions = [];
-    
+
     // Logica de filtros
     // filtro por texto (titulo)
     if (filtros.terminoBusqueda.trim() !== '') {
