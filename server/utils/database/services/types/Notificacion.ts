@@ -1,16 +1,19 @@
+import type { Usuario } from './Usuario';
+import type { AutoIncrement, Defaults, ForeignKey, GetCreateType, GetType, Int, PrimaryKey, VarChar } from './base/Shared';
+
 export interface Notificacion {
-	id: number;
-	idDestino: number;
-	leido: boolean;
-	titulo: string;
-	mensaje: string;
-	fecha_fin: Date;
-	emailOrigen: string;
-	idOferta: number;
-	tituloOferta: string;
-	idDemanda: number;
-	tituloDemanda: string;
-	pendiente: boolean;
-	idPartenariado: number;
-	idMatching: number;
+	id: PrimaryKey<AutoIncrement<Int>>;
+	idDestino: ForeignKey<Usuario, 'id'>;
+	leido: Defaults<boolean>;
+	titulo: VarChar<200>;
+	mensaje: VarChar<1200>;
+	fecha_fin: Defaults<Date>;
+	pendiente: Defaults<boolean>;
+}
+
+export namespace Notificacion {
+	export const name = 'notificaciones';
+
+	export interface Value extends GetType<Notificacion> {}
+	export interface CreateData extends GetCreateType<Notificacion> {}
 }

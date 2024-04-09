@@ -19,10 +19,10 @@ export default eventHandler(async (event) => {
 		throw createError({ statusCode: 404, statusMessage: 'Partenariado no encontrado' });
 	}
 
-	partenariado.id_demanda = body.demanda;
+	partenariado.demandaId = body.demanda;
 	partenariado.titulo = body.titulo;
 	partenariado.descripcion = body.descripcion;
-	partenariado.admite_externos = body.externos;
+	partenariado.admiteExternos = body.externos;
 	partenariado.profesores = body.profesores;
 	await actualizarPartenariado(partenariado);
 

@@ -5,7 +5,7 @@ import { AreaServicio } from '../types/AreaServicio';
 import { AreaServicioAnuncio } from '../types/AreaServicioAnuncio';
 import { DemandaServicio } from '../types/DemandaServicio';
 import { TitulacionLocal } from '../types/TitulacionLocal';
-import { TitulacionLocalDemanda } from '../types/TitulacionLocalDemanda';
+import { TitulacionLocal_Demanda } from '../types/TitulacionLocal_Demanda';
 
 //Obtener areas de servicio por un id de anuncio concreto
 async function obtenerAreaServicio(id_anuncio: number): Promise<AreaServicio[]> {
@@ -248,7 +248,7 @@ export async function crearDemanda(demanda: DemandaServicio): Promise<number> {
 
 		// Insertar las titulaciones locales demandadas asociadas a la demanda
 		const titulaciones = demanda.titulacionlocal;
-		const fieldsToInsert: TitulacionLocalDemanda | TitulacionLocalDemanda[] = Array.isArray(titulaciones)
+		const fieldsToInsert: TitulacionLocal_Demanda | TitulacionLocal_Demanda[] = Array.isArray(titulaciones)
 			? titulaciones.map((titulacion) => ({
 					id_titulacion: titulacion.id_titulacion,
 					id_demanda: id_anuncio

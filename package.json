@@ -28,6 +28,7 @@
 		"@nuxtjs/tailwindcss": "^6.11.4",
 		"@prettier/plugin-xml": "^3.4.1",
 		"@sapphire/prettier-config": "^2.0.0",
+		"@sapphire/utilities": "^3.15.3",
 		"@tailwindcss/forms": "^0.5.7",
 		"@tailwindcss/typography": "^0.5.12",
 		"@types/bcryptjs": "^2",

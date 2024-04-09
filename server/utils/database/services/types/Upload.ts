@@ -1,13 +1,25 @@
+import type { Usuario } from './Usuario';
+import type { AutoIncrement, Defaults, ForeignKey, GetCreateType, GetType, Int, PrimaryKey, VarChar } from './base/Shared';
+
 export interface Upload {
-	id: number;
-	almacenamiento: string;
-	campo: string;
-	tipo: string;
-	tipo_id: number;
-	path: string;
-	client_name: string;
-	nombre: string;
-	creador: string;
-	createdAt: Date;
-	updatedAt: Date;
+	id: PrimaryKey<AutoIncrement<Int>>;
+	almacenamiento: VarChar<200>;
+	campo: VarChar<200>;
+	tipo: VarChar<200>;
+	tipo_id: VarChar<200>;
+	path: VarChar<200>;
+	client_name: VarChar<200>;
+	nombre: VarChar<200>;
+	/** Foreign key of {@linkcode Usuario.id} */
+	creador: ForeignKey<Usuario, 'id'>;
+	createdAt: Defaults<Date>;
+	updatedAt: Defaults<Date>;
+	_v: Int;
+}
+
+export namespace Upload {
+	export const name = 'upload';
+
+	export interface Value extends GetType<Upload> {}
+	export interface CreateData extends GetCreateType<Upload> {}
 }

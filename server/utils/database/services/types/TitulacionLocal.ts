@@ -1,4 +1,13 @@
+import type { AutoIncrement, GetCreateType, GetType, Int, PrimaryKey, VarChar } from './base/Shared';
+
 export interface TitulacionLocal {
-	id: number;
-	nombre: string;
+	id: PrimaryKey<AutoIncrement<Int>>;
+	nombre: VarChar<200>;
+}
+
+export namespace TitulacionLocal {
+	export const name = 'titulacion_local';
+
+	export interface Value extends GetType<TitulacionLocal> {}
+	export interface CreateData extends GetCreateType<TitulacionLocal> {}
 }

@@ -10,11 +10,11 @@ export default eventHandler(async (event) => {
 
 	const mensaje = {
 		texto: body.mensaje,
-		uid: user.id,
-		email: user.email,
-		nombre: user.nombre,
-		apellidos: user.apellidos,
-		rol: user.rol,
+		uid: user.data.id,
+		email: user.data.email,
+		nombre: user.data.nombre,
+		apellidos: user.data.apellidos,
+		rol: user.data.rol,
 		fecha: new Date()
 	};
 

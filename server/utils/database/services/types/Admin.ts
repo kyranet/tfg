@@ -1,10 +1,15 @@
-import type { Usuario } from './Usuario';
+import type { DatosPersonalesInterno } from './DatosPersonalesInterno';
+import type { ForeignKey, GetCreateType, GetType, Int, PrimaryKey } from './base/Shared';
 
-export interface Admin extends Usuario {
-	correo: string;
-	nombre: string;
-	apellidos: string;
-	password: string;
-	telefono: string;
-	rol: string;
+export interface Admin {
+	id: PrimaryKey<Int>;
+	/** Foreign key of {@linkcode DatosPersonalesInterno.id} */
+	datos_personales_Id: ForeignKey<DatosPersonalesInterno, 'id'>;
+}
+
+export namespace Admin {
+	export const name = 'admin';
+
+	export interface Value extends GetType<Admin> {}
+	export interface CreateData extends GetCreateType<Admin> {}
 }

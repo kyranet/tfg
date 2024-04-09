@@ -5,7 +5,7 @@ export const PartenariadoBody = z.object({
 	titulo: z.string(),
 	descripcion: z.string(),
 	admiteExternos: z.boolean(),
-	responsable: z.string(),
+	responsable: z.number().int(),
 	demanda: z.number().int(),
 	oferta: z.number().int()
 });

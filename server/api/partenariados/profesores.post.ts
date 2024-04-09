@@ -1,5 +1,5 @@
 import { crearPartenariado } from '~/server/utils/database/services/daos/daoColaboracion';
-import { Partenariado, PartenariadoStatus } from '~/server/utils/database/services/types/Partenariado';
+import { Partenariado, PartenariadoEstado } from '~/server/utils/database/services/types/Partenariado';
 import { PartenariadoBody } from '~/server/utils/validators/Partenariados';
 
 const schemaBody = PartenariadoBody;
@@ -14,7 +14,7 @@ export default eventHandler(async (event) => {
 		profesores: body.profesores,
 		id_demanda: body.demanda,
 		id_oferta: body.oferta,
-		estado: PartenariadoStatus.EnCreacion
+		estado: PartenariadoEstado.EnCreacion
 	};
 	const id = await crearPartenariado(partenariado);
 	return { ...partenariado, id };

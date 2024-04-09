@@ -7,7 +7,7 @@ import {
 } from '~/server/utils/database/services/daos/daoColaboracion';
 import { crearDemanda } from '~/server/utils/database/services/daos/daoDemanda';
 import type { DemandaServicio } from '~/server/utils/database/services/types/DemandaServicio';
-import { PartenariadoStatus, type Partenariado } from '~/server/utils/database/services/types/Partenariado';
+import { PartenariadoEstado, type Partenariado } from '~/server/utils/database/services/types/Partenariado';
 import { DemandaBody } from '~/server/utils/validators/Demandas';
 import { PartenariadoBody } from '~/server/utils/validators/Partenariados';
 import { CoercedIntegerId } from '~/server/utils/validators/shared';
@@ -20,13 +20,13 @@ export default eventHandler(async (event) => {
 	const body = await readValidatedBody(event, schemaBody.parse);
 	const user = await requireAuthSession(event); // Asegúrate de tener una forma de acceder al usuario actual
 
-	let estado: PartenariadoStatus;
+	let estado: PartenariadoEstado;
 	let demandaId: number;
 	if ('demanda' in body) {
-		estado = PartenariadoStatus.EnCreacion;
+		estado = PartenariadoEstado.EnCreacion;
 		demandaId = body.demanda;
 	} else {
-		estado = PartenariadoStatus.EnNegociacion;
+		estado = PartenariadoEstado.EnNegociacion;
 		let demanda: DemandaServicio = {
 			id: null!,
 			titulo: body.titulo,

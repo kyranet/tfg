@@ -3,10 +3,12 @@ import { readByOferta } from '../daos/daoTags';
 import { obtenerProfesorInterno, obtenerProfesoresInternos } from '../daos/daoUsuario';
 import { AnuncioServicio } from '../types/AnuncioServicio';
 import { OfertaServicio } from '../types/OfertaServicio';
+import { Profesor } from '../types/Profesor';
 
-async function crearAnuncio(anuncio: AnuncioServicio): Promise<number> {
+export type AnuncioServicioCreateData = Pick<AnuncioServicio, 'titulo' | 'descripcion' | 'imagen'> & { area_servicio: readonly number[] };
+async function crearAnuncio(anuncio: AnuncioServicioCreateData): Promise<number> {
 	try {
-		const [idAnuncio] = await knex('anuncio_servicio')
+		const [entry] = await knex<AnuncioServicio>('anuncio_servicio')
 			.insert({
 				titulo: anuncio.titulo,
 				descripcion: anuncio.descripcion,
@@ -17,23 +19,33 @@ async function crearAnuncio(anuncio: AnuncioServicio): Promise<number> {
 		// Insertar áreas de servicio si existen
 		if (anuncio.area_servicio && anuncio.area_servicio.length > 0) {
 			const areasParaInsertar = anuncio.area_servicio.map((area) => ({
-				id_area: area.id_area,
-				id_anuncio: idAnuncio
+				id_area: area,
+				id_anuncio: entry.id
 			}));
 			await knex('areaservicio_anuncioservicio').insert(areasParaInsertar);
 		}
 
-		return idAnuncio; // Retorna el ID del anuncio creado
+		return entry.id; // Retorna el ID del anuncio creado
 	} catch (error) {
 		console.error('Error al crear anuncio', error);
 		throw error;
 	}
 }
-export async function crearOferta(oferta: OfertaServicio): Promise<number> {
-	try {
-		const idAnuncio = await crearAnuncio(oferta); // Reutiliza la función de crearAnuncio
 
-		await knex('oferta_servicio').insert({
+type OfertaServicioCreateDataKeys =
+	| 'asignatura_objetivo'
+	| 'cuatrimestre'
+	| 'anio_academico'
+	| 'fecha_limite'
+	| 'observaciones_temporales'
+	| 'creador'
+	| 'tags'
+	| 'profesores';
+export type OfertaServicioCreateData = AnuncioServicioCreateData & Pick<OfertaServicio, OfertaServicioCreateDataKeys>;
+export async function crearOferta(oferta: OfertaServicioCreateData): Promise<OfertaServicio> {
+	const idAnuncio = await crearAnuncio(oferta); // Reutiliza la función de crearAnuncio
+	const [entry] = await knex<OfertaServicio>('oferta_servicio')
+		.insert({
 			id: idAnuncio,
 			asignatura_objetivo: oferta.asignatura_objetivo,
 			cuatrimestre: oferta.cuatrimestre,
@@ -44,12 +56,12 @@ export async function crearOferta(oferta: OfertaServicio): Promise<number> {
 			//Revisar esta logica de insercion de profesores/tags
 			tags: oferta.tags,
 			profesores: oferta.profesores
-		});
-		return idAnuncio;
-	} catch (error) {
-		console.error('Error al crear oferta', error);
-		throw error;
-	}
+		})
+		.returning('*');
+
+	await knex<Profesor>('profesor_colaboracion').whereIn('id', oferta.profesores).update({ oferta_servicio: entry.id });
+
+	return entry;
 }
 
 export async function obtenerOfertaServicio(id_oferta: number): Promise<OfertaServicio | null> {

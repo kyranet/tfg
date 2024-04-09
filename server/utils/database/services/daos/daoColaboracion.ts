@@ -1,279 +1,204 @@
+import { isNullish, isNullishOrEmpty } from '@sapphire/utilities';
 import knex from '../../config';
 import { obtenerUsuarioSinRolPorId } from '../daos/daoUsuario';
 import { Colaboracion } from '../types/Colaboracion';
-import { Notas } from '../types/Notas';
+import { EstudianteProyecto } from '../types/EstudianteProyecto';
+import { Nota } from '../types/Nota';
 import { Partenariado } from '../types/Partenariado';
+import { Profesor_Colaboracion } from '../types/Profesor_Colaboracion';
 import { Proyecto } from '../types/Proyecto';
+import { OfertaServicio } from '../types/OfertaServicio';
+import { AnuncioServicio } from '../types/AnuncioServicio';
 
-export const crearColaboracion = async (colaboracion: Colaboracion): Promise<number> => {
-	try {
-		const idColab: number[] = await knex('colaboracion').insert(
-			{
-				titulo: colaboracion.titulo,
-				descripcion: colaboracion.descripcion,
-				admite_externos: colaboracion.admite_externos,
-				responsable: colaboracion.responsable
-			},
-			'id'
+export type ColaboracionCreateData = Colaboracion.CreateData & { profesores?: readonly number[] };
+export const crearColaboracion = async (colaboracion: ColaboracionCreateData): Promise<number> => {
+	const [entry] = await knex<Colaboracion.Value>(Colaboracion.name).insert(
+		{
+			titulo: colaboracion.titulo,
+			descripcion: colaboracion.descripcion,
+			admite_externos: colaboracion.admite_externos,
+			responsable: colaboracion.responsable
+		},
+		'id'
+	);
+
+	if (!isNullishOrEmpty(colaboracion.profesores)) {
+		await knex<Profesor_Colaboracion.Value>(Profesor_Colaboracion.name).insert(
+			colaboracion.profesores.map((profesor) => ({
+				id_profesor: profesor,
+				id_colaboracion: entry.id
+			}))
 		);
-
-		const profesores = colaboracion.profesores;
-		const fieldsToInsert = profesores.map((profesor) => ({
-			id_profesor: profesor,
-			id_colaboracion: idColab[0]
-		}));
-
-		await knex('profesor_colaboracion').insert(fieldsToInsert);
-		return idColab[0];
-	} catch (err) {
-		console.error('Se ha producido un error al intentar crear la colaboracion', err);
-		throw err;
 	}
+
+	return entry.id;
 };
 
-export const crearPartenariado = async (partenariado: Partenariado): Promise<number> => {
-	try {
-		const id = await crearColaboracion(partenariado);
-		await knex('partenariado').insert({
-			id,
-			id_demanda: partenariado.id_demanda,
-			id_oferta: partenariado.id_oferta,
-			estado: partenariado.estado
-		});
-		console.log('Se ha creado un partenariado con id', id);
-		return id;
-	} catch (err) {
-		console.error('Se ha producido un error al crear el partenariado', err);
-		throw err;
-	}
+export type PartenariadoCreateData = Omit<ColaboracionCreateData & Partenariado.CreateData, 'id'>;
+export const crearPartenariado = async (partenariado: PartenariadoCreateData): Promise<number> => {
+	const id = await crearColaboracion(partenariado);
+	await knex<Partenariado.Value>(Partenariado.name).insert({
+		id,
+		id_demanda: partenariado.id_demanda,
+		id_oferta: partenariado.id_oferta,
+		estado: partenariado.estado
+	});
+
+	console.log('Se ha creado un partenariado con id', id);
+	return id;
 };
 
-export const crearProyecto = async (proyecto: Proyecto): Promise<number> => {
-	try {
-		const id = await crearColaboracion(proyecto);
-		await knex('proyecto').insert({
-			id,
-			id_partenariado: proyecto.id_partenariado,
-			estado: proyecto.estado
-		});
+export type ProyectoCreateData = Omit<ColaboracionCreateData & Proyecto.CreateData, 'id'> & { estudiantes?: readonly number[] };
+export const crearProyecto = async (proyecto: ProyectoCreateData): Promise<number> => {
+	const id = await crearColaboracion(proyecto);
+	await knex<Proyecto.Value>(Proyecto.name).insert({
+		id,
+		id_partenariado: proyecto.id_partenariado,
+		estado: proyecto.estado
+	});
 
-		const fieldsToInsert = proyecto.estudiantes.map((estudiante) => ({
-			id_estudiante: estudiante,
-			id_proyecto: id
-		}));
-
-		await knex('estudiante_proyecto').insert(fieldsToInsert);
-		return id;
-	} catch (err) {
-		console.error('Se ha producido un error al intentar crear el proyecto', err);
-		throw err;
+	if (!isNullishOrEmpty(proyecto.estudiantes)) {
+		await knex<EstudianteProyecto.Value>(EstudianteProyecto.name).insert(
+			proyecto.estudiantes.map((estudiante) => ({
+				id_estudiante: estudiante,
+				id_proyecto: id
+			}))
+		);
 	}
+
+	return id;
 };
 
-async function crearNota(nota: Notas): Promise<number> {
-	try {
-		const [idF] = await knex('notas')
-			.insert({
-				id_estudiante: nota.id_estudiante,
-				nota: nota.nota,
-				id_proyecto: nota.id_proyecto
-			})
-			.returning('id');
-		return idF;
-	} catch (err) {
-		console.error('Se ha producido un error al intentar crear la nota ', err);
-		throw err;
-	}
+export async function crearNota(nota: Nota.CreateData): Promise<number> {
+	const [entry] = await knex<Nota.Value>(Nota.name)
+		.insert({
+			id_estudiante: nota.id_estudiante,
+			nota: nota.nota,
+			id_proyecto: nota.id_proyecto
+		})
+		.returning('id');
+
+	return entry.id;
 }
 
-async function obtenerColaboracion(id_colab: number): Promise<Colaboracion> {
-	try {
-		const colab = await knex('colaboracion').where({ id: id_colab }).first();
-		const profes = await knex('profesor_colaboracion').where({ id_colaboracion: id_colab }).select('id_profesor');
+async function obtenerColaboracion(colaboracionId: number) {
+	const colaboracion = await knex<Colaboracion.Value>(Colaboracion.name).where({ id: colaboracionId }).first();
+	if (isNullish(colaboracion)) return null;
 
-		const profesores = profes.map((prof) => prof.id_profesor);
+	const profesores = await knex<Profesor_Colaboracion.Value>(Profesor_Colaboracion.name)
+		.where({ id_colaboracion: colaboracion.id })
+		.select('id_profesor');
 
-		let colabo: Colaboracion = {
-			id: id_colab,
-			titulo: colab.titulo,
-			descripcion: colab.descripcion,
-			admite_externos: colab.admite_externos,
-			responsable: colab.responsable,
-			profesores
-		};
-		return colabo;
-	} catch (err) {
-		console.error(`Se ha producido un error al intentar obtener los profesores que trabajan en la colaboracion ${id_colab}`, err);
-		throw err;
-	}
+	return {
+		...colaboracion,
+		profesores: profesores.map((profesor) => profesor.id_profesor)
+	};
 }
 
-export async function obtenerPartenariado(id: number): Promise<Partenariado> {
-	try {
-		const colaboracion = await obtenerColaboracion(id);
-		const partenariado = await knex('partenariado').where({ id }).first();
+export async function obtenerPartenariado(id: number) {
+	const colaboracion = await obtenerColaboracion(id);
+	if (isNullish(colaboracion)) return null;
 
-		const responsable = await obtenerUsuarioSinRolPorId(colaboracion.id);
+	const partenariado = await knex<Partenariado.Value>(Partenariado.name).where({ id }).first();
+	if (isNullish(partenariado)) return null;
 
-		const partner: Partenariado = {
-			id: id,
-			titulo: colaboracion.titulo,
-			descripcion: colaboracion.descripcion,
-			admite_externos: colaboracion.admite_externos,
-			responsable: responsable.nombre,
-			profesores: colaboracion.profesores,
-			id_demanda: partenariado.id_demanda,
-			id_oferta: partenariado.id_oferta,
-			estado: partenariado.estado
-		};
-		return partner;
-	} catch (err) {
-		console.error(`Se ha producido un error al intentar obtener el partenariado con id ${id}`, err);
-		throw err;
-	}
+	const responsable = await obtenerUsuarioSinRolPorId(colaboracion.id);
+
+	return {
+		id,
+		titulo: colaboracion.titulo,
+		descripcion: colaboracion.descripcion,
+		admiteExternos: colaboracion.admite_externos,
+		responsable: responsable.nombre,
+		profesores: colaboracion.profesores,
+		demandaId: partenariado.id_demanda,
+		ofertaId: partenariado.id_oferta,
+		estado: partenariado.estado
+	};
 }
 
-async function obtenerProyecto(id: number): Promise<Proyecto> {
-	try {
-		const colaboracion = await obtenerColaboracion(id);
-		const proyecto = await knex('proyecto').where({ id }).first();
-		const estudiantes = await knex('estudiante_proyecto').where({ id_proyecto: id }).select('id_estudiante');
+export async function obtenerProyecto(id: number) {
+	const colaboracion = await obtenerColaboracion(id);
+	if (isNullish(colaboracion)) return null;
 
-		const idsEstudiantes = estudiantes.map((est) => est.id_estudiante);
+	const proyecto = await knex<Proyecto.Value>(Proyecto.name).where({ id }).first();
+	if (isNullish(proyecto)) return null;
 
-		const proy: Proyecto = {
-			id: id,
-			titulo: colaboracion.titulo,
-			descripcion: colaboracion.descripcion,
-			admite_externos: colaboracion.admite_externos,
-			responsable: colaboracion.responsable,
-			profesores: colaboracion.profesores,
-			id_partenariado: proyecto.id_partenariado,
-			estado: proyecto.estado,
-			estudiantes: idsEstudiantes
-		};
-		return proy;
-	} catch (err) {
-		console.error(`Se ha producido un error al intentar obtener el proyecto con id ${id}`, err);
-		throw err;
-	}
+	const estudiantes = await knex<EstudianteProyecto.Value>(EstudianteProyecto.name).where({ id_proyecto: id }).select('id_estudiante');
+
+	return {
+		id,
+		titulo: colaboracion.titulo,
+		descripcion: colaboracion.descripcion,
+		admiteExternos: colaboracion.admite_externos,
+		responsable: colaboracion.responsable,
+		profesores: colaboracion.profesores,
+		partenariadoId: proyecto.id_partenariado,
+		estado: proyecto.estado,
+		estudiantes: estudiantes.map((est) => est.id_estudiante)
+	};
 }
 
 // Función para obtener una nota específica
-async function obtenerNota(id: number): Promise<Notas | null> {
-	try {
-		const response = await knex('notas').where({ id }).first();
-		if (!response) return null;
-		const notas: Notas = {
-			id: response.id,
-			id_estudiante: response.id_estudiante,
-			nota: response.nota,
-			id_proyecto: response.id_proyecto
-		};
-		return notas;
-	} catch (err) {
-		console.error('Se ha producido un error al obtener la nota:', err);
-		throw err;
-	}
+export async function obtenerNota(id: number) {
+	const response = await knex<Nota.Value>(Nota.name).where({ id }).first();
+	if (isNullish(response)) return null;
+
+	return {
+		id: response.id,
+		estudianteId: response.id_estudiante,
+		nota: response.nota,
+		proyectoId: response.id_proyecto
+	};
+}
+
+async function countTable(table: string) {
+	const result = await knex(table).count({ count: '*' }).first();
+	return result?.count ? Number(result.count) : 0;
 }
 
 // Funciones para contar elementos en la base de datos
-export async function contarProyectos(): Promise<number> {
-	try {
-		const result = await knex('proyecto').count('* as total').first();
-		return result ? +result.total : 0;
-	} catch (err) {
-		console.error('Error al contar proyectos:', err);
-		throw err;
-	}
+export function contarProyectos(): Promise<number> {
+	return countTable(Proyecto.name);
 }
 
-export async function contarPartenariados(): Promise<number> {
-	try {
-		const result = await knex('partenariado').count('* as total').first();
-		return result ? +result.total : 0;
-	} catch (err) {
-		console.error('Error al contar partenariados:', err);
-		throw err;
-	}
+export function contarPartenariados(): Promise<number> {
+	return countTable(Partenariado.name);
 }
 
-export async function contarIniciativas(): Promise<number> {
-	try {
-		const result = await knex('oferta_servicio').count('* as total').first();
-		return result ? +result.total : 0;
-	} catch (err) {
-		console.error('Error al contar iniciativas:', err);
-		throw err;
-	}
+export function contarIniciativas(): Promise<number> {
+	return countTable(OfertaServicio.name);
 }
 
-async function contarOfertas(): Promise<number> {
-	try {
-		const result = await knex('anuncio_servicio').count('* as total').first();
-		return result ? +result.total : 0;
-	} catch (err) {
-		console.error('Error al contar ofertas:', err);
-		throw err;
-	}
+export async function contarOfertas(): Promise<number> {
+	return countTable(AnuncioServicio.name);
 }
 
 //ELIMINAR
 
+async function deleteEntryTable(table: string, id: number) {
+	const result = await knex(table).where({ id }).del();
+	return result > 0;
+}
+
 // Eliminar una colaboración
-async function eliminarColaboracion(id_colab: number): Promise<void> {
-	try {
-		const result = await knex('colaboracion').where({ id: id_colab }).del();
-		if (result > 0) {
-			console.log('Colaboración eliminada con éxito. ID:', id_colab);
-		} else {
-			console.log('No se encontró la colaboración con ID:', id_colab);
-		}
-	} catch (err) {
-		console.error('Error al eliminar la colaboración. ID:', id_colab, err);
-	}
+export function eliminarColaboracion(id: number): Promise<boolean> {
+	return deleteEntryTable(Colaboracion.name, id);
 }
 
 // Eliminar un partenariado
-async function eliminarPartenariado(id: number): Promise<void> {
-	try {
-		const result = await knex('partenariado').where('id', id).del();
-		if (result > 0) {
-			console.log('Partenariado eliminado con éxito. ID:', id);
-		} else {
-			console.log('No se encontró el partenariado con ID:', id);
-		}
-	} catch (err) {
-		console.error('Error al eliminar el partenariado. ID:', id, err);
-	}
+export function eliminarPartenariado(id: number): Promise<boolean> {
+	return deleteEntryTable(Partenariado.name, id);
 }
 
 // Eliminar un proyecto
-async function eliminarProyecto(id: number): Promise<void> {
-	try {
-		const result = await knex('proyecto').where('id', id).del();
-		if (result > 0) {
-			console.log('Proyecto eliminado con éxito. ID:', id);
-		} else {
-			console.log('No se encontró el proyecto con ID:', id);
-		}
-	} catch (err) {
-		console.error('Error al eliminar el proyecto. ID:', id, err);
-	}
+export function eliminarProyecto(id: number): Promise<boolean> {
+	return deleteEntryTable(Proyecto.name, id);
 }
 
 // Eliminar una nota
-async function eliminarNota(id: number): Promise<void> {
-	try {
-		const result = await knex('notas').where({ id }).del();
-		if (result > 0) {
-			console.log('Nota eliminada con éxito. ID:', id);
-		} else {
-			console.log('No se encontró la nota con ID:', id);
-		}
-	} catch (err) {
-		console.error('Error al eliminar la nota. ID:', id, err);
-	}
+export async function eliminarNota(id: number): Promise<boolean> {
+	return deleteEntryTable(Nota.name, id);
 }
 
 //ACTUALIZAR---------------------------------------------------
@@ -341,7 +266,7 @@ async function actualizarProyecto(proyecto: Proyecto): Promise<void> {
 	}
 }
 
-async function actualizarNota(nota: Notas): Promise<void> {
+async function actualizarNota(nota: Nota): Promise<void> {
 	try {
 		const notaExistente = await knex('notas').where('id', nota.id).first();
 

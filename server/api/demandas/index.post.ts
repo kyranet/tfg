@@ -5,6 +5,7 @@ import { DemandaBody } from '~/server/utils/validators/Demandas';
 const schemaBody = DemandaBody;
 export const crearDemandas = eventHandler(async (event) => {
 	const body = await readValidatedBody(event, schemaBody.parse);
+	const user = await requireAuthSession(event);
 
 	// Crear la instancia de la demanda siguiendo la original
 	const demanda: DemandaServicio = {
@@ -16,7 +17,7 @@ export const crearDemandas = eventHandler(async (event) => {
 		updated_at: null,
 		// NOTE: No hagamos body.current_user, sino que usemos el usuario actual
 		// que viene en el evento
-		creador: body.current_user.uid, // Esta en el original, correcto?
+		creador: user.id, // Esta en el original, correcto?
 		ciudad: body.ciudad,
 		finalidad: body.finalidad,
 		periodo_definicion_ini: body.fechas.definition.start,

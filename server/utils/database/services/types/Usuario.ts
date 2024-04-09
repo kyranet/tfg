@@ -1,9 +1,17 @@
+import type { AutoIncrement, Defaults, GetCreateType, GetType, Int, PrimaryKey, VarChar } from './base/Shared';
+
 export interface Usuario {
-	id: number;
-	origin_login: string;
-	origin_img: string;
-	createdAt: Date;
-	updatedAt: Date;
+	id: PrimaryKey<AutoIncrement<Int>>;
+	origin_login: VarChar<200>;
+	origin_img: VarChar<200>;
+	createdAt: Defaults<Date>;
+	updatedAt: Defaults<Date>;
 	terminos_aceptados: boolean;
-	rol: string;
+}
+
+export namespace Usuario {
+	export const name = 'usuario';
+
+	export interface Value extends GetType<Usuario> {}
+	export interface CreateData extends GetCreateType<Usuario> {}
 }
