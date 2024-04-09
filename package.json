@@ -16,6 +16,7 @@
 		"postinstall": "nuxt prepare"
 	},
 	"dependencies": {
+		"bcryptjs": "^2.4.3",
 		"keyword-extractor": "^0.0.28",
 		"knex": "^3.1.0",
 		"mysql2": "^3.9.3",
@@ -29,6 +30,7 @@
 		"@sapphire/prettier-config": "^2.0.0",
 		"@tailwindcss/forms": "^0.5.7",
 		"@tailwindcss/typography": "^0.5.12",
+		"@types/bcryptjs": "^2",
 		"@types/mysql": "^2.15.26",
 		"@types/node": "^20.12.5",
 		"@types/prettier": "^3.0.0",
@@ -50,5 +52,5 @@
 		"*": "prettier --ignore-unknown --write",
 		"*.{mjs,js,ts,vue}": "eslint --fix"
 	},
-	"packageManager": "yarn@4.0.1"
+	"packageManager": "yarn@4.1.1"
 }

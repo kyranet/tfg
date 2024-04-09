@@ -1,6 +1,6 @@
 interface tAreaServicioAnuncio {
-    id_area: number;
-    id_anuncio: number;
+	id_area: number;
+	id_anuncio: number;
 }
 
-export default tAreaServicioAnuncio
+export default tAreaServicioAnuncio;

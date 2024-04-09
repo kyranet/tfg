@@ -1,5 +1,5 @@
-import { obtenerTodasDemandasServicio, contarTodasDemandasServicio } from '../../utils/database/services/daos/daoDemanda';
-import z from 'zod';
+import { z } from 'zod';
+import { contarTodasDemandasServicio, obtenerTodasDemandasServicio } from '~/server/utils/database/services/daos/daoDemanda';
 
 const schemaFilter = z.object({
 	necesidadSocial: z.string(),
@@ -9,14 +9,14 @@ const schemaFilter = z.object({
 	terminoBusqueda: z.string().optional()
 });
 const schema = z.object({
-	limit: z.number({ coerce: true }).min(1).max(100).optional(),
-	skip: z.number({ coerce: true }).min(0).optional(),
+	limit: z.coerce.number().int().min(1).max(100).default(25),
+	skip: z.coerce.number().int().min(0).default(0),
 	filtros: z.preprocess((arg) => JSON.parse(arg as string), schemaFilter.array())
 });
 
 export default eventHandler(async (event) => {
 	const query = await getValidatedQuery(event, schema.parse);
-	const demandas = await obtenerTodasDemandasServicio(query.limit ?? 25, query.skip ?? 0, query.filtros);
+	const demandas = await obtenerTodasDemandasServicio(query.limit, query.skip, query.filtros);
 	const total = await contarTodasDemandasServicio();
 	return { demandas, total };
 });

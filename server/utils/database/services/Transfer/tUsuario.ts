@@ -5,7 +5,7 @@ interface TUsuario {
 	createdAt: Date;
 	updatedAt: Date;
 	terminos_aceptados: boolean;
-	rol: string; 
+	rol: string;
 }
 
 export default TUsuario;

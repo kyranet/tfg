@@ -34,199 +34,188 @@ async function obtenerUploads(idUploads: number): Promise<TUpload | null> {
 
 async function obtenerMensajes(idMensajes: number): Promise<tMensajes | null> {
 	try {
-	  const mensajeData: tMensajes | undefined = await knex<tMensajes>('mensaje')
-		.where({
-		  id: idMensajes,
-		})
-		.select('*')
-		.first();
-  
-	  if (!mensajeData) {
-		console.error('No se encontró ningún mensaje con el ID', idMensajes);
-		return null;
-	  }
-  
-	  const usuarioData = await knex<tMensajes['user']>('usuario')
-		.where({
-		  id: mensajeData.user,
-		})
-		.select('origin_login')
-		.first();
-  
-	  if (!usuarioData) {
-		console.error('No se encontró ningún usuario con el ID', mensajeData.user);
-		return null;
-	  }
-  
-	  // Asignar el campo faltante a `mensajeData` utilizando la aserción de tipo
-	  mensajeData.user = usuarioData.origin_login as tMensajes['user'];
-  
-	  return mensajeData;
+		const mensajeData: tMensajes | undefined = await knex<tMensajes>('mensaje')
+			.where({
+				id: idMensajes
+			})
+			.select('*')
+			.first();
+
+		if (!mensajeData) {
+			console.error('No se encontró ningún mensaje con el ID', idMensajes);
+			return null;
+		}
+
+		const usuarioData = await knex<tMensajes['user']>('usuario')
+			.where({
+				id: mensajeData.user
+			})
+			.select('origin_login')
+			.first();
+
+		if (!usuarioData) {
+			console.error('No se encontró ningún usuario con el ID', mensajeData.user);
+			return null;
+		}
+
+		// Asignar el campo faltante a `mensajeData` utilizando la aserción de tipo
+		mensajeData.user = usuarioData.origin_login as tMensajes['user'];
+
+		return mensajeData;
 	} catch (error) {
-	  console.error(error);
-	  console.error(`Se ha producido un error al intentar obtener el mensaje con ID ${idMensajes}`);
-	  return null;
+		console.error(error);
+		console.error(`Se ha producido un error al intentar obtener el mensaje con ID ${idMensajes}`);
+		return null;
 	}
-  }
-  
-  
-  
+}
 
 //Devuelve todos los mensajes de un anuncio
 //REVISAR
 async function obtenerMensajesAnuncio(idAnuncio: number): Promise<tMensajes[] | null> {
-  try {
-    const mensajes: tMensajes[] = await knex('mensaje_anuncioservicio')
-      .where({
-        id_anuncio: idAnuncio,
-      })
-      .join('mensaje', 'id_mensaje', '=', 'id')
-      .join('usuario', 'usuario.id', '=', 'usuario')
-      .select('mensaje.id', 'mensaje.texto', 'mensaje.fecha', 'mensaje.usuario', 'usuario.origin_login')
-      .catch((err) => {
-        console.error(err);
-        console.error('Se ha producido un error al intentar obtener los mensajes del anuncio ', idAnuncio);
-        // Proporciona un valor por defecto o lanza el error nuevamente según la lógica
-        return [] as tMensajes[];
-      });
+	try {
+		const mensajes: tMensajes[] = await knex('mensaje_anuncioservicio')
+			.where({
+				id_anuncio: idAnuncio
+			})
+			.join('mensaje', 'id_mensaje', '=', 'id')
+			.join('usuario', 'usuario.id', '=', 'usuario')
+			.select('mensaje.id', 'mensaje.texto', 'mensaje.fecha', 'mensaje.usuario', 'usuario.origin_login')
+			.catch((err) => {
+				console.error(err);
+				console.error('Se ha producido un error al intentar obtener los mensajes del anuncio ', idAnuncio);
+				// Proporciona un valor por defecto o lanza el error nuevamente según la lógica
+				return [] as tMensajes[];
+			});
 
-    if (!mensajes || mensajes.length === 0) {
-      console.error('No se encontraron mensajes para el anuncio con ID', idAnuncio);
-      return null;
-    }
+		if (!mensajes || mensajes.length === 0) {
+			console.error('No se encontraron mensajes para el anuncio con ID', idAnuncio);
+			return null;
+		}
 
-    const mensajesTransformados: tMensajes[] = mensajes.map((mensaje) => ({
-      id: mensaje.id,
-      text: mensaje.text,
-      datetime: mensaje.datetime,
-      user: mensaje.user,
-      username: mensaje.username,
-    }));
+		const mensajesTransformados: tMensajes[] = mensajes.map((mensaje) => ({
+			id: mensaje.id,
+			text: mensaje.text,
+			datetime: mensaje.datetime,
+			user: mensaje.user,
+			username: mensaje.username
+		}));
 
-    return mensajesTransformados;
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
+		return mensajesTransformados;
+	} catch (error) {
+		console.error(error);
+		return null;
+	}
 }
-
-
 
 //Devuelve todos los mensajes de una colaboración
 async function obtenerMensajesColab(idColab: number): Promise<tMensajes[] | null> {
-  try {
-    const mensajes = await knex('mensaje_colaboracion')
-      .where({
-        id_colaboracion: idColab
-      })
-      .join('mensaje', 'id_mensaje', '=', 'id')
-      .join('usuario', 'usuario.id', '=', 'usuario')
-      .select('mensaje.id', 'mensaje.texto', 'mensaje.fecha', 'mensaje.usuario', 'usuario.origin_login')
-      .then((mensajes) => {
-        const mensajesTransformados: tMensajes[] = mensajes.map((mensaje: any) => {
-          return {
-            id: mensaje.id,
-            text: mensaje.texto,
-            datetime: mensaje.fecha,
-            user: mensaje.usuario,
-            username: mensaje.origin_login
-          };
-        });
-        return mensajesTransformados;
-      })
-      .catch((err) => {
-        console.error(err);
-        console.error('Se ha producido un error al intentar obtener los mensajes de la colaboración con id ', idColab);
-        return null;
-      });
+	try {
+		const mensajes = await knex('mensaje_colaboracion')
+			.where({
+				id_colaboracion: idColab
+			})
+			.join('mensaje', 'id_mensaje', '=', 'id')
+			.join('usuario', 'usuario.id', '=', 'usuario')
+			.select('mensaje.id', 'mensaje.texto', 'mensaje.fecha', 'mensaje.usuario', 'usuario.origin_login')
+			.then((mensajes) => {
+				const mensajesTransformados: tMensajes[] = mensajes.map((mensaje: any) => {
+					return {
+						id: mensaje.id,
+						text: mensaje.texto,
+						datetime: mensaje.fecha,
+						user: mensaje.usuario,
+						username: mensaje.origin_login
+					};
+				});
+				return mensajesTransformados;
+			})
+			.catch((err) => {
+				console.error(err);
+				console.error('Se ha producido un error al intentar obtener los mensajes de la colaboración con id ', idColab);
+				return null;
+			});
 
-    return mensajes;
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
+		return mensajes;
+	} catch (error) {
+		console.error(error);
+		return null;
+	}
 }
-
 
 //Devuelve todos los uploads de un anuncio
 async function obtenerUploadsAnuncio(idAnuncio: number): Promise<TUpload[] | null> {
-  try {
-    const uploadsData = (await knex<TUpload>('upload_anuncioservicio')
-      .where({
-        id: idAnuncio,
-      })
-      .join('upload', 'id_upload', '=', 'id')
-      .select(
-        'upload.id',
-        'upload.almacenamiento',
-        'upload.campo',
-        'upload.tipo',
-        'upload.tipo_id',
-        'upload.path',
-        'upload.client_name',
-        'upload.nombre',
-        'upload.creador',
-        'upload.createdAt',
-        'upload.updatedAt',
-      )
-      .catch((err) => {
-        console.error(err);
-        console.error(
-          'Se ha producido un error al intentar obtener los uploads del anuncio con ID',
-          idAnuncio
-        );
-        throw err;
-      })) as TUpload[];
+	try {
+		const uploadsData = (await knex<TUpload>('upload_anuncioservicio')
+			.where({
+				id: idAnuncio
+			})
+			.join('upload', 'id_upload', '=', 'id')
+			.select(
+				'upload.id',
+				'upload.almacenamiento',
+				'upload.campo',
+				'upload.tipo',
+				'upload.tipo_id',
+				'upload.path',
+				'upload.client_name',
+				'upload.nombre',
+				'upload.creador',
+				'upload.createdAt',
+				'upload.updatedAt'
+			)
+			.catch((err) => {
+				console.error(err);
+				console.error('Se ha producido un error al intentar obtener los uploads del anuncio con ID', idAnuncio);
+				throw err;
+			})) as TUpload[];
 
-    if (!uploadsData || uploadsData.length === 0) {
-      console.error('No se encontraron uploads para el anuncio con el ID', idAnuncio);
-      return null;
-    }
+		if (!uploadsData || uploadsData.length === 0) {
+			console.error('No se encontraron uploads para el anuncio con el ID', idAnuncio);
+			return null;
+		}
 
-    return uploadsData;
-  } catch (error) {
-    console.error(error);
-    console.error(`Se ha producido un error al intentar obtener los uploads del anuncio con ID ${idAnuncio}`);
-    return null;
-  }
+		return uploadsData;
+	} catch (error) {
+		console.error(error);
+		console.error(`Se ha producido un error al intentar obtener los uploads del anuncio con ID ${idAnuncio}`);
+		return null;
+	}
 }
-
-
 
 //Devuelve todos los uploads de una colaboración
 
 async function obtenerUploadsColab(idColab: number): Promise<TUpload[] | null> {
-  try {
-    const uploadsData = (await knex('uploads_colaboracion')
-      .where({
-        id_colaboracion: idColab,
-      })
-      .join('upload', 'id_upload', '=', 'id')
-      .select(
-        'upload.id',
-        'upload.almacenamiento',
-        'upload.campo',
-        'upload.tipo',
-        'upload.tipo_id',
-        'upload.path',
-        'upload.client_name',
-        'upload.nombre',
-        'upload.creador',
-        'upload.createdAt',
-        'upload.updatedAt'
-      )) as TUpload[];
+	try {
+		const uploadsData = (await knex('uploads_colaboracion')
+			.where({
+				id_colaboracion: idColab
+			})
+			.join('upload', 'id_upload', '=', 'id')
+			.select(
+				'upload.id',
+				'upload.almacenamiento',
+				'upload.campo',
+				'upload.tipo',
+				'upload.tipo_id',
+				'upload.path',
+				'upload.client_name',
+				'upload.nombre',
+				'upload.creador',
+				'upload.createdAt',
+				'upload.updatedAt'
+			)) as TUpload[];
 
-    if (!uploadsData || uploadsData.length === 0) {
-      console.error('No se encontraron uploads para la colaboración con el ID', idColab);
-      return null;
-    }
+		if (!uploadsData || uploadsData.length === 0) {
+			console.error('No se encontraron uploads para la colaboración con el ID', idColab);
+			return null;
+		}
 
-    return uploadsData;
-  } catch (error) {
-    console.error(error);
-    console.error(`Se ha producido un error al intentar obtener los uploads para la colaboración con ID ${idColab}`);
-    return null;
-  }
+		return uploadsData;
+	} catch (error) {
+		console.error(error);
+		console.error(`Se ha producido un error al intentar obtener los uploads para la colaboración con ID ${idColab}`);
+		return null;
+	}
 }
 
 //Crear nuevo mensaje
@@ -501,39 +490,38 @@ async function crearMail(mail: tMail): Promise<number | null> {
 }
 
 async function obtenerMail(id_mail: number): Promise<tMail | null> {
-  try {
-    const mail = await knex<tMail>('mail')
-      .where({
-        id: id_mail,
-      })
-      .select('*')
-      .first();
+	try {
+		const mail = await knex<tMail>('mail')
+			.where({
+				id: id_mail
+			})
+			.select('*')
+			.first();
 
-    if (mail) {
-      return {
-        id: mail.id,
-        mail_to: mail.mail_to,
-        type: mail.type,
-        mail_name: mail.mail_name,
-        mail_from: mail.mail_from,
-        subject: mail.subject,
-        html: mail.html,
-        _to: mail._to,
-        usuario: mail.usuario,
-        createdAt: mail.createdAt,
-        updatedAt: mail.updatedAt,
-      };
-    } else {
-      console.error('No se encontró ningún mail con ID', id_mail);
-      return null;
-    }
-  } catch (error) {
-    console.error(error);
-    console.error('Se ha producido un error al intentar obtener el mail con ID', id_mail);
-    return null;
-  }
+		if (mail) {
+			return {
+				id: mail.id,
+				mail_to: mail.mail_to,
+				type: mail.type,
+				mail_name: mail.mail_name,
+				mail_from: mail.mail_from,
+				subject: mail.subject,
+				html: mail.html,
+				_to: mail._to,
+				usuario: mail.usuario,
+				createdAt: mail.createdAt,
+				updatedAt: mail.updatedAt
+			};
+		} else {
+			console.error('No se encontró ningún mail con ID', id_mail);
+			return null;
+		}
+	} catch (error) {
+		console.error(error);
+		console.error('Se ha producido un error al intentar obtener el mail con ID', id_mail);
+		return null;
+	}
 }
-
 
 async function actualizarMail(mail: tMail): Promise<void> {
 	try {
@@ -608,32 +596,31 @@ async function crearNewsletter(news: TNewsletter): Promise<number | null> {
 }
 
 async function obtenerNewsletter(id_news: number): Promise<TNewsletter | null> {
-  try {
-    const news = await knex<TNewsletter>('newsletter')
-      .where({
-        id: id_news,
-      })
-      .select('*')
-      .first();
+	try {
+		const news = await knex<TNewsletter>('newsletter')
+			.where({
+				id: id_news
+			})
+			.select('*')
+			.first();
 
-    if (news) {
-      return {
-        id: news.id,
-        mail_to: news.mail_to,
-        createdAt: news.createdAt,
-        updatedAt: news.updatedAt,
-      };
-    } else {
-      console.error('No se encontró ninguna newsletter con ID', id_news);
-      return null;
-    }
-  } catch (error) {
-    console.error(error);
-    console.error('Se ha producido un error al intentar obtener la newsletter con ID', id_news);
-    return null;
-  }
+		if (news) {
+			return {
+				id: news.id,
+				mail_to: news.mail_to,
+				createdAt: news.createdAt,
+				updatedAt: news.updatedAt
+			};
+		} else {
+			console.error('No se encontró ninguna newsletter con ID', id_news);
+			return null;
+		}
+	} catch (error) {
+		console.error(error);
+		console.error('Se ha producido un error al intentar obtener la newsletter con ID', id_news);
+		return null;
+	}
 }
-
 
 async function actualizarNewsletter(news: TNewsletter): Promise<void> {
 	try {
@@ -659,26 +646,25 @@ async function actualizarNewsletter(news: TNewsletter): Promise<void> {
 }
 
 async function eliminarNewsletter(id: number): Promise<void> {
-  try {
-    const result = await knex('newsletter')
-      .where({
-        id
-      })
-      .del();
+	try {
+		const result = await knex('newsletter')
+			.where({
+				id
+			})
+			.del();
 
-    if (result > 0) {
-      console.log('Se ha eliminado de la base de datos la newsletter con ID', id);
-    } else {
-      console.log('No existe la newsletter con ID', id);
-    }
+		if (result > 0) {
+			console.log('Se ha eliminado de la base de datos la newsletter con ID', id);
+		} else {
+			console.log('No existe la newsletter con ID', id);
+		}
 
-    return Promise.resolve();
-  } catch (error) {
-    console.error(error);
-    return Promise.resolve();
-  }
+		return Promise.resolve();
+	} catch (error) {
+		console.error(error);
+		return Promise.resolve();
+	}
 }
-
 
 module.exports = {
 	crearMensajeAnuncio,
