@@ -1,6 +1,6 @@
-import type TUsuario from './tUsuario';
+import type { Usuario } from './Usuario';
 
-interface TAdmin extends TUsuario {
+export interface Admin extends Usuario {
 	correo: string;
 	nombre: string;
 	apellidos: string;
@@ -8,5 +8,3 @@ interface TAdmin extends TUsuario {
 	telefono: string;
 	rol: string;
 }
-
-export default TAdmin;

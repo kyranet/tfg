@@ -1,4 +1,4 @@
-interface TNotificacion {
+export interface Notificacion {
 	id: number;
 	idDestino: number;
 	leido: boolean;
@@ -14,5 +14,3 @@ interface TNotificacion {
 	idPartenariado: number;
 	idMatching: number;
 }
-
-export default TNotificacion;

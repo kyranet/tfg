@@ -1,11 +1,11 @@
 import knex from '../../config';
-import AnuncioServicio from '../Transfer/tAnuncioServicio';
-import AreaServicio from '../Transfer/tAreaServicio';
-import { default as AreaServicioAnuncio, default as tAreaServicioAnuncio } from '../Transfer/tAreaServicioAnuncio';
-import { DemandaServicio } from '../Transfer/tDemandaServicio';
-import TitulacionLocal from '../Transfer/tTitulacionLocal';
-import TitulacionLocalDemanda from '../Transfer/tTitulacionLocalDemanda';
 import { obtenerSocioComunitario } from '../daos/daoUsuario';
+import { AnuncioServicio } from '../types/AnuncioServicio';
+import { AreaServicio } from '../types/AreaServicio';
+import { AreaServicioAnuncio } from '../types/AreaServicioAnuncio';
+import { DemandaServicio } from '../types/DemandaServicio';
+import { TitulacionLocal } from '../types/TitulacionLocal';
+import { TitulacionLocalDemanda } from '../types/TitulacionLocalDemanda';
 
 //Obtener areas de servicio por un id de anuncio concreto
 async function obtenerAreaServicio(id_anuncio: number): Promise<AreaServicio[]> {
@@ -111,7 +111,7 @@ export async function obtenerDemandaServicio(id_demanda: number): Promise<Demand
 		//Obtenemos areas de servicio de la demanda
 		const areasServicio = await obtenerAreaServicio(id_demanda);
 
-		let relaciones: tAreaServicioAnuncio[] = [];
+		let relaciones: AreaServicioAnuncio[] = [];
 
 		// Por cada área de servicio, encuentra los anuncios relacionados.
 		for (const areaServicio of areasServicio) {
@@ -279,15 +279,14 @@ export async function contarTodasDemandasServicio(): Promise<number> {
 }
 
 interface DemandasFiltro {
-	necesidadSocial: string;
+	terminoBusqueda: string;
+	necesidadSocial?: string[];
 	creador?: string;
 	entidadDemandante?: string;
-	areaServicio?: string;
-	terminoBusqueda?: string;
+	areaServicio?: string[];
 }
 
-//Cambiado a any, el tipo deberia ser QueryValue | QueryValue[]
-export async function obtenerTodasDemandasServicio(limit: number, offset: number, filters: DemandasFiltro[]): Promise<DemandaServicio[]> {
+export async function obtenerTodasDemandasServicio(limit: number, offset: number, filters: DemandasFiltro): Promise<DemandaServicio[]> {
 	try {
 		const demandasQuery = knex('anuncio_servicio')
 			.join('demanda_servicio', 'anuncio_servicio.id', '=', 'demanda_servicio.id')
@@ -308,17 +307,17 @@ export async function obtenerTodasDemandasServicio(limit: number, offset: number
 			])
 			.where('titulo', 'like', `%${filters.terminoBusqueda}%`)
 			.modify((queryBuilder) => {
-				if (fil.necesidadSocial) {
-					queryBuilder.whereIn('necesidad_social.nombre', fil.necesidadSocial);
+				if (filters.necesidadSocial) {
+					queryBuilder.whereIn('necesidad_social.nombre', filters.necesidadSocial);
 				}
-				if (fil.creador) {
-					queryBuilder.where('demanda_servicio.creador', fil.creador);
+				if (filters.creador) {
+					queryBuilder.where('demanda_servicio.creador', filters.creador);
 				}
-				if (fil.entidadDemandante) {
-					queryBuilder.where('socio_comunitario.id', fil.entidadDemandante);
+				if (filters.entidadDemandante) {
+					queryBuilder.where('socio_comunitario.id', filters.entidadDemandante);
 				}
-				if (fil.areaServicio) {
-					queryBuilder.whereIn('area_servicio.nombre', fil.areaServicio);
+				if (filters.areaServicio) {
+					queryBuilder.whereIn('area_servicio.nombre', filters.areaServicio);
 				}
 			})
 			.limit(limit)

@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { OfertaServicio } from '~/server/utils/database/services/Transfer/tOfertaServicio';
 import { crearOferta } from '~/server/utils/database/services/daos/daoOferta';
 import { createAndLinkedTags } from '~/server/utils/database/services/daos/daoUtils';
+import { OfertaServicio } from '~/server/utils/database/services/types/OfertaServicio';
 import { CoercedIntegerId } from '~/server/utils/validators/shared';
 
 const schemaBody = z.object({

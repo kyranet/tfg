@@ -3,14 +3,14 @@ import { contarTodasDemandasServicio, obtenerTodasDemandasServicio } from '~/ser
 import { SearchQuery, stringJSON } from '~/server/utils/validators/shared';
 
 const schemaFilter = z.object({
-	necesidadSocial: z.string(),
+	terminoBusqueda: z.string(),
+	necesidadSocial: z.string().array().optional(),
 	creador: z.string().optional(),
 	entidadDemandante: z.string().optional(),
-	areaServicio: z.string().optional(),
-	terminoBusqueda: z.string().optional()
+	areaServicio: z.string().array().optional()
 });
 const schema = z //
-	.object({ filtros: stringJSON(schemaFilter.array()) })
+	.object({ filtros: stringJSON(schemaFilter) })
 	.merge(SearchQuery);
 
 export default eventHandler(async (event) => {

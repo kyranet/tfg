@@ -1,10 +1,10 @@
-import TNotificacion from '../../utils/database/services/Transfer/tNotificacion';
-import { crearNotificacionDemandaRespalda } from '../../utils/database/services/daos/daoNotificacion';
+import { crearNotificacionDemandaRespalda } from '~/server/utils/database/services/daos/daoNotificacion';
+import { Notificacion } from '~/server/utils/database/services/types/Notificacion';
 
 export default eventHandler(async (event) => {
 	try {
 		const body = await readBody(event);
-		const notificacion: TNotificacion = {
+		const notificacion: Notificacion = {
 			id: null,
 			idDestino: body.idDestino,
 			leido: null,

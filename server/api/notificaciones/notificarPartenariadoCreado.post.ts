@@ -1,10 +1,10 @@
-import TNotificacion from '../../utils/database/services/Transfer/tNotificacion';
-import { notificarPartenariadoRellenado } from '../../utils/database/services/daos/daoNotificacion';
+import { notificarPartenariadoRellenado } from '~/server/utils/database/services/daos/daoNotificacion';
+import { Notificacion } from '~/server/utils/database/services/types/Notificacion';
 
 export default eventHandler(async (event) => {
 	try {
 		const query = getQuery(event);
-		const notificacion: TNotificacion = {
+		const notificacion: Notificacion = {
 			id: null,
 			idDestino: null,
 			leido: null,

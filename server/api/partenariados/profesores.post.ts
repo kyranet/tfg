@@ -1,5 +1,5 @@
-import { Partenariado, PartenariadoStatus } from '~/server/utils/database/services/Transfer/tPartenariado';
 import { crearPartenariado } from '~/server/utils/database/services/daos/daoColaboracion';
+import { Partenariado, PartenariadoStatus } from '~/server/utils/database/services/types/Partenariado';
 import { PartenariadoBody } from '~/server/utils/validators/Partenariados';
 
 const schemaBody = PartenariadoBody;

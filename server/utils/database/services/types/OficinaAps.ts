@@ -1,6 +1,6 @@
-import type tUsuario from './tUsuario';
+import type { Usuario } from './Usuario';
 
-interface tOficinaAps extends tUsuario {
+export interface OficinaAps extends Usuario {
 	id: number;
 	correo: string;
 	nombre: string;
@@ -14,5 +14,3 @@ interface tOficinaAps extends tUsuario {
 	terminos_aceptados: boolean;
 	rol: string;
 }
-
-export default tOficinaAps;

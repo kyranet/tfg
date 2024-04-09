@@ -1,6 +1,6 @@
-import type TColaboracion from './tColaboracion';
+import type { Colaboracion } from './Colaboracion';
 
-export interface Partenariado extends TColaboracion {
+export interface Partenariado extends Colaboracion {
 	id: number;
 	id_demanda: number;
 	id_oferta: number;

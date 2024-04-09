@@ -1,4 +1,4 @@
-interface TColaboracion {
+export interface Colaboracion {
 	id: number;
 	titulo: string;
 	descripcion: string;
@@ -6,5 +6,3 @@ interface TColaboracion {
 	responsable: string;
 	profesores: string[];
 }
-
-export default TColaboracion;

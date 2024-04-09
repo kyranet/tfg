@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { PartenariadoStatus } from '~/server/utils/database/services/Transfer/tPartenariado';
 import { actualizarEstadoPartenariado, obtenerPartenariado } from '~/server/utils/database/services/daos/daoColaboracion';
+import { PartenariadoStatus } from '~/server/utils/database/services/types/Partenariado';
 
 // NOTE: This route is unnecessary, `index.patch.ts` can be used instead
 const schemaParams = z.object({ id: z.coerce.number().int() });

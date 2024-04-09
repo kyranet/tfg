@@ -1,7 +1,7 @@
-import TAnuncioServicio from './tAnuncioServicio';
-import TitulacionLocalDemanda from './tTitulacionLocalDemanda';
+import { AnuncioServicio } from './AnuncioServicio';
+import { TitulacionLocalDemanda } from './TitulacionLocalDemanda';
 
-export interface DemandaServicio extends TAnuncioServicio {
+export interface DemandaServicio extends AnuncioServicio {
 	creador: any;
 	ciudad: string;
 	finalidad: string;

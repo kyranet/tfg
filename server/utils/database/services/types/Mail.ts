@@ -1,4 +1,4 @@
-interface tMail {
+export interface Mail {
 	id: number;
 	mail_to: string;
 	type: string;
@@ -11,5 +11,3 @@ interface tMail {
 	createdAt: Date;
 	updatedAt: Date;
 }
-
-export default tMail;

@@ -1,5 +1,5 @@
 const knex = require('../../config');
-import Partenariado from '../Transfer/tPartenariado';
+import { Partenariado } from '../types/Partenariado';
 
 export async function obtenerPartenariados(limit: number, offset: number, filters: string): Promise<Partenariado[]> {
 	const fil = JSON.parse(filters);

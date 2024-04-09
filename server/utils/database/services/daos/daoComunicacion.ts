@@ -1,19 +1,19 @@
 import knex from '../../config';
-import type TUpload from '../Transfer/tUpload';
-import type tMensajes from '../Transfer/tMensajes';
-import type tMail from '../Transfer/tMail';
-import type TNewsletter from '../Transfer/tNewsletter';
+import type { Mail } from '../types/Mail';
+import type { Mensajes } from '../types/Mensajes';
+import type { Newsletter } from '../types/Newsletter';
+import type { Upload } from '../types/Upload';
 // Devuelve el upload correspondiente
 
-async function obtenerUploads(idUploads: number): Promise<TUpload | null> {
-	const uploadData: TUpload | undefined = await knex<TUpload>('upload').where({ id: idUploads }).select('*').first();
+async function obtenerUploads(idUploads: number): Promise<Upload | null> {
+	const uploadData: Upload | undefined = await knex<Upload>('upload').where({ id: idUploads }).select('*').first();
 
 	if (!uploadData) {
 		console.error('No se encontró ningún upload con el ID', idUploads);
 		return null;
 	}
 
-	const upload: TUpload = {
+	const upload: Upload = {
 		id: uploadData.id,
 		almacenamiento: uploadData.almacenamiento,
 		campo: uploadData.campo,
@@ -32,9 +32,9 @@ async function obtenerUploads(idUploads: number): Promise<TUpload | null> {
 
 //Devolver mensaje correspondiente
 
-async function obtenerMensajes(idMensajes: number): Promise<tMensajes | null> {
+async function obtenerMensajes(idMensajes: number): Promise<Mensajes | null> {
 	try {
-		const mensajeData: tMensajes | undefined = await knex<tMensajes>('mensaje')
+		const mensajeData: Mensajes | undefined = await knex<Mensajes>('mensaje')
 			.where({
 				id: idMensajes
 			})
@@ -46,12 +46,7 @@ async function obtenerMensajes(idMensajes: number): Promise<tMensajes | null> {
 			return null;
 		}
 
-		const usuarioData = await knex<tMensajes['user']>('usuario')
-			.where({
-				id: mensajeData.user
-			})
-			.select('origin_login')
-			.first();
+		const usuarioData = await knex<Mensajes['user']>('usuario').where({ id: mensajeData.user }).select('origin_login').first();
 
 		if (!usuarioData) {
 			console.error('No se encontró ningún usuario con el ID', mensajeData.user);
@@ -59,7 +54,7 @@ async function obtenerMensajes(idMensajes: number): Promise<tMensajes | null> {
 		}
 
 		// Asignar el campo faltante a `mensajeData` utilizando la aserción de tipo
-		mensajeData.user = usuarioData.origin_login as tMensajes['user'];
+		mensajeData.user = usuarioData.origin_login as Mensajes['user'];
 
 		return mensajeData;
 	} catch (error) {
@@ -71,9 +66,9 @@ async function obtenerMensajes(idMensajes: number): Promise<tMensajes | null> {
 
 //Devuelve todos los mensajes de un anuncio
 //REVISAR
-async function obtenerMensajesAnuncio(idAnuncio: number): Promise<tMensajes[] | null> {
+async function obtenerMensajesAnuncio(idAnuncio: number): Promise<Mensajes[] | null> {
 	try {
-		const mensajes: tMensajes[] = await knex('mensaje_anuncioservicio')
+		const mensajes: Mensajes[] = await knex('mensaje_anuncioservicio')
 			.where({
 				id_anuncio: idAnuncio
 			})
@@ -84,7 +79,7 @@ async function obtenerMensajesAnuncio(idAnuncio: number): Promise<tMensajes[] | 
 				console.error(err);
 				console.error('Se ha producido un error al intentar obtener los mensajes del anuncio ', idAnuncio);
 				// Proporciona un valor por defecto o lanza el error nuevamente según la lógica
-				return [] as tMensajes[];
+				return [] as Mensajes[];
 			});
 
 		if (!mensajes || mensajes.length === 0) {
@@ -92,7 +87,7 @@ async function obtenerMensajesAnuncio(idAnuncio: number): Promise<tMensajes[] | 
 			return null;
 		}
 
-		const mensajesTransformados: tMensajes[] = mensajes.map((mensaje) => ({
+		const mensajesTransformados: Mensajes[] = mensajes.map((mensaje) => ({
 			id: mensaje.id,
 			text: mensaje.text,
 			datetime: mensaje.datetime,
@@ -108,7 +103,7 @@ async function obtenerMensajesAnuncio(idAnuncio: number): Promise<tMensajes[] | 
 }
 
 //Devuelve todos los mensajes de una colaboración
-async function obtenerMensajesColab(idColab: number): Promise<tMensajes[] | null> {
+async function obtenerMensajesColab(idColab: number): Promise<Mensajes[] | null> {
 	try {
 		const mensajes = await knex('mensaje_colaboracion')
 			.where({
@@ -118,7 +113,7 @@ async function obtenerMensajesColab(idColab: number): Promise<tMensajes[] | null
 			.join('usuario', 'usuario.id', '=', 'usuario')
 			.select('mensaje.id', 'mensaje.texto', 'mensaje.fecha', 'mensaje.usuario', 'usuario.origin_login')
 			.then((mensajes) => {
-				const mensajesTransformados: tMensajes[] = mensajes.map((mensaje: any) => {
+				const mensajesTransformados: Mensajes[] = mensajes.map((mensaje: any) => {
 					return {
 						id: mensaje.id,
 						text: mensaje.texto,
@@ -143,9 +138,9 @@ async function obtenerMensajesColab(idColab: number): Promise<tMensajes[] | null
 }
 
 //Devuelve todos los uploads de un anuncio
-async function obtenerUploadsAnuncio(idAnuncio: number): Promise<TUpload[] | null> {
+async function obtenerUploadsAnuncio(idAnuncio: number): Promise<Upload[] | null> {
 	try {
-		const uploadsData = (await knex<TUpload>('upload_anuncioservicio')
+		const uploadsData = (await knex<Upload>('upload_anuncioservicio')
 			.where({
 				id: idAnuncio
 			})
@@ -167,7 +162,7 @@ async function obtenerUploadsAnuncio(idAnuncio: number): Promise<TUpload[] | nul
 				console.error(err);
 				console.error('Se ha producido un error al intentar obtener los uploads del anuncio con ID', idAnuncio);
 				throw err;
-			})) as TUpload[];
+			})) as Upload[];
 
 		if (!uploadsData || uploadsData.length === 0) {
 			console.error('No se encontraron uploads para el anuncio con el ID', idAnuncio);
@@ -184,7 +179,7 @@ async function obtenerUploadsAnuncio(idAnuncio: number): Promise<TUpload[] | nul
 
 //Devuelve todos los uploads de una colaboración
 
-async function obtenerUploadsColab(idColab: number): Promise<TUpload[] | null> {
+async function obtenerUploadsColab(idColab: number): Promise<Upload[] | null> {
 	try {
 		const uploadsData = (await knex('uploads_colaboracion')
 			.where({
@@ -203,7 +198,7 @@ async function obtenerUploadsColab(idColab: number): Promise<TUpload[] | null> {
 				'upload.creador',
 				'upload.createdAt',
 				'upload.updatedAt'
-			)) as TUpload[];
+			)) as Upload[];
 
 		if (!uploadsData || uploadsData.length === 0) {
 			console.error('No se encontraron uploads para la colaboración con el ID', idColab);
@@ -220,7 +215,7 @@ async function obtenerUploadsColab(idColab: number): Promise<TUpload[] | null> {
 
 //Crear nuevo mensaje
 
-async function crearMensajeAnuncio(mensaje: tMensajes, anuncio: number): Promise<number | null> {
+async function crearMensajeAnuncio(mensaje: Mensajes, anuncio: number): Promise<number | null> {
 	try {
 		const idMensaje = await knex('mensaje')
 			.insert({
@@ -253,7 +248,7 @@ async function crearMensajeAnuncio(mensaje: tMensajes, anuncio: number): Promise
 	}
 }
 
-async function crearMensajeColab(mensaje: tMensajes, colaboracion: number): Promise<number | null> {
+async function crearMensajeColab(mensaje: Mensajes, colaboracion: number): Promise<number | null> {
 	try {
 		return knex('mensaje')
 			.insert({
@@ -285,7 +280,7 @@ async function crearMensajeColab(mensaje: tMensajes, colaboracion: number): Prom
 	}
 }
 
-async function crearUploadAnuncio(upload: TUpload, anuncio: number): Promise<number | null> {
+async function crearUploadAnuncio(upload: Upload, anuncio: number): Promise<number | null> {
 	try {
 		return knex('upload')
 			.insert({
@@ -324,7 +319,7 @@ async function crearUploadAnuncio(upload: TUpload, anuncio: number): Promise<num
 	}
 }
 
-async function crearUploadColab(upload: TUpload, colaboracion: number): Promise<number | null> {
+async function crearUploadColab(upload: Upload, colaboracion: number): Promise<number | null> {
 	try {
 		return knex('upload')
 			.insert({
@@ -411,7 +406,7 @@ async function eliminarUpload(id_upload: number): Promise<void> {
 	}
 }
 
-async function actualizarUpload(upload: TUpload): Promise<void> {
+async function actualizarUpload(upload: Upload): Promise<void> {
 	try {
 		return knex('upload')
 			.where('id', upload.id)
@@ -438,7 +433,7 @@ async function actualizarUpload(upload: TUpload): Promise<void> {
 	}
 }
 
-async function actualizarMensaje(mensaje: tMensajes): Promise<void> {
+async function actualizarMensaje(mensaje: Mensajes): Promise<void> {
 	try {
 		return knex('mensaje')
 			.where({
@@ -462,7 +457,7 @@ async function actualizarMensaje(mensaje: tMensajes): Promise<void> {
 }
 
 //Mail
-async function crearMail(mail: tMail): Promise<number | null> {
+async function crearMail(mail: Mail): Promise<number | null> {
 	try {
 		return knex('mail')
 			.insert({
@@ -489,9 +484,9 @@ async function crearMail(mail: tMail): Promise<number | null> {
 	}
 }
 
-async function obtenerMail(id_mail: number): Promise<tMail | null> {
+async function obtenerMail(id_mail: number): Promise<Mail | null> {
 	try {
-		const mail = await knex<tMail>('mail')
+		const mail = await knex<Mail>('mail')
 			.where({
 				id: id_mail
 			})
@@ -523,7 +518,7 @@ async function obtenerMail(id_mail: number): Promise<tMail | null> {
 	}
 }
 
-async function actualizarMail(mail: tMail): Promise<void> {
+async function actualizarMail(mail: Mail): Promise<void> {
 	try {
 		return knex('mail')
 			.where('id', mail.id)
@@ -575,7 +570,7 @@ async function eliminarMail(id_mail: number): Promise<void> {
 }
 //Newsletter
 
-async function crearNewsletter(news: TNewsletter): Promise<number | null> {
+async function crearNewsletter(news: Newsletter): Promise<number | null> {
 	try {
 		return knex('newsletter')
 			.insert({
@@ -595,9 +590,9 @@ async function crearNewsletter(news: TNewsletter): Promise<number | null> {
 	}
 }
 
-async function obtenerNewsletter(id_news: number): Promise<TNewsletter | null> {
+async function obtenerNewsletter(id_news: number): Promise<Newsletter | null> {
 	try {
-		const news = await knex<TNewsletter>('newsletter')
+		const news = await knex<Newsletter>('newsletter')
 			.where({
 				id: id_news
 			})
@@ -622,7 +617,7 @@ async function obtenerNewsletter(id_news: number): Promise<TNewsletter | null> {
 	}
 }
 
-async function actualizarNewsletter(news: TNewsletter): Promise<void> {
+async function actualizarNewsletter(news: Newsletter): Promise<void> {
 	try {
 		return knex('newsletter')
 			.where({

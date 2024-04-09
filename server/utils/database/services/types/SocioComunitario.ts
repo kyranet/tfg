@@ -1,6 +1,6 @@
-import TUsuario from './tUsuario';
+import { Usuario } from './Usuario';
 
-interface TSocioComunitario extends TUsuario {
+export interface SocioComunitario extends Usuario {
 	correo: string;
 	nombre: string;
 	apellidos: string;
@@ -11,5 +11,3 @@ interface TSocioComunitario extends TUsuario {
 	url: string;
 	mision: string;
 }
-
-export default TSocioComunitario;

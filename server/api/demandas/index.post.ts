@@ -1,5 +1,5 @@
-import { DemandaServicio } from '~/server/utils/database/services/Transfer/tDemandaServicio';
 import { crearDemanda } from '~/server/utils/database/services/daos/daoDemanda';
+import { DemandaServicio } from '~/server/utils/database/services/types/DemandaServicio';
 import { DemandaBody } from '~/server/utils/validators/Demandas';
 
 const schemaBody = DemandaBody;

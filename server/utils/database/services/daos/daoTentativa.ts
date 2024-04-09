@@ -1,8 +1,7 @@
 import knex from '../../config';
-import TAreaServicio from '../Transfer/tAreaServicio';
-import type TIniciativa from '../Transfer/tIniciativa';
+import type { Iniciativa } from '../types/Iniciativa';
 
-async function crearIniciativa(iniciativa: TIniciativa): Promise<void> {
+async function crearIniciativa(iniciativa: Iniciativa): Promise<void> {
 	try {
 		const [id_iniciativa] = await knex('iniciativa')
 			.insert({
@@ -48,7 +47,7 @@ async function crearMatch(idOferta: number, idDemanda: number, porcentaje: numbe
 	}
 }
 
-async function obtenerIniciativa(id: number): Promise<TIniciativa | null> {
+async function obtenerIniciativa(id: number): Promise<Iniciativa | null> {
 	try {
 		// Obtener los datos de la iniciativa directamente
 		const datos = await knex('iniciativa').where({ id }).first();
@@ -79,7 +78,7 @@ async function obtenerIniciativa(id: number): Promise<TIniciativa | null> {
 }
 
 //Unificar estas dos en una unica funcion y modificar dinamicamente la consulta mediante un parametro???
-async function obtenerIniciativasInternos(): Promise<TIniciativa[]> {
+async function obtenerIniciativasInternos(): Promise<Iniciativa[]> {
 	return knex('iniciativa')
 		.join('necesidad_social', 'iniciativa.necesidad_social', '=', 'necesidad_social.id')
 		.join('estudiante_interno', 'iniciativa.id_estudiante', '=', 'estudiante_interno.id')
@@ -94,7 +93,7 @@ async function obtenerIniciativasInternos(): Promise<TIniciativa[]> {
 		});
 }
 
-async function obtenerIniciativasExternos(): Promise<TIniciativa[]> {
+async function obtenerIniciativasExternos(): Promise<Iniciativa[]> {
 	return knex('iniciativa')
 		.join('necesidad_social', 'iniciativa.necesidad_social', '=', 'necesidad_social.id')
 		.join('estudiante_externo', 'iniciativa.id_estudiante', '=', 'estudiante_externo.id')
@@ -109,7 +108,7 @@ async function obtenerIniciativasExternos(): Promise<TIniciativa[]> {
 		});
 }
 
-async function obtenerTodasIniciativas(): Promise<TIniciativa[]> {
+async function obtenerTodasIniciativas(): Promise<Iniciativa[]> {
 	try {
 		const internos = await obtenerIniciativasInternos();
 		const externos = await obtenerIniciativasExternos();
@@ -132,7 +131,7 @@ async function obtenerTodasIniciativas(): Promise<TIniciativa[]> {
 	}
 }
 
-async function actualizarIniciativa(iniciativa: TIniciativa): Promise<number> {
+async function actualizarIniciativa(iniciativa: Iniciativa): Promise<number> {
 	try {
 		await knex('iniciativa').where({ id: iniciativa.id }).update({
 			titulo: iniciativa.titulo,

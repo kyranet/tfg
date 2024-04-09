@@ -1,4 +1,4 @@
-interface TUsuario {
+export interface Usuario {
 	id: number;
 	origin_login: string;
 	origin_img: string;
@@ -7,5 +7,3 @@ interface TUsuario {
 	terminos_aceptados: boolean;
 	rol: string;
 }
-
-export default TUsuario;

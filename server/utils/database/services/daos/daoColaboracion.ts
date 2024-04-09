@@ -1,11 +1,11 @@
 import knex from '../../config';
-import TColaboracion from '../Transfer/tColaboracion';
-import TNotas from '../Transfer/tNotas';
-import { Partenariado } from '../Transfer/tPartenariado';
-import tProyecto from '../Transfer/tProyecto';
 import { obtenerUsuarioSinRolPorId } from '../daos/daoUsuario';
+import { Colaboracion } from '../types/Colaboracion';
+import { Notas } from '../types/Notas';
+import { Partenariado } from '../types/Partenariado';
+import { Proyecto } from '../types/Proyecto';
 
-export const crearColaboracion = async (colaboracion: TColaboracion): Promise<number> => {
+export const crearColaboracion = async (colaboracion: Colaboracion): Promise<number> => {
 	try {
 		const idColab: number[] = await knex('colaboracion').insert(
 			{
@@ -48,7 +48,7 @@ export const crearPartenariado = async (partenariado: Partenariado): Promise<num
 	}
 };
 
-export const crearProyecto = async (proyecto: tProyecto): Promise<number> => {
+export const crearProyecto = async (proyecto: Proyecto): Promise<number> => {
 	try {
 		const id = await crearColaboracion(proyecto);
 		await knex('proyecto').insert({
@@ -70,7 +70,7 @@ export const crearProyecto = async (proyecto: tProyecto): Promise<number> => {
 	}
 };
 
-async function crearNota(nota: TNotas): Promise<number> {
+async function crearNota(nota: Notas): Promise<number> {
 	try {
 		const [idF] = await knex('notas')
 			.insert({
@@ -86,14 +86,14 @@ async function crearNota(nota: TNotas): Promise<number> {
 	}
 }
 
-async function obtenerColaboracion(id_colab: number): Promise<TColaboracion> {
+async function obtenerColaboracion(id_colab: number): Promise<Colaboracion> {
 	try {
 		const colab = await knex('colaboracion').where({ id: id_colab }).first();
 		const profes = await knex('profesor_colaboracion').where({ id_colaboracion: id_colab }).select('id_profesor');
 
 		const profesores = profes.map((prof) => prof.id_profesor);
 
-		let colabo: TColaboracion = {
+		let colabo: Colaboracion = {
 			id: id_colab,
 			titulo: colab.titulo,
 			descripcion: colab.descripcion,
@@ -114,7 +114,6 @@ export async function obtenerPartenariado(id: number): Promise<Partenariado> {
 		const partenariado = await knex('partenariado').where({ id }).first();
 
 		const responsable = await obtenerUsuarioSinRolPorId(colaboracion.id);
-		const estado = transformarEstadoPartenariado(partenariado.estado);
 
 		const partner: Partenariado = {
 			id: id,
@@ -125,7 +124,7 @@ export async function obtenerPartenariado(id: number): Promise<Partenariado> {
 			profesores: colaboracion.profesores,
 			id_demanda: partenariado.id_demanda,
 			id_oferta: partenariado.id_oferta,
-			status: estado
+			status: partenariado.estado
 		};
 		return partner;
 	} catch (err) {
@@ -134,7 +133,7 @@ export async function obtenerPartenariado(id: number): Promise<Partenariado> {
 	}
 }
 
-async function obtenerProyecto(id: number): Promise<tProyecto> {
+async function obtenerProyecto(id: number): Promise<Proyecto> {
 	try {
 		const colaboracion = await obtenerColaboracion(id);
 		const proyecto = await knex('proyecto').where({ id }).first();
@@ -142,7 +141,7 @@ async function obtenerProyecto(id: number): Promise<tProyecto> {
 
 		const idsEstudiantes = estudiantes.map((est) => est.id_estudiante);
 
-		const proy: tProyecto = {
+		const proy: Proyecto = {
 			id: id,
 			titulo: colaboracion.titulo,
 			descripcion: colaboracion.descripcion,
@@ -160,28 +159,12 @@ async function obtenerProyecto(id: number): Promise<tProyecto> {
 	}
 }
 
-// Utilidad para transformar el estado del partenariado
-function transformarEstadoPartenariado(estado: string): string {
-	switch (estado) {
-		case 'EN_CREACION':
-			return 'En creación';
-		case 'EN_NEGOCIACION':
-			return 'En negociación';
-		case 'ACORDADO':
-			return 'Acordado';
-		case 'SUSPENDIDO':
-			return 'Suspendido';
-		default:
-			return 'Estado desconocido';
-	}
-}
-
 // Función para obtener una nota específica
-async function obtenerNota(id: number): Promise<TNotas | null> {
+async function obtenerNota(id: number): Promise<Notas | null> {
 	try {
 		const response = await knex('notas').where({ id }).first();
 		if (!response) return null;
-		const notas: TNotas = {
+		const notas: Notas = {
 			id: response.id,
 			id_estudiante: response.id_estudiante,
 			nota: response.nota,
@@ -295,7 +278,7 @@ async function eliminarNota(id: number): Promise<void> {
 
 //ACTUALIZAR---------------------------------------------------
 
-async function actualizarColaboracion(colaboracion: TColaboracion): Promise<void> {
+async function actualizarColaboracion(colaboracion: Colaboracion): Promise<void> {
 	try {
 		await knex('colaboracion').where({ id: colaboracion.id }).update({
 			titulo: colaboracion.titulo,
@@ -335,7 +318,7 @@ export async function actualizarPartenariado(partenariado: Partenariado): Promis
 	}
 }
 
-async function actualizarProyecto(proyecto: tProyecto): Promise<void> {
+async function actualizarProyecto(proyecto: Proyecto): Promise<void> {
 	try {
 		await actualizarColaboracion(proyecto);
 
@@ -358,7 +341,7 @@ async function actualizarProyecto(proyecto: tProyecto): Promise<void> {
 	}
 }
 
-async function actualizarNota(nota: TNotas): Promise<void> {
+async function actualizarNota(nota: Notas): Promise<void> {
 	try {
 		const notaExistente = await knex('notas').where('id', nota.id).first();
 

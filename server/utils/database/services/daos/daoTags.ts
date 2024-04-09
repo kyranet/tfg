@@ -1,5 +1,5 @@
 import knex from '../../config';
-import type OfertaServicio from '../Transfer/tOfertaServicio';
+import type { OfertaServicio } from '../types/OfertaServicio';
 
 export function readByStartWithWord(text: string): Promise<any[]> {
 	return knex<OfertaServicio>('tags').where('nombre', 'like', `${text}%`).select('*');

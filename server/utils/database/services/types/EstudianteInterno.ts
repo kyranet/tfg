@@ -1,6 +1,6 @@
-import type TEstudiante from './tEstudiante';
+import type { Estudiante } from './Estudiante';
 
-interface TEstudianteInterno extends TEstudiante {
+export interface EstudianteInterno extends Estudiante {
 	correo: string;
 	nombre: string;
 	apellidos: string;
@@ -9,5 +9,3 @@ interface TEstudianteInterno extends TEstudiante {
 	telefono: string;
 	rol: string;
 }
-
-export default TEstudianteInterno;

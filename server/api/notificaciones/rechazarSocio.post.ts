@@ -1,5 +1,5 @@
-import TNotificacion from '../../utils/database/services/Transfer/tNotificacion';
-import { crearNotificacionAceptadacionRechazada, obtenerNotificacionOfertaAceptada } from '../../utils/database/services/daos/daoNotificacion';
+import { crearNotificacionAceptadacionRechazada, obtenerNotificacionOfertaAceptada } from '~/server/utils/database/services/daos/daoNotificacion';
+import { Notificacion } from '~/server/utils/database/services/types/Notificacion';
 
 //Del codigo original no logro saber cuales son los que se crean en este punto
 //TODO revisar
@@ -7,7 +7,7 @@ export default eventHandler(async (event) => {
 	try {
 		const query = getQuery(event);
 		let ofertaAceptada = await obtenerNotificacionOfertaAceptada(query.idNotificacion);
-		const notificacion: TNotificacion = {
+		const notificacion: Notificacion = {
 			id: null,
 			idDestino: ofertaAceptada[0].idSocio,
 			leido: null,
@@ -23,10 +23,7 @@ export default eventHandler(async (event) => {
 			pendiente: false,
 			idPartenariado: 0
 		};
-		let newNotificacion = await crearNotificacionAceptadacionRechazada(notificacion, query.idNotificacion);
-		return {
-			ok: true
-		};
+		return crearNotificacionAceptadacionRechazada(notificacion, query.idNotificacion);
 	} catch (error) {
 		console.error(error);
 		throw createError({ statusCode: 500, statusMessage: 'Error inesperado (al intentar rechazarSocio)' });

@@ -1,9 +1,10 @@
 import knex from '../../config';
-import TAnuncioServicio from '../Transfer/tAnuncioServicio';
-import OfertaServicio from '../Transfer/tOfertaServicio';
 import { readByOferta } from '../daos/daoTags';
 import { obtenerProfesorInterno, obtenerProfesoresInternos } from '../daos/daoUsuario';
-async function crearAnuncio(anuncio: TAnuncioServicio): Promise<number> {
+import { AnuncioServicio } from '../types/AnuncioServicio';
+import { OfertaServicio } from '../types/OfertaServicio';
+
+async function crearAnuncio(anuncio: AnuncioServicio): Promise<number> {
 	try {
 		const [idAnuncio] = await knex('anuncio_servicio')
 			.insert({
@@ -243,7 +244,7 @@ function obtenerAnuncioServicio(id_anuncio) {
 				for (const area of areas_servicio) {
 					areas.push(area['nombre']);
 				}
-				const tAnuncioServicio: TAnuncioServicio = {
+				const tAnuncioServicio: AnuncioServicio = {
 					id: id_anuncio,
 					titulo: anuncio[0]['titulo'],
 					descripcion: anuncio[0]['descripcion'],
@@ -280,7 +281,7 @@ async function obtenerAreaServicio(id_anuncio: number): Promise<any[]> {
 	}
 }
 
-export async function obtenerAnuncioPorAreaServicio(id_areaServicio: number): Promise<TAnuncioServicio[]> {
+export async function obtenerAnuncioPorAreaServicio(id_areaServicio: number): Promise<AnuncioServicio[]> {
 	try {
 		const id_anuncios = await knex('areaservicio_anuncioservicio').where({ id_area: id_areaServicio }).select('id_anuncio');
 		const anuncios = id_anuncios.map((a) => a.id_anuncio);

@@ -1,6 +1,4 @@
 import { z } from 'zod';
-import type { DemandaServicio } from '~/server/utils/database/services/Transfer/tDemandaServicio';
-import { PartenariadoStatus, type Partenariado } from '~/server/utils/database/services/Transfer/tPartenariado';
 import {
 	actualizarPartenariado,
 	actualizarPrevioPartenariado,
@@ -8,6 +6,8 @@ import {
 	obtenerIdPartenariado
 } from '~/server/utils/database/services/daos/daoColaboracion';
 import { crearDemanda } from '~/server/utils/database/services/daos/daoDemanda';
+import type { DemandaServicio } from '~/server/utils/database/services/types/DemandaServicio';
+import { PartenariadoStatus, type Partenariado } from '~/server/utils/database/services/types/Partenariado';
 import { DemandaBody } from '~/server/utils/validators/Demandas';
 import { PartenariadoBody } from '~/server/utils/validators/Partenariados';
 import { CoercedIntegerId } from '~/server/utils/validators/shared';

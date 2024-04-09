@@ -1,4 +1,4 @@
-interface TIniciativa {
+export interface Iniciativa {
 	id: number;
 	titulo: string;
 	descripcion: string;
@@ -7,5 +7,3 @@ interface TIniciativa {
 	area_servicio: number[];
 	estudiante: string;
 }
-
-export default TIniciativa;

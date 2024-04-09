@@ -1,8 +1,8 @@
-import Notificacion from '../Transfer/tNotificacion';
-import daoUsuario from '../daos/daoUsuario';
-import daoOferta from '../daos/daoOferta';
-import daoDemanda from '../daos/daoDemanda';
 import daoColaboracion from '../daos/daoColaboracion';
+import daoDemanda from '../daos/daoDemanda';
+import daoOferta from '../daos/daoOferta';
+import daoUsuario from '../daos/daoUsuario';
+import { Notificacion } from '../types/Notificacion';
 const knex = require('../../config');
 
 async function obtenerNotificaciones(idUser: number): Promise<Notificacion[]> {

@@ -1,4 +1,4 @@
-interface TUpload {
+export interface Upload {
 	id: number;
 	almacenamiento: string;
 	campo: string;
@@ -11,5 +11,3 @@ interface TUpload {
 	createdAt: Date;
 	updatedAt: Date;
 }
-
-export default TUpload;

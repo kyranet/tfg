@@ -1,14 +1,14 @@
 import bcrypt from 'bcryptjs';
 import { generarJWT } from '~/helpers/jwt';
-import TEstudianteExterno from '../../utils/database/services/Transfer/tEstudianteExterno';
-import TProfesorExterno from '../../utils/database/services/Transfer/tProfesorExterno';
-import TSocioComunitario from '../../utils/database/services/Transfer/tSocioComunitario';
 import {
 	insertarEstudianteExterno,
 	insertarProfesorExterno,
 	insertarSocioComunitario,
 	obtenerUsuarioSinRolPorEmail
 } from '../../utils/database/services/daos/daoUsuario';
+import type { EstudianteExterno } from '../../utils/database/services/types/EstudianteExterno';
+import type { ProfesorExterno } from '../../utils/database/services/types/ProfesorExterno';
+import type { SocioComunitario } from '../../utils/database/services/types/SocioComunitario';
 
 export default eventHandler(async (event) => {
 	try {
@@ -27,7 +27,7 @@ export default eventHandler(async (event) => {
 		let fecha = new Date().toLocaleDateString();
 		switch (rol) {
 			case 'ROL_SOCIO_COMUNITARIO':
-				let socioComunitario: TSocioComunitario = {
+				let socioComunitario: SocioComunitario = {
 					id: null,
 					correo: email,
 					nombre: body.nombre,
@@ -55,7 +55,7 @@ export default eventHandler(async (event) => {
 				usuarioCreado.id = idSocio;
 				break;
 			case 'ROL_ESTUDIANTE':
-				let estudiante: TEstudianteExterno = {
+				let estudiante: EstudianteExterno = {
 					id: null,
 					correo: email,
 					nombre: body.nombre,
@@ -81,7 +81,7 @@ export default eventHandler(async (event) => {
 				usuarioCreado.id = idEstu;
 				break;
 			case 'ROL_PROFESOR':
-				let profesor: TProfesorExterno = {
+				let profesor: ProfesorExterno = {
 					id: null,
 					correo: email,
 					nombre: body.nombre,

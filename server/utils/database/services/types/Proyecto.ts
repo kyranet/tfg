@@ -1,6 +1,6 @@
-import type TColaboracion from './tColaboracion';
+import type { Colaboracion } from './Colaboracion';
 
-interface tProyecto extends TColaboracion {
+export interface Proyecto extends Colaboracion {
 	id: number;
 	id_partenariado: number;
 	estado: string;
@@ -11,5 +11,3 @@ interface tProyecto extends TColaboracion {
 	responsable: string;
 	profesores: string[];
 }
-
-export default tProyecto;

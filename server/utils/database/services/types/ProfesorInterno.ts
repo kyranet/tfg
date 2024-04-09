@@ -1,6 +1,6 @@
-import type TProfesor from './tProfesor';
+import type { Profesor } from './Profesor';
 
-interface tProfesorInterno extends TProfesor {
+export interface ProfesorInterno extends Profesor {
 	id: number;
 	correo: string;
 	nombre: string;
@@ -16,5 +16,3 @@ interface tProfesorInterno extends TProfesor {
 	area_conocimiento: string[];
 	titulacion_local: string[];
 }
-
-export default tProfesorInterno;

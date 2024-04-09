@@ -1,22 +1,22 @@
 import knex from '../../config';
-import type TAdmin from '../Transfer/tAdmin';
-import type TSocioComunitario from '../Transfer/tSocioComunitario';
-import type TUsuario from '../Transfer/tUsuario';
-import type TProfesor from '../Transfer/tProfesor';
-import type tOficinaAps from '../Transfer/tOficinaAps';
-import type TEstudiante from '../Transfer/tEstudiante';
-import type tProfesorExterno from '../Transfer/tProfesorExterno';
-import type tProfesorInterno from '../Transfer/tProfesorInterno';
-import type TEstudianteExterno from '../Transfer/tEstudianteExterno';
-import type TEstudianteInterno from '../Transfer/tEstudianteInterno';
-import TAreaServicio from '../Transfer/tAreaServicio';
-import tTitulacionLocal from '../Transfer/tTitulacionLocal';
+import type { Admin } from '../types/Admin';
+import type { AreaServicio } from '../types/AreaServicio';
+import type { Estudiante } from '../types/Estudiante';
+import type { EstudianteExterno } from '../types/EstudianteExterno';
+import type { EstudianteInterno } from '../types/EstudianteInterno';
+import type { OficinaAps } from '../types/OficinaAps';
+import type { Profesor } from '../types/Profesor';
+import type { ProfesorExterno } from '../types/ProfesorExterno';
+import type { ProfesorInterno } from '../types/ProfesorInterno';
+import type { SocioComunitario } from '../types/SocioComunitario';
+import type { TitulacionLocal } from '../types/TitulacionLocal';
+import type { Usuario } from '../types/Usuario';
 
 //Insertar------------------------------------------------------------------------------------------------
 // Inserta en la base de datos un nuevo usuario
-async function insertarUsuario(usuario: TUsuario): Promise<number> {
+async function insertarUsuario(usuario: Usuario): Promise<number> {
 	try {
-		const [id] = await knex<TUsuario>('usuario')
+		const [id] = await knex<Usuario>('usuario')
 			.insert({
 				origin_login: usuario.origin_login,
 				origin_img: usuario.origin_img,
@@ -34,7 +34,7 @@ async function insertarUsuario(usuario: TUsuario): Promise<number> {
 	}
 }
 //Inserta en la base de datos un nuevo admin
-async function insertarAdmin(admin: TAdmin): Promise<number> {
+async function insertarAdmin(admin: Admin): Promise<number> {
 	try {
 		const idUsuario: number = await insertarUsuario(admin);
 
@@ -62,7 +62,7 @@ async function insertarAdmin(admin: TAdmin): Promise<number> {
 	}
 }
 // Inserta en la base de datos una nueva oficinaAPS
-async function insertarOficinaAps(usuario: tOficinaAps): Promise<number> {
+async function insertarOficinaAps(usuario: OficinaAps): Promise<number> {
 	try {
 		const idUsuario: number = await insertarUsuario(usuario);
 
@@ -87,7 +87,7 @@ async function insertarOficinaAps(usuario: tOficinaAps): Promise<number> {
 	}
 }
 //Inserta en la base de datos un nuevo estudiante
-async function insertarEstudiante(usuario: TUsuario): Promise<number> {
+async function insertarEstudiante(usuario: Usuario): Promise<number> {
 	try {
 		const idF: number = await insertarUsuario(usuario); // Cambiar a un solo número
 
@@ -106,7 +106,7 @@ async function insertarEstudiante(usuario: TUsuario): Promise<number> {
 	}
 }
 //Inserta en la base de datos un nuevo estudiante interno
-async function insertarEstudianteInterno(usuario: TEstudianteInterno): Promise<number> {
+async function insertarEstudianteInterno(usuario: EstudianteInterno): Promise<number> {
 	try {
 		const idF: number = await insertarEstudiante(usuario);
 
@@ -134,7 +134,7 @@ async function insertarEstudianteInterno(usuario: TEstudianteInterno): Promise<n
 	}
 }
 //Inserta en la base de datos un nuevo profesor
-async function insertarProfesor(usuario: TUsuario): Promise<number> {
+async function insertarProfesor(usuario: Usuario): Promise<number> {
 	try {
 		const id: number = await insertarUsuario(usuario);
 
@@ -153,7 +153,7 @@ async function insertarProfesor(usuario: TUsuario): Promise<number> {
 	}
 }
 // Inserta en la base de datos un nuevo socio comunitario
-export async function insertarSocioComunitario(usuario: TSocioComunitario): Promise<number> {
+export async function insertarSocioComunitario(usuario: SocioComunitario): Promise<number> {
 	try {
 		const idF: number = await insertarUsuario(usuario);
 
@@ -189,7 +189,7 @@ export async function insertarSocioComunitario(usuario: TSocioComunitario): Prom
 	}
 }
 //Inserta en la base de datos un nuevo profesor interno
-async function insertarProfesorInterno(usuario: tProfesorInterno): Promise<number> {
+async function insertarProfesorInterno(usuario: ProfesorInterno): Promise<number> {
 	try {
 		const idF: number = await insertarProfesor(usuario);
 
@@ -229,7 +229,7 @@ async function insertarProfesorInterno(usuario: tProfesorInterno): Promise<numbe
 	}
 }
 //Inserta en la base de datos un nuevo estudiante externo
-export async function insertarEstudianteExterno(usuario: TEstudianteExterno): Promise<number> {
+export async function insertarEstudianteExterno(usuario: EstudianteExterno): Promise<number> {
 	try {
 		const idF: number = await insertarEstudiante(usuario);
 
@@ -486,7 +486,7 @@ export async function obtenerUsuarioSinRolPorEmail(email: string): Promise<any |
 	}
 }
 
-async function obtenerRolInterno(idInterno: number): Promise<TUsuario> {
+async function obtenerRolInterno(idInterno: number): Promise<Usuario> {
 	try {
 		let profeInterno = await obtenerProfesorInternoPorDatosPersonales(idInterno);
 		if (profeInterno !== null) return profeInterno;
@@ -508,7 +508,7 @@ async function obtenerRolInterno(idInterno: number): Promise<TUsuario> {
 	}
 }
 
-async function obtenerRolExterno(idExterno: number): Promise<TUsuario> {
+async function obtenerRolExterno(idExterno: number): Promise<Usuario> {
 	try {
 		let socio = await obtenerSocioComunitarioPorDatosPersonales(idExterno);
 		if (socio !== null) return socio;
@@ -564,7 +564,7 @@ export async function obtenerUsuarioSinRolPorId(id: number): Promise<any> {
 	}
 }
 
-async function obtenerUsuario(id: number): Promise<TUsuario | null> {
+async function obtenerUsuario(id: number): Promise<Usuario | null> {
 	try {
 		const response = await knex('usuario').where({ id }).select('*');
 		return response[0] || null; // Retorna el usuario encontrado o null si no existe
@@ -632,7 +632,7 @@ async function obtenerDatosPersonalesExterno(id: number): Promise<any> {
 	}
 }
 
-async function obtenerAdmin(id: number): Promise<TAdmin> {
+async function obtenerAdmin(id: number): Promise<Admin> {
 	try {
 		const admin = await knex('admin').where({ id }).select('*');
 		if (admin.length === 0) return null;
@@ -640,7 +640,7 @@ async function obtenerAdmin(id: number): Promise<TAdmin> {
 		const usuario = await obtenerUsuario(id);
 		const datos = await obtenerDatosPersonalesInterno(admin[0]['datos_personales_Id']);
 
-		const Tadmin: TAdmin = {
+		const Tadmin: Admin = {
 			id: usuario.id,
 			correo: datos.correo,
 			nombre: datos.nombre,
@@ -661,7 +661,7 @@ async function obtenerAdmin(id: number): Promise<TAdmin> {
 	}
 }
 
-async function obtenerAdminPorDatosPersonales(id: number): Promise<TAdmin> {
+async function obtenerAdminPorDatosPersonales(id: number): Promise<Admin> {
 	try {
 		const admin = await knex('admin').where({ datos_personales_Id: id }).select('*');
 		if (admin.length === 0) return null;
@@ -669,7 +669,7 @@ async function obtenerAdminPorDatosPersonales(id: number): Promise<TAdmin> {
 		const usuario = await obtenerUsuario(admin[0].id);
 		const datos = await obtenerDatosPersonalesInterno(admin[0]['datos_personales_Id']);
 
-		const Tadmin: TAdmin = {
+		const Tadmin: Admin = {
 			id: usuario.id,
 			correo: datos.correo,
 			nombre: datos.nombre,
@@ -690,7 +690,7 @@ async function obtenerAdminPorDatosPersonales(id: number): Promise<TAdmin> {
 	}
 }
 
-async function obtenerOficinaAps(id: number): Promise<tOficinaAps> {
+async function obtenerOficinaAps(id: number): Promise<OficinaAps> {
 	try {
 		const admin = await knex('oficinaaps').where({ id }).select('*');
 		if (admin.length === 0) return null;
@@ -698,7 +698,7 @@ async function obtenerOficinaAps(id: number): Promise<tOficinaAps> {
 		const usuario = await obtenerUsuario(id);
 		const datos = await obtenerDatosPersonalesInterno(admin[0]['datos_personales_Id']);
 
-		const oficinaAps: tOficinaAps = {
+		const oficinaAps: OficinaAps = {
 			id: usuario.id,
 			correo: datos.correo,
 			nombre: datos.nombre,
@@ -719,7 +719,7 @@ async function obtenerOficinaAps(id: number): Promise<tOficinaAps> {
 	}
 }
 
-async function obtenerOficinaApsPorDatosPersonales(id: number): Promise<tOficinaAps> {
+async function obtenerOficinaApsPorDatosPersonales(id: number): Promise<OficinaAps> {
 	try {
 		const admin = await knex('oficinaaps').where({ datos_personales_Id: id }).select('*');
 		if (admin.length === 0) return null;
@@ -727,7 +727,7 @@ async function obtenerOficinaApsPorDatosPersonales(id: number): Promise<tOficina
 		const usuario = await obtenerUsuario(admin[0].id);
 		const datos = await obtenerDatosPersonalesInterno(admin[0]['datos_personales_Id']);
 
-		const Tadmin: TAdmin = {
+		const Tadmin: Admin = {
 			id: usuario.id,
 			correo: datos.correo,
 			nombre: datos.nombre,
@@ -748,7 +748,7 @@ async function obtenerOficinaApsPorDatosPersonales(id: number): Promise<tOficina
 	}
 }
 
-export async function obtenerSocioComunitario(id: number): Promise<TSocioComunitario> {
+export async function obtenerSocioComunitario(id: number): Promise<SocioComunitario> {
 	try {
 		const socio = await knex('socio_comunitario').where({ id }).select('*');
 		if (socio.length === 0) return null;
@@ -756,7 +756,7 @@ export async function obtenerSocioComunitario(id: number): Promise<TSocioComunit
 		const usuario = await obtenerUsuario(id);
 		const datos = await obtenerDatosPersonalesExterno(socio[0]['datos_personales_Id']);
 
-		const tSocio: TSocioComunitario = {
+		const tSocio: SocioComunitario = {
 			id: usuario.id,
 			correo: datos.correo,
 			nombre: datos.nombre,
@@ -781,7 +781,7 @@ export async function obtenerSocioComunitario(id: number): Promise<TSocioComunit
 	}
 }
 
-async function obtenerSocioComunitarioPorDatosPersonales(id: number): Promise<TSocioComunitario> {
+async function obtenerSocioComunitarioPorDatosPersonales(id: number): Promise<SocioComunitario> {
 	try {
 		const socio = await knex('socio_comunitario').where({ datos_personales_Id: id }).select('*');
 		if (socio.length === 0) return null;
@@ -789,7 +789,7 @@ async function obtenerSocioComunitarioPorDatosPersonales(id: number): Promise<TS
 		const usuario = await obtenerUsuario(socio[0].id);
 		const datos = await obtenerDatosPersonalesExterno(socio[0]['datos_personales_Id']);
 
-		const tSocio: TSocioComunitario = {
+		const tSocio: SocioComunitario = {
 			id: usuario.id,
 			correo: datos.correo,
 			nombre: datos.nombre,
@@ -814,7 +814,7 @@ async function obtenerSocioComunitarioPorDatosPersonales(id: number): Promise<TS
 	}
 }
 
-export async function obtenerSociosComunitarios(): Promise<TSocioComunitario[]> {
+export async function obtenerSociosComunitarios(): Promise<SocioComunitario[]> {
 	try {
 		const socios = await knex('socio_comunitario')
 			.join('datos_personales_externo', 'socio_comunitario.datos_personales_Id', '=', 'datos_personales_externo.id')
@@ -826,7 +826,7 @@ export async function obtenerSociosComunitarios(): Promise<TSocioComunitario[]> 
 	}
 }
 
-async function obtenerProfesor(id: number): Promise<TProfesor> {
+async function obtenerProfesor(id: number): Promise<Profesor> {
 	try {
 		const profesor = await knex('profesor').where({ id }).select('*');
 		return profesor[0] || null; // Retorna el profesor encontrado o null si no existe
@@ -836,7 +836,7 @@ async function obtenerProfesor(id: number): Promise<TProfesor> {
 	}
 }
 
-export async function obtenerProfesores(): Promise<TProfesor[]> {
+export async function obtenerProfesores(): Promise<Profesor[]> {
 	try {
 		const profesores = await knex('profesor_interno')
 			.join('datos_personales_interno', 'profesor_interno.datos_personales_Id', '=', 'datos_personales_interno.id')
@@ -848,7 +848,7 @@ export async function obtenerProfesores(): Promise<TProfesor[]> {
 	}
 }
 
-export async function obtenerProfesorInterno(id: number): Promise<tProfesorInterno> {
+export async function obtenerProfesorInterno(id: number): Promise<ProfesorInterno> {
 	try {
 		const profesorInterno = await knex('profesor_interno').where({ id }).select('*');
 		if (profesorInterno.length === 0) return null;
@@ -858,7 +858,7 @@ export async function obtenerProfesorInterno(id: number): Promise<tProfesorInter
 		const areas = await obtenerAreasConocimientoDelProfesor(id);
 		const titulaciones = await obtenerTitulacionesDelProfesor(id);
 
-		const tProfesorInterno: tProfesorInterno = {
+		const ProfesorInterno: ProfesorInterno = {
 			id: usuario.id,
 			correo: datos.correo,
 			nombre: datos.nombre,
@@ -874,14 +874,14 @@ export async function obtenerProfesorInterno(id: number): Promise<tProfesorInter
 			telefono: datos.telefono,
 			rol: 'ProfesorInterno'
 		};
-		return tProfesorInterno;
+		return ProfesorInterno;
 	} catch (err) {
 		console.error('Se ha producido un error al obtener el profesor interno:', err);
 		return null;
 	}
 }
 
-async function obtenerProfesorInternoPorDatosPersonales(datosPersonalesId: number): Promise<tProfesorInterno> {
+async function obtenerProfesorInternoPorDatosPersonales(datosPersonalesId: number): Promise<ProfesorInterno> {
 	try {
 		// Encontrar el profesor interno por su ID de datos personales
 		const profesorInterno = await knex('profesor_interno').where({ datos_personales_Id: datosPersonalesId }).select('*');
@@ -895,7 +895,7 @@ async function obtenerProfesorInternoPorDatosPersonales(datosPersonalesId: numbe
 		const titulaciones = await obtenerTitulacionesDelProfesor(idProfesorInterno);
 
 		// Crear y retornar la instancia de TProfesorInterno con la información obtenida
-		const tProfesorInterno: tProfesorInterno = {
+		const ProfesorInterno: ProfesorInterno = {
 			id: usuario.id,
 			correo: datos.correo,
 			nombre: datos.nombre,
@@ -911,7 +911,7 @@ async function obtenerProfesorInternoPorDatosPersonales(datosPersonalesId: numbe
 			telefono: datos.telefono,
 			rol: 'ProfesorInterno'
 		};
-		return tProfesorInterno;
+		return ProfesorInterno;
 	} catch (err) {
 		console.error('Se ha producido un error al obtener el profesor interno por datos personales:', err);
 		return null; // Retorna null en caso de error
@@ -942,7 +942,7 @@ async function obtenerTitulacionesDelProfesor(idProfesor: number): Promise<strin
 	return titulaciones.map((titulacion) => titulacion.nombre);
 }
 
-async function obtenerProfesorExterno(id: number): Promise<tProfesorExterno> {
+async function obtenerProfesorExterno(id: number): Promise<ProfesorExterno> {
 	try {
 		const profesorExterno = await knex('profesor_externo').where({ id }).select('*');
 		if (profesorExterno.length === 0) return null;
@@ -952,7 +952,7 @@ async function obtenerProfesorExterno(id: number): Promise<tProfesorExterno> {
 		const areas = await obtenerAreasConocimientoDelProfesor(profesorExterno[0]['datos_personales_Id']);
 		const universidad = await knex('universidad').where({ id: profesorExterno[0]['universidad'] }).select('*');
 
-		const tProfesorExterno: tProfesorExterno = {
+		const ProfesorExterno: ProfesorExterno = {
 			id: usuario.id,
 			correo: datos.correo,
 			nombre: datos.nombre,
@@ -969,14 +969,14 @@ async function obtenerProfesorExterno(id: number): Promise<tProfesorExterno> {
 			rol: 'ProfesorExterno',
 			area_conocimiento: areas
 		};
-		return tProfesorExterno;
+		return ProfesorExterno;
 	} catch (err) {
 		console.error('Se ha producido un error al obtener el profesor externo:', err);
 		return null;
 	}
 }
 
-async function obtenerProfesorExternoPorDatosPersonales(datosPersonalesId: number): Promise<tProfesorExterno> {
+async function obtenerProfesorExternoPorDatosPersonales(datosPersonalesId: number): Promise<ProfesorExterno> {
 	try {
 		const profesorExterno = await knex('profesor_externo').where({ datos_personales_Id: datosPersonalesId }).select('*');
 		if (profesorExterno.length === 0) return null;
@@ -987,7 +987,7 @@ async function obtenerProfesorExternoPorDatosPersonales(datosPersonalesId: numbe
 		const universidad = await knex('universidad').where({ id: profesorExterno[0]['universidad'] }).select('*');
 		const areas = await obtenerAreasConocimientoDelProfesor(profesorExterno[0]['datos_personales_Id']);
 
-		const tProfesorExterno: tProfesorExterno = {
+		const ProfesorExterno: ProfesorExterno = {
 			id: usuario.id,
 			correo: datos.correo,
 			nombre: datos.nombre,
@@ -1004,7 +1004,7 @@ async function obtenerProfesorExternoPorDatosPersonales(datosPersonalesId: numbe
 			rol: 'ProfesorExterno',
 			area_conocimiento: areas
 		};
-		return tProfesorExterno;
+		return ProfesorExterno;
 	} catch (err) {
 		console.error('Se ha producido un error al obtener el profesor externo por datos personales:', err);
 		return null;
@@ -1012,7 +1012,7 @@ async function obtenerProfesorExternoPorDatosPersonales(datosPersonalesId: numbe
 }
 
 //Se utiliza?
-async function obtenerEstudiante(id: number): Promise<TEstudiante> {
+async function obtenerEstudiante(id: number): Promise<Estudiante> {
 	try {
 		const estudiante = await knex('estudiante').where({ id }).select('*');
 		if (estudiante.length === 0) {
@@ -1026,7 +1026,7 @@ async function obtenerEstudiante(id: number): Promise<TEstudiante> {
 	}
 }
 
-async function obtenerEstudianteInterno(id: number): Promise<TEstudianteInterno | null> {
+async function obtenerEstudianteInterno(id: number): Promise<EstudianteInterno | null> {
 	try {
 		const estudianteInterno = await knex('estudiante_interno').where({ id }).select('*');
 		if (estudianteInterno.length === 0) return null;
@@ -1056,7 +1056,7 @@ async function obtenerEstudianteInterno(id: number): Promise<TEstudianteInterno 
 	}
 }
 
-async function obtenerEstudianteInternoPorDatosPersonales(datosPersonalesId: number): Promise<TEstudianteInterno | null> {
+async function obtenerEstudianteInternoPorDatosPersonales(datosPersonalesId: number): Promise<EstudianteInterno | null> {
 	try {
 		const estudianteInterno = await knex('estudiante_interno').where({ datos_personales_Id: datosPersonalesId }).select('*');
 		if (estudianteInterno.length === 0) return null;
@@ -1087,7 +1087,7 @@ async function obtenerEstudianteInternoPorDatosPersonales(datosPersonalesId: num
 	}
 }
 
-async function obtenerEstudianteExterno(id: number): Promise<TEstudianteExterno | null> {
+async function obtenerEstudianteExterno(id: number): Promise<EstudianteExterno | null> {
 	try {
 		const estudianteExterno = await knex('estudiante_externo').where({ id }).select('*');
 		if (estudianteExterno.length === 0) return null;
@@ -1118,7 +1118,7 @@ async function obtenerEstudianteExterno(id: number): Promise<TEstudianteExterno 
 	}
 }
 
-async function obtenerEstudianteExternoPorDatosPersonales(datosPersonalesId: number): Promise<TEstudianteExterno | null> {
+async function obtenerEstudianteExternoPorDatosPersonales(datosPersonalesId: number): Promise<EstudianteExterno | null> {
 	try {
 		const estudianteExterno = await knex('estudiante_externo').where({ datos_personales_Id: datosPersonalesId }).select('*');
 		if (estudianteExterno.length === 0) return null;
@@ -1150,9 +1150,9 @@ async function obtenerEstudianteExternoPorDatosPersonales(datosPersonalesId: num
 	}
 }
 
-export async function getPathAvatar(id: number): Promise<tProfesorInterno> {
+export async function getPathAvatar(id: number): Promise<ProfesorInterno> {
 	try {
-		const response: tProfesorInterno[] = await knex('datos_personales_interno')
+		const response: ProfesorInterno[] = await knex('datos_personales_interno')
 			.innerJoin('profesor_interno', 'profesor_interno.datos_personales_Id', 'datos_personales_interno.id')
 			.where('profesor_interno.id', id)
 			.select('*');
@@ -1174,7 +1174,7 @@ async function updateAvatar(id: number, photo: string): Promise<number> {
 	}
 }
 
-export async function actualizarUsuario(usuario: TUsuario): Promise<number> {
+export async function actualizarUsuario(usuario: Usuario): Promise<number> {
 	try {
 		await knex('usuario').where('id', usuario.id).update({
 			origin_login: usuario.origin_login,
@@ -1191,7 +1191,7 @@ export async function actualizarUsuario(usuario: TUsuario): Promise<number> {
 	}
 }
 
-async function actualizarAdmin(usuario: TAdmin): Promise<number> {
+async function actualizarAdmin(usuario: Admin): Promise<number> {
 	try {
 		// Actualizar la información básica del usuario en la tabla 'usuario'
 		const resUsuario = await actualizarUsuario(usuario);
@@ -1220,7 +1220,7 @@ async function actualizarAdmin(usuario: TAdmin): Promise<number> {
 	}
 }
 
-async function actualizarOficinaAPS(usuario: tOficinaAps): Promise<number> {
+async function actualizarOficinaAPS(usuario: OficinaAps): Promise<number> {
 	try {
 		// Actualizar la información básica del usuario en la tabla 'usuario'
 		const resUsuario = await actualizarUsuario(usuario);
@@ -1249,7 +1249,7 @@ async function actualizarOficinaAPS(usuario: tOficinaAps): Promise<number> {
 	}
 }
 
-async function actualizarSocioComunitario(usuario: TSocioComunitario): Promise<number> {
+async function actualizarSocioComunitario(usuario: SocioComunitario): Promise<number> {
 	try {
 		//Actualizamos datos generales usuario
 		const res = await actualizarUsuario(usuario);
@@ -1284,7 +1284,7 @@ async function actualizarSocioComunitario(usuario: TSocioComunitario): Promise<n
 	}
 }
 
-async function actualizarEstudiante(usuario: TEstudiante): Promise<number> {
+async function actualizarEstudiante(usuario: Estudiante): Promise<number> {
 	try {
 		const res = await actualizarUsuario(usuario);
 		return res > 0 ? usuario.id : -1;
@@ -1294,7 +1294,7 @@ async function actualizarEstudiante(usuario: TEstudiante): Promise<number> {
 	}
 }
 
-async function actualizarProfesor(usuario: TProfesor): Promise<number> {
+async function actualizarProfesor(usuario: Profesor): Promise<number> {
 	try {
 		const res = await actualizarUsuario(usuario);
 		//Devolvemos idProfesor actu
@@ -1305,7 +1305,7 @@ async function actualizarProfesor(usuario: TProfesor): Promise<number> {
 	}
 }
 
-async function actualizarEstudianteExterno(usuario: TEstudianteExterno): Promise<number> {
+async function actualizarEstudianteExterno(usuario: EstudianteExterno): Promise<number> {
 	try {
 		// Eliminada comprobacion previa de correo, tiene sentido?
 		const resUsuario = await actualizarUsuario(usuario);
@@ -1345,7 +1345,7 @@ async function actualizarEstudianteExterno(usuario: TEstudianteExterno): Promise
 	}
 }
 
-async function actualizarProfesorExterno(usuario: tProfesorExterno): Promise<number> {
+async function actualizarProfesorExterno(usuario: ProfesorExterno): Promise<number> {
 	try {
 		const res = await actualizarUsuario(usuario);
 		if (res <= 0) {
@@ -1376,7 +1376,7 @@ async function actualizarProfesorExterno(usuario: tProfesorExterno): Promise<num
 	}
 }
 
-async function actualizarProfesorInterno(usuario: tProfesorInterno, areas: TAreaServicio[], titulaciones: tTitulacionLocal[]): Promise<number> {
+async function actualizarProfesorInterno(usuario: ProfesorInterno, areas: AreaServicio[], titulaciones: TitulacionLocal[]): Promise<number> {
 	try {
 		await actualizarUsuario(usuario);
 
@@ -1412,7 +1412,7 @@ async function actualizarProfesorInterno(usuario: tProfesorInterno, areas: TArea
 	}
 }
 
-async function actualizarEstudianteInterno(usuario: TEstudianteInterno): Promise<number> {
+async function actualizarEstudianteInterno(usuario: EstudianteInterno): Promise<number> {
 	try {
 		const res = await actualizarUsuario(usuario);
 		if (res <= 0) {
@@ -1444,10 +1444,10 @@ async function actualizarEstudianteInterno(usuario: TEstudianteInterno): Promise
 }
 
 //AUXILIARES
-export async function obtenerProfesoresInternos(arrayProfesores: number[]): Promise<tProfesorInterno[]> {
+export async function obtenerProfesoresInternos(arrayProfesores: number[]): Promise<ProfesorInterno[]> {
 	try {
 		// Asumiendo que hay una relación directa y las claves foráneas están correctamente configuradas en tus tablas
-		const profesores: tProfesorInterno[] = await knex('profesor_interno')
+		const profesores: ProfesorInterno[] = await knex('profesor_interno')
 			.join('usuario', 'usuario.id', 'profesor_interno.id')
 			.join('datos_personales_interno', 'datos_personales_interno.id', 'profesor_interno.datos_personales_Id')
 			.join('areaconocimiento_profesor', 'areaconocimiento_profesor.id_profesor', 'profesor_interno.id')
