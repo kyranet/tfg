@@ -6,7 +6,7 @@ export interface Profesor {
 }
 
 export namespace Profesor {
-	export const name = 'profesor';
+	export const Name = 'profesor';
 
 	export interface Value extends GetType<Profesor> {}
 	export interface CreateData extends GetCreateType<Profesor> {}

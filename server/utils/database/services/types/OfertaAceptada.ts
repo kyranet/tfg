@@ -11,7 +11,7 @@ export interface OfertaAceptada {
 }
 
 export namespace OfertaAceptada {
-	export const name = 'ofertaaceptada';
+	export const Name = 'ofertaaceptada';
 
 	export interface Value extends GetType<OfertaAceptada> {}
 	export interface CreateData extends GetCreateType<OfertaAceptada> {}

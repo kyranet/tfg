@@ -6,7 +6,7 @@ export interface TitulacionLocal {
 }
 
 export namespace TitulacionLocal {
-	export const name = 'titulacion_local';
+	export const Name = 'titulacion_local';
 
 	export interface Value extends GetType<TitulacionLocal> {}
 	export interface CreateData extends GetCreateType<TitulacionLocal> {}

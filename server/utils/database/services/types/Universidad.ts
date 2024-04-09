@@ -7,7 +7,7 @@ export interface Universidad {
 }
 
 export namespace Universidad {
-	export const name = 'universidad';
+	export const Name = 'universidad';
 
 	export interface Value extends GetType<Universidad> {}
 	export interface CreateData extends GetCreateType<Universidad> {}

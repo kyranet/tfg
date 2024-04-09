@@ -10,7 +10,7 @@ export interface DatosPersonalesInterno {
 }
 
 export namespace DatosPersonalesInterno {
-	export const name = 'datos_personales_interno';
+	export const Name = 'datos_personales_interno';
 
 	export interface Value extends GetType<DatosPersonalesInterno> {}
 	export interface CreateData extends GetCreateType<DatosPersonalesInterno> {}

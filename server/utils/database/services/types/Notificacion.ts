@@ -12,7 +12,7 @@ export interface Notificacion {
 }
 
 export namespace Notificacion {
-	export const name = 'notificaciones';
+	export const Name = 'notificaciones';
 
 	export interface Value extends GetType<Notificacion> {}
 	export interface CreateData extends GetCreateType<Notificacion> {}

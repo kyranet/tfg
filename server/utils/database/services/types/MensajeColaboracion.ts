@@ -9,8 +9,8 @@ export interface MensajeColaboracion {
 	id_colaboracion: PrimaryKey<ForeignKey<Colaboracion, 'id'>>;
 }
 
-export namespace NecesidadSocial {
-	export const name = 'mensaje_colaboracion';
+export namespace MensajeColaboracion {
+	export const Name = 'mensaje_colaboracion';
 
 	export interface Value extends GetType<MensajeColaboracion> {}
 	export interface CreateData extends GetCreateType<MensajeColaboracion> {}

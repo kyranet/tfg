@@ -10,7 +10,7 @@ export interface EstudianteProyecto {
 }
 
 export namespace EstudianteProyecto {
-	export const name = 'estudiante_proyecto';
+	export const Name = 'estudiante_proyecto';
 
 	export interface Value extends GetType<EstudianteProyecto> {}
 	export interface CreateData extends GetCreateType<EstudianteProyecto> {}

@@ -8,7 +8,7 @@ export interface Admin {
 }
 
 export namespace Admin {
-	export const name = 'admin';
+	export const Name = 'admin';
 
 	export interface Value extends GetType<Admin> {}
 	export interface CreateData extends GetCreateType<Admin> {}

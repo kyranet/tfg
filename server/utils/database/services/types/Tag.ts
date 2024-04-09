@@ -6,7 +6,7 @@ export interface Tag {
 }
 
 export namespace Tag {
-	export const name = 'tags';
+	export const Name = 'tags';
 
 	export interface Value extends GetType<Tag> {}
 	export interface CreateData extends GetCreateType<Tag> {}

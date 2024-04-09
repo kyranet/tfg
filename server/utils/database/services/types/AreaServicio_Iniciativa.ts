@@ -10,7 +10,7 @@ export interface AreaServicio_Iniciativa {
 }
 
 export namespace AreaServicio_Iniciativa {
-	export const name = 'areaservicio_iniciativa';
+	export const Name = 'areaservicio_iniciativa';
 
 	export interface Value extends GetType<AreaServicio_Iniciativa> {}
 	export interface CreateData extends GetCreateType<AreaServicio_Iniciativa> {}

@@ -15,7 +15,7 @@ export interface Mail {
 }
 
 export namespace Mail {
-	export const name = 'mail';
+	export const Name = 'mail';
 
 	export interface Value extends GetType<Mail> {}
 	export interface CreateData extends GetCreateType<Mail> {}

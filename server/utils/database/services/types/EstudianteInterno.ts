@@ -13,7 +13,7 @@ export interface EstudianteInterno {
 }
 
 export namespace EstudianteInterno {
-	export const name = 'estudiante_interno';
+	export const Name = 'estudiante_interno';
 
 	export interface Value extends GetType<EstudianteInterno> {}
 	export interface CreateData extends GetCreateType<EstudianteInterno> {}

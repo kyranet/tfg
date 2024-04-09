@@ -12,7 +12,7 @@ import { AnuncioServicio } from '../types/AnuncioServicio';
 
 export type ColaboracionCreateData = Colaboracion.CreateData & { profesores?: readonly number[] };
 export const crearColaboracion = async (colaboracion: ColaboracionCreateData): Promise<number> => {
-	const [entry] = await knex<Colaboracion.Value>(Colaboracion.name).insert(
+	const [entry] = await knex(Colaboracion.Name).insert(
 		{
 			titulo: colaboracion.titulo,
 			descripcion: colaboracion.descripcion,
@@ -23,7 +23,7 @@ export const crearColaboracion = async (colaboracion: ColaboracionCreateData): P
 	);
 
 	if (!isNullishOrEmpty(colaboracion.profesores)) {
-		await knex<Profesor_Colaboracion.Value>(Profesor_Colaboracion.name).insert(
+		await knex(Profesor_Colaboracion.Name).insert(
 			colaboracion.profesores.map((profesor) => ({
 				id_profesor: profesor,
 				id_colaboracion: entry.id
@@ -37,7 +37,7 @@ export const crearColaboracion = async (colaboracion: ColaboracionCreateData): P
 export type PartenariadoCreateData = Omit<ColaboracionCreateData & Partenariado.CreateData, 'id'>;
 export const crearPartenariado = async (partenariado: PartenariadoCreateData): Promise<number> => {
 	const id = await crearColaboracion(partenariado);
-	await knex<Partenariado.Value>(Partenariado.name).insert({
+	await knex(Partenariado.Name).insert({
 		id,
 		id_demanda: partenariado.id_demanda,
 		id_oferta: partenariado.id_oferta,
@@ -51,14 +51,14 @@ export const crearPartenariado = async (partenariado: PartenariadoCreateData): P
 export type ProyectoCreateData = Omit<ColaboracionCreateData & Proyecto.CreateData, 'id'> & { estudiantes?: readonly number[] };
 export const crearProyecto = async (proyecto: ProyectoCreateData): Promise<number> => {
 	const id = await crearColaboracion(proyecto);
-	await knex<Proyecto.Value>(Proyecto.name).insert({
+	await knex(Proyecto.Name).insert({
 		id,
 		id_partenariado: proyecto.id_partenariado,
 		estado: proyecto.estado
 	});
 
 	if (!isNullishOrEmpty(proyecto.estudiantes)) {
-		await knex<EstudianteProyecto.Value>(EstudianteProyecto.name).insert(
+		await knex(EstudianteProyecto.Name).insert(
 			proyecto.estudiantes.map((estudiante) => ({
 				id_estudiante: estudiante,
 				id_proyecto: id
@@ -70,7 +70,7 @@ export const crearProyecto = async (proyecto: ProyectoCreateData): Promise<numbe
 };
 
 export async function crearNota(nota: Nota.CreateData): Promise<number> {
-	const [entry] = await knex<Nota.Value>(Nota.name)
+	const [entry] = await knex(Nota.Name)
 		.insert({
 			id_estudiante: nota.id_estudiante,
 			nota: nota.nota,
@@ -82,12 +82,10 @@ export async function crearNota(nota: Nota.CreateData): Promise<number> {
 }
 
 async function obtenerColaboracion(colaboracionId: number) {
-	const colaboracion = await knex<Colaboracion.Value>(Colaboracion.name).where({ id: colaboracionId }).first();
+	const colaboracion = await knex(Colaboracion.Name).where({ id: colaboracionId }).first();
 	if (isNullish(colaboracion)) return null;
 
-	const profesores = await knex<Profesor_Colaboracion.Value>(Profesor_Colaboracion.name)
-		.where({ id_colaboracion: colaboracion.id })
-		.select('id_profesor');
+	const profesores = await knex(Profesor_Colaboracion.Name).where({ id_colaboracion: colaboracion.id }).select('id_profesor');
 
 	return {
 		...colaboracion,
@@ -99,7 +97,7 @@ export async function obtenerPartenariado(id: number) {
 	const colaboracion = await obtenerColaboracion(id);
 	if (isNullish(colaboracion)) return null;
 
-	const partenariado = await knex<Partenariado.Value>(Partenariado.name).where({ id }).first();
+	const partenariado = await knex(Partenariado.Name).where({ id }).first();
 	if (isNullish(partenariado)) return null;
 
 	const responsable = await obtenerUsuarioSinRolPorId(colaboracion.id);
@@ -121,10 +119,10 @@ export async function obtenerProyecto(id: number) {
 	const colaboracion = await obtenerColaboracion(id);
 	if (isNullish(colaboracion)) return null;
 
-	const proyecto = await knex<Proyecto.Value>(Proyecto.name).where({ id }).first();
+	const proyecto = await knex(Proyecto.Name).where({ id }).first();
 	if (isNullish(proyecto)) return null;
 
-	const estudiantes = await knex<EstudianteProyecto.Value>(EstudianteProyecto.name).where({ id_proyecto: id }).select('id_estudiante');
+	const estudiantes = await knex(EstudianteProyecto.Name).where({ id_proyecto: id }).select('id_estudiante');
 
 	return {
 		id,
@@ -141,7 +139,7 @@ export async function obtenerProyecto(id: number) {
 
 // Función para obtener una nota específica
 export async function obtenerNota(id: number) {
-	const response = await knex<Nota.Value>(Nota.name).where({ id }).first();
+	const response = await knex(Nota.Name).where({ id }).first();
 	if (isNullish(response)) return null;
 
 	return {
@@ -159,19 +157,19 @@ async function countTable(table: string) {
 
 // Funciones para contar elementos en la base de datos
 export function contarProyectos(): Promise<number> {
-	return countTable(Proyecto.name);
+	return countTable(Proyecto.Name);
 }
 
 export function contarPartenariados(): Promise<number> {
-	return countTable(Partenariado.name);
+	return countTable(Partenariado.Name);
 }
 
 export function contarIniciativas(): Promise<number> {
-	return countTable(OfertaServicio.name);
+	return countTable(OfertaServicio.Name);
 }
 
 export async function contarOfertas(): Promise<number> {
-	return countTable(AnuncioServicio.name);
+	return countTable(AnuncioServicio.Name);
 }
 
 //ELIMINAR

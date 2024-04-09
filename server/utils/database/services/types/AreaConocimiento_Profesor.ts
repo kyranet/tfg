@@ -10,7 +10,7 @@ export interface AreaConocimiento_Profesor {
 }
 
 export namespace AreaConocimiento_Profesor {
-	export const name = 'areaconocimiento_profesor';
+	export const Name = 'areaconocimiento_profesor';
 
 	export interface Value extends GetType<AreaConocimiento_Profesor> {}
 	export interface CreateData extends GetCreateType<AreaConocimiento_Profesor> {}

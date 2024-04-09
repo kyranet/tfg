@@ -16,7 +16,7 @@ export interface Iniciativa {
 }
 
 export namespace Iniciativa {
-	export const name = 'iniciativa';
+	export const Name = 'iniciativa';
 
 	export interface Value extends GetType<Iniciativa> {}
 	export interface CreateData extends GetCreateType<Iniciativa> {}

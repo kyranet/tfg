@@ -10,7 +10,7 @@ export interface ProfesorInterno_Oferta {
 }
 
 export namespace ProfesorInterno_Oferta {
-	export const name = 'profesorinterno_oferta';
+	export const Name = 'profesorinterno_oferta';
 
 	export interface Value extends GetType<ProfesorInterno_Oferta> {}
 	export interface CreateData extends GetCreateType<ProfesorInterno_Oferta> {}

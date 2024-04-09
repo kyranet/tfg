@@ -12,7 +12,7 @@ export interface Matching {
 }
 
 export namespace Matching {
-	export const name = 'matching';
+	export const Name = 'matching';
 
 	export interface Value extends GetType<Matching> {}
 	export interface CreateData extends GetCreateType<Matching> {}

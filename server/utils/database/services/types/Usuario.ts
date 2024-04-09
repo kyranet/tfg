@@ -10,7 +10,7 @@ export interface Usuario {
 }
 
 export namespace Usuario {
-	export const name = 'usuario';
+	export const Name = 'usuario';
 
 	export interface Value extends GetType<Usuario> {}
 	export interface CreateData extends GetCreateType<Usuario> {}

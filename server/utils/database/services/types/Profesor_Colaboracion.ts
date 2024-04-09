@@ -10,7 +10,7 @@ export interface Profesor_Colaboracion {
 }
 
 export namespace Profesor_Colaboracion {
-	export const name = 'profesor_colaboracion';
+	export const Name = 'profesor_colaboracion';
 
 	export interface Value extends GetType<Profesor_Colaboracion> {}
 	export interface CreateData extends GetCreateType<Profesor_Colaboracion> {}

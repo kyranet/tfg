@@ -6,7 +6,7 @@ export interface NecesidadSocial {
 }
 
 export namespace NecesidadSocial {
-	export const name = 'necesidad_social';
+	export const Name = 'necesidad_social';
 
 	export interface Value extends GetType<NecesidadSocial> {}
 	export interface CreateData extends GetCreateType<NecesidadSocial> {}

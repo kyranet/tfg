@@ -8,7 +8,7 @@ export interface Newsletter {
 }
 
 export namespace Newsletter {
-	export const name = 'newsletter';
+	export const Name = 'newsletter';
 
 	export interface Value extends GetType<Newsletter> {}
 	export interface CreateData extends GetCreateType<Newsletter> {}

@@ -11,7 +11,7 @@ export interface AnuncioServicio {
 }
 
 export namespace AnuncioServicio {
-	export const name = 'anuncio_servicio';
+	export const Name = 'anuncio_servicio';
 
 	export interface Value extends GetType<AnuncioServicio> {}
 	export interface CreateData extends GetCreateType<AnuncioServicio> {}

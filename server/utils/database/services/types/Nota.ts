@@ -12,7 +12,7 @@ export interface Nota {
 }
 
 export namespace Nota {
-	export const name = 'notas';
+	export const Name = 'notas';
 
 	export interface Value extends GetType<Nota> {}
 	export interface CreateData extends GetCreateType<Nota> {}

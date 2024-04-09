@@ -8,7 +8,7 @@ export interface Asignatura {
 }
 
 export namespace Asignatura {
-	export const name = 'asignatura';
+	export const Name = 'asignatura';
 
 	export interface Value extends GetType<Asignatura> {}
 	export interface CreateData extends GetCreateType<Asignatura> {}

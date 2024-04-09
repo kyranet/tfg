@@ -10,7 +10,7 @@ export interface Upload_Colaboracion {
 }
 
 export namespace Upload_Colaboracion {
-	export const name = 'uploads_colaboracion';
+	export const Name = 'uploads_colaboracion';
 
 	export interface Value extends GetType<Upload_Colaboracion> {}
 	export interface CreateData extends GetCreateType<Upload_Colaboracion> {}

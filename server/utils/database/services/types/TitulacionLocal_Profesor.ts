@@ -10,7 +10,7 @@ export interface TitulacionLocal_Profesor {
 }
 
 export namespace TitulacionLocal_Profesor {
-	export const name = 'titulacionlocal_profesor';
+	export const Name = 'titulacionlocal_profesor';
 
 	export interface Value extends GetType<TitulacionLocal_Profesor> {}
 	export interface CreateData extends GetCreateType<TitulacionLocal_Profesor> {}

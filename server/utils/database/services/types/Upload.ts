@@ -18,7 +18,7 @@ export interface Upload {
 }
 
 export namespace Upload {
-	export const name = 'upload';
+	export const Name = 'upload';
 
 	export interface Value extends GetType<Upload> {}
 	export interface CreateData extends GetCreateType<Upload> {}

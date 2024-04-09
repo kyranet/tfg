@@ -13,7 +13,7 @@ export interface PrevioPartenariado {
 }
 
 export namespace PrevioPartenariado {
-	export const name = 'previo_partenariado';
+	export const Name = 'previo_partenariado';
 
 	export interface Value extends GetType<PrevioPartenariado> {}
 	export interface CreateData extends GetCreateType<PrevioPartenariado> {}

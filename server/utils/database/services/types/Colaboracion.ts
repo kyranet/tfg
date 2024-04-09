@@ -12,7 +12,7 @@ export interface Colaboracion {
 }
 
 export namespace Colaboracion {
-	export const name = 'colaboracion';
+	export const Name = 'colaboracion';
 
 	export interface Value extends GetType<Colaboracion> {}
 	export interface CreateData extends GetCreateType<Colaboracion> {}

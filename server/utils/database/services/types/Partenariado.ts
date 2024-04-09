@@ -14,7 +14,7 @@ export interface Partenariado {
 }
 
 export namespace Partenariado {
-	export const name = 'partenariado';
+	export const Name = 'partenariado';
 
 	export interface Value extends GetType<Partenariado> {}
 	export interface CreateData extends GetCreateType<Partenariado> {}

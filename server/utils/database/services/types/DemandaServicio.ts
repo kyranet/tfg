@@ -22,7 +22,7 @@ export interface DemandaServicio {
 }
 
 export namespace DemandaServicio {
-	export const name = 'demanda_servicio';
+	export const Name = 'demanda_servicio';
 
 	export interface Value extends GetType<DemandaServicio> {}
 	export interface CreateData extends GetCreateType<DemandaServicio> {}

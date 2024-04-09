@@ -10,7 +10,7 @@ export interface DatosPersonalesExterno {
 }
 
 export namespace DatosPersonalesExterno {
-	export const name = 'datos_personales_externo';
+	export const Name = 'datos_personales_externo';
 
 	export interface Value extends GetType<DatosPersonalesExterno> {}
 	export interface CreateData extends GetCreateType<DatosPersonalesExterno> {}

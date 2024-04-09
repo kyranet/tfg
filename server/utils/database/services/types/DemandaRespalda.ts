@@ -10,7 +10,7 @@ export interface DemandaRespalda {
 }
 
 export namespace DemandaRespalda {
-	export const name = 'demandarespalda';
+	export const Name = 'demandarespalda';
 
 	export interface Value extends GetType<DemandaRespalda> {}
 	export interface CreateData extends GetCreateType<DemandaRespalda> {}

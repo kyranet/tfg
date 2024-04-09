@@ -8,7 +8,7 @@ export interface OfertaDemanda_Tags {
 }
 
 export namespace OfertaDemanda_Tags {
-	export const name = 'oferta_demanda_tags';
+	export const Name = 'oferta_demanda_tags';
 
 	export interface Value extends GetType<OfertaDemanda_Tags> {}
 	export interface CreateData extends GetCreateType<OfertaDemanda_Tags> {}

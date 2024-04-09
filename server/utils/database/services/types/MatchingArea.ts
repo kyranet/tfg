@@ -7,7 +7,7 @@ export interface MatchingArea {
 }
 
 export namespace MatchingArea {
-	export const name = 'matching_areas';
+	export const Name = 'matching_areas';
 
 	export interface Value extends GetType<MatchingArea> {}
 	export interface CreateData extends GetCreateType<MatchingArea> {}

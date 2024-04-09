@@ -14,7 +14,7 @@ export interface OfertaServicio {
 }
 
 export namespace OfertaServicio {
-	export const name = 'oferta_servicio';
+	export const Name = 'oferta_servicio';
 
 	export interface Value extends GetType<OfertaServicio> {}
 	export interface CreateData extends GetCreateType<OfertaServicio> {}

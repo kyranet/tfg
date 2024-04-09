@@ -10,7 +10,7 @@ export interface AreaServicio_AnuncioServicio {
 }
 
 export namespace AreaServicio_AnuncioServicio {
-	export const name = 'areaservicio_anuncioservicio';
+	export const Name = 'areaservicio_anuncioservicio';
 
 	export interface Value extends GetType<AreaServicio_AnuncioServicio> {}
 	export interface CreateData extends GetCreateType<AreaServicio_AnuncioServicio> {}

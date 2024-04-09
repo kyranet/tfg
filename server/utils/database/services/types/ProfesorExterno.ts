@@ -14,7 +14,7 @@ export interface ProfesorExterno {
 }
 
 export namespace ProfesorExterno {
-	export const name = 'profesor_externo';
+	export const Name = 'profesor_externo';
 
 	export interface Value extends GetType<ProfesorExterno> {}
 	export interface CreateData extends GetCreateType<ProfesorExterno> {}

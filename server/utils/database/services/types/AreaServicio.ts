@@ -6,7 +6,7 @@ export interface AreaServicio {
 }
 
 export namespace AreaServicio {
-	export const name = 'area_servicio';
+	export const Name = 'area_servicio';
 
 	export interface Value extends GetType<AreaServicio> {}
 	export interface CreateData extends GetCreateType<AreaServicio> {}

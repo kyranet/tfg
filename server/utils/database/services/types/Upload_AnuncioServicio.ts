@@ -10,7 +10,7 @@ export interface Upload_AnuncioServicio {
 }
 
 export namespace Upload_AnuncioServicio {
-	export const name = 'upload_anuncioservicio';
+	export const Name = 'upload_anuncioservicio';
 
 	export interface Value extends GetType<Upload_AnuncioServicio> {}
 	export interface CreateData extends GetCreateType<Upload_AnuncioServicio> {}

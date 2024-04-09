@@ -10,7 +10,7 @@ export interface PartenariadoRellenado {
 }
 
 export namespace PartenariadoRellenado {
-	export const name = 'partenariadorellenado';
+	export const Name = 'partenariadorellenado';
 
 	export interface Value extends GetType<PartenariadoRellenado> {}
 	export interface CreateData extends GetCreateType<PartenariadoRellenado> {}

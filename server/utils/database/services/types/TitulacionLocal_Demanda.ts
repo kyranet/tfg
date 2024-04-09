@@ -10,7 +10,7 @@ export interface TitulacionLocal_Demanda {
 }
 
 export namespace TitulacionLocal_Demanda {
-	export const name = 'titulacionlocal_demanda';
+	export const Name = 'titulacionlocal_demanda';
 
 	export interface Value extends GetType<TitulacionLocal_Demanda> {}
 	export interface CreateData extends GetCreateType<TitulacionLocal_Demanda> {}

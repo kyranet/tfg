@@ -10,7 +10,7 @@ export interface MensajeAnuncioServicio {
 }
 
 export namespace MensajeAnuncioServicio {
-	export const name = 'mensaje_anuncioservicio';
+	export const Name = 'mensaje_anuncioservicio';
 
 	export interface Value extends GetType<MensajeAnuncioServicio> {}
 	export interface CreateData extends GetCreateType<MensajeAnuncioServicio> {}

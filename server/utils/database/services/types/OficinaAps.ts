@@ -10,7 +10,7 @@ export interface OficinaAps {
 }
 
 export namespace OficinaAps {
-	export const name = 'oficinaaps';
+	export const Name = 'oficinaaps';
 
 	export interface Value extends GetType<OficinaAps> {}
 	export interface CreateData extends GetCreateType<OficinaAps> {}

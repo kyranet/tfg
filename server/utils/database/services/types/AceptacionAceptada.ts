@@ -11,7 +11,7 @@ export interface AceptacionAceptada {
 }
 
 export namespace AceptacionAceptada {
-	export const name = 'aceptacionaceptada';
+	export const Name = 'aceptacionaceptada';
 
 	export interface Value extends GetType<AceptacionAceptada> {}
 	export interface CreateData extends GetCreateType<AceptacionAceptada> {}

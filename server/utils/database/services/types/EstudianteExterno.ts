@@ -14,7 +14,7 @@ export interface EstudianteExterno {
 }
 
 export namespace EstudianteExterno {
-	export const name = 'estudiante_externo';
+	export const Name = 'estudiante_externo';
 
 	export interface Value extends GetType<EstudianteExterno> {}
 	export interface CreateData extends GetCreateType<EstudianteExterno> {}

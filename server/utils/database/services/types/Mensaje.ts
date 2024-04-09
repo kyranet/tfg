@@ -10,7 +10,7 @@ export interface Mensaje {
 }
 
 export namespace Mensaje {
-	export const name = 'mensaje';
+	export const Name = 'mensaje';
 
 	export interface Value extends GetType<Mensaje> {}
 	export interface CreateData extends GetCreateType<Mensaje> {}

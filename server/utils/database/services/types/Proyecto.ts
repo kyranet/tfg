@@ -12,7 +12,7 @@ export interface Proyecto {
 }
 
 export namespace Proyecto {
-	export const name = 'proyecto';
+	export const Name = 'proyecto';
 
 	export interface Value extends GetType<Proyecto> {}
 	export interface CreateData extends GetCreateType<Proyecto> {}
