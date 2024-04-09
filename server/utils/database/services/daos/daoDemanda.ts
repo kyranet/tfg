@@ -1,13 +1,11 @@
+import knex from '../../config';
 import AnuncioServicio from '../Transfer/tAnuncioServicio';
-import DemandaServicio from '../Transfer/tDemandaServicio';
 import AreaServicio from '../Transfer/tAreaServicio';
-import AreaServicioAnuncio from '../Transfer/tAreaServicioAnuncio';
+import { default as AreaServicioAnuncio, default as tAreaServicioAnuncio } from '../Transfer/tAreaServicioAnuncio';
+import { DemandaServicio } from '../Transfer/tDemandaServicio';
 import TitulacionLocal from '../Transfer/tTitulacionLocal';
 import TitulacionLocalDemanda from '../Transfer/tTitulacionLocalDemanda';
-import TDemandaServicio from '../Transfer/tDemandaServicio';
-import knex from '../../config';
 import { obtenerSocioComunitario } from '../daos/daoUsuario';
-import tAreaServicioAnuncio from '../Transfer/tAreaServicioAnuncio';
 
 //Obtener areas de servicio por un id de anuncio concreto
 async function obtenerAreaServicio(id_anuncio: number): Promise<AreaServicio[]> {
@@ -130,7 +128,7 @@ export async function obtenerDemandaServicio(id_demanda: number): Promise<Demand
 			});
 		}
 
-		// Devolvemos la interfaz TDemandaServicio
+		// Devolvemos la interfaz DemandaServicio
 		const demandaServicio: DemandaServicio = {
 			id: demanda[0].id,
 			titulo: anuncio[0]['titulo'],
@@ -289,7 +287,7 @@ interface DemandasFiltro {
 }
 
 //Cambiado a any, el tipo deberia ser QueryValue | QueryValue[]
-export async function obtenerTodasDemandasServicio(limit: number, offset: number, filters: DemandasFiltro[]): Promise<TDemandaServicio[]> {
+export async function obtenerTodasDemandasServicio(limit: number, offset: number, filters: DemandasFiltro[]): Promise<DemandaServicio[]> {
 	try {
 		const demandasQuery = knex('anuncio_servicio')
 			.join('demanda_servicio', 'anuncio_servicio.id', '=', 'demanda_servicio.id')
@@ -341,7 +339,7 @@ export async function obtenerTodasDemandasServicio(limit: number, offset: number
 				dummy: datoDemanda.dummy
 			};
 
-			const transferDemanda: TDemandaServicio = {
+			const transferDemanda: DemandaServicio = {
 				...anuncio,
 				creador: { nombre: datoDemanda.nombre_creador, apellidos: datoDemanda.apellidos_creador },
 				ciudad: datoDemanda.ciudad,

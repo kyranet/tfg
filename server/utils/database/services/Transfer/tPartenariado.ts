@@ -1,10 +1,10 @@
 import type TColaboracion from './tColaboracion';
 
-interface tPartenariado extends TColaboracion {
+export interface Partenariado extends TColaboracion {
 	id: number;
 	id_demanda: number;
 	id_oferta: number;
-	status: string;
+	status: PartenariadoStatus;
 	titulo: string;
 	descripcion: string;
 	admite_externos: boolean;
@@ -12,4 +12,9 @@ interface tPartenariado extends TColaboracion {
 	profesores: string[];
 }
 
-export default tPartenariado;
+export enum PartenariadoStatus {
+	EnNegociacion = 'EN_NEGOCIACION',
+	Acordado = 'ACORDADO',
+	Suspendido = 'SUSPENDIDO',
+	EnCreacion = 'EN_CREACION'
+}

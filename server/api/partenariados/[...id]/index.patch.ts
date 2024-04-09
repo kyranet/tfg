@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { actualizarPartenariado, obtenerPartenariado } from '~/server/utils/database/services/daos/daoColaboracion';
+import { CoercedIntegerId } from '~/server/utils/validators/shared';
 
-const schemaParams = z.object({ id: z.coerce.number().int() });
+const schemaParams = z.object({ id: CoercedIntegerId });
 const schemaBody = z.object({
 	demanda: z.coerce.number().int(),
 	titulo: z.string(),

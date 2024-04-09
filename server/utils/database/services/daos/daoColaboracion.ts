@@ -1,8 +1,8 @@
 import knex from '../../config';
 import TColaboracion from '../Transfer/tColaboracion';
-import tPartenariado from '../Transfer/tPartenariado';
-import tProyecto from '../Transfer/tProyecto';
 import TNotas from '../Transfer/tNotas';
+import { Partenariado } from '../Transfer/tPartenariado';
+import tProyecto from '../Transfer/tProyecto';
 import { obtenerUsuarioSinRolPorId } from '../daos/daoUsuario';
 
 export const crearColaboracion = async (colaboracion: TColaboracion): Promise<number> => {
@@ -31,7 +31,7 @@ export const crearColaboracion = async (colaboracion: TColaboracion): Promise<nu
 	}
 };
 
-export const crearPartenariado = async (partenariado: tPartenariado): Promise<number> => {
+export const crearPartenariado = async (partenariado: Partenariado): Promise<number> => {
 	try {
 		const id = await crearColaboracion(partenariado);
 		await knex('partenariado').insert({
@@ -108,7 +108,7 @@ async function obtenerColaboracion(id_colab: number): Promise<TColaboracion> {
 	}
 }
 
-export async function obtenerPartenariado(id: number): Promise<tPartenariado> {
+export async function obtenerPartenariado(id: number): Promise<Partenariado> {
 	try {
 		const colaboracion = await obtenerColaboracion(id);
 		const partenariado = await knex('partenariado').where({ id }).first();
@@ -116,7 +116,7 @@ export async function obtenerPartenariado(id: number): Promise<tPartenariado> {
 		const responsable = await obtenerUsuarioSinRolPorId(colaboracion.id);
 		const estado = transformarEstadoPartenariado(partenariado.estado);
 
-		const partner: tPartenariado = {
+		const partner: Partenariado = {
 			id: id,
 			titulo: colaboracion.titulo,
 			descripcion: colaboracion.descripcion,
@@ -320,7 +320,7 @@ async function actualizarColaboracion(colaboracion: TColaboracion): Promise<void
 	}
 }
 
-export async function actualizarPartenariado(partenariado: tPartenariado): Promise<void> {
+export async function actualizarPartenariado(partenariado: Partenariado): Promise<void> {
 	try {
 		await actualizarColaboracion(partenariado);
 
@@ -377,7 +377,7 @@ async function actualizarNota(nota: TNotas): Promise<void> {
 	}
 }
 
-export async function actualizarEstadoPartenariado(partenariado: tPartenariado): Promise<void> {
+export async function actualizarEstadoPartenariado(partenariado: Partenariado): Promise<void> {
 	try {
 		const partenariadoExistente = await knex('partenariado').where('id', partenariado.id).first();
 
@@ -397,7 +397,7 @@ export async function actualizarEstadoPartenariado(partenariado: tPartenariado):
 }
 
 //GET ALL
-async function obtenerTodosPartenariados(): Promise<tPartenariado[]> {
+async function obtenerTodosPartenariados(): Promise<Partenariado[]> {
 	try {
 		const datos = await knex('colaboracion').join('partenariado', 'colaboracion.id', '=', 'partenariado.id').select('*');
 

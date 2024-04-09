@@ -1,6 +1,7 @@
 import TAnuncioServicio from './tAnuncioServicio';
 import TitulacionLocalDemanda from './tTitulacionLocalDemanda';
-interface TDemandaServicio extends TAnuncioServicio {
+
+export interface DemandaServicio extends TAnuncioServicio {
 	creador: any;
 	ciudad: string;
 	finalidad: string;
@@ -15,5 +16,3 @@ interface TDemandaServicio extends TAnuncioServicio {
 	comunidad_beneficiaria: string;
 	dummy: any;
 }
-
-export default TDemandaServicio;

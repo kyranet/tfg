@@ -1,7 +1,6 @@
-import { defineEventHandler, getQuery, createError } from 'h3';
 import obtenerNotificaciones from '../../utils/database/services/daos/daoNotificacion';
 
-export default defineEventHandler(async (event) => {
+export default eventHandler(async (event) => {
 	try {
 		const query = getQuery(event);
 		let notificaciones = await obtenerNotificaciones(query.idUser);

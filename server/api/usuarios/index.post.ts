@@ -1,17 +1,16 @@
-import { defineEventHandler, readBody, createError } from 'h3';
 import bcrypt from 'bcryptjs';
 import { generarJWT } from '~/helpers/jwt';
-import {
-	obtenerUsuarioSinRolPorEmail,
-	insertarSocioComunitario,
-	insertarEstudianteExterno,
-	insertarProfesorExterno
-} from '../../utils/database/services/daos/daoUsuario';
-import TSocioComunitario from '../../utils/database/services/Transfer/tSocioComunitario';
 import TEstudianteExterno from '../../utils/database/services/Transfer/tEstudianteExterno';
 import TProfesorExterno from '../../utils/database/services/Transfer/tProfesorExterno';
+import TSocioComunitario from '../../utils/database/services/Transfer/tSocioComunitario';
+import {
+	insertarEstudianteExterno,
+	insertarProfesorExterno,
+	insertarSocioComunitario,
+	obtenerUsuarioSinRolPorEmail
+} from '../../utils/database/services/daos/daoUsuario';
 
-export default defineEventHandler(async (event) => {
+export default eventHandler(async (event) => {
 	try {
 		const body = await readBody(event);
 		const { email, password, rol } = body;

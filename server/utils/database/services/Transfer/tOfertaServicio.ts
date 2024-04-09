@@ -1,7 +1,8 @@
 import TAnuncioServicio from './tAnuncioServicio';
 import tProfesorInterno from './tProfesorInterno';
-interface TOfertaServicio extends TAnuncioServicio {
-	asignatura_objetivo: String[];
+
+export interface OfertaServicio extends TAnuncioServicio {
+	asignatura_objetivo: string[];
 	cuatrimestre: string;
 	anio_academico: string;
 	fecha_limite: Date;
@@ -10,5 +11,3 @@ interface TOfertaServicio extends TAnuncioServicio {
 	profesores: tProfesorInterno[];
 	tags: string[];
 }
-
-export default TOfertaServicio;

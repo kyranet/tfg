@@ -1,16 +1,14 @@
-import { defineEventHandler } from 'h3';
 import { z } from 'zod';
+import { SearchQuery, stringJSON } from '~/server/utils/validators/shared';
 import Usuario from '../../database/models/usuario.model'; //Revisar Models
 
 const filterSchema = z.object({ terminoBusqueda: z.string() });
-const schema = z.object({
-	skip: z.coerce.number().default(0),
-	limit: z.coerce.number().default(25),
-	filtros: z.preprocess((arg) => JSON.parse(arg as string), filterSchema).default({ terminoBusqueda: '' })
-});
+const schemaQuery = z //
+	.object({ filtros: stringJSON(filterSchema).default({ terminoBusqueda: '' }) })
+	.merge(SearchQuery);
 
-export default defineEventHandler(async (event) => {
-	const { skip, limit, filtros } = await getValidatedQuery(event, schema.parse);
+export default eventHandler(async (event) => {
+	const { skip, limit, filtros } = await getValidatedQuery(event, schemaQuery.parse);
 	let conditions = [];
 
 	// Logica de filtros

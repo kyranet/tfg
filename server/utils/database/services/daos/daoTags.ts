@@ -1,12 +1,12 @@
 import knex from '../../config';
-import type TOfertaServicio from '../Transfer/tOfertaServicio';
+import type OfertaServicio from '../Transfer/tOfertaServicio';
 
 export function readByStartWithWord(text: string): Promise<any[]> {
-	return knex<TOfertaServicio>('tags').where('nombre', 'like', `${text}%`).select('*');
+	return knex<OfertaServicio>('tags').where('nombre', 'like', `${text}%`).select('*');
 }
 
 export function readByOferta(ofertaId: number): Promise<any[]> {
-	return knex<TOfertaServicio>('oferta_demanda_tags')
+	return knex<OfertaServicio>('oferta_demanda_tags')
 		.select('tags.id', 'tags.nombre')
 		.from('oferta_demanda_tags')
 		.innerJoin('tags', 'oferta_demanda_tags.tag_id', 'tags.id')
@@ -23,8 +23,8 @@ export function readByOfertaIDs(ofertasIds: number[]): Promise<any[]> {
 		.where('tipo', 'like', 'oferta');
 }
 
-function getOfertasByTags(tagsNames: string[]): Promise<TOfertaServicio[]> {
-	return knex<TOfertaServicio>('oferta_demanda_tags')
+function getOfertasByTags(tagsNames: string[]): Promise<OfertaServicio[]> {
+	return knex<OfertaServicio>('oferta_demanda_tags')
 		.distinct('oferta_demanda_tags.object_id')
 		.from('oferta_demanda_tags')
 		.innerJoin('tags', 'oferta_demanda_tags.tag_id', 'tags.id')

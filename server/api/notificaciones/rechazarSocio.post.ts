@@ -1,10 +1,9 @@
-import { defineEventHandler, getQuery, createError } from 'h3';
-import { obtenerNotificacionOfertaAceptada, crearNotificacionAceptadacionRechazada } from '../../utils/database/services/daos/daoNotificacion';
 import TNotificacion from '../../utils/database/services/Transfer/tNotificacion';
+import { crearNotificacionAceptadacionRechazada, obtenerNotificacionOfertaAceptada } from '../../utils/database/services/daos/daoNotificacion';
 
 //Del codigo original no logro saber cuales son los que se crean en este punto
 //TODO revisar
-export default defineEventHandler(async (event) => {
+export default eventHandler(async (event) => {
 	try {
 		const query = getQuery(event);
 		let ofertaAceptada = await obtenerNotificacionOfertaAceptada(query.idNotificacion);

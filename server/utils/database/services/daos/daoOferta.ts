@@ -1,8 +1,8 @@
 import knex from '../../config';
 import TAnuncioServicio from '../Transfer/tAnuncioServicio';
-import TOfertaServicio from '../Transfer/tOfertaServicio';
+import OfertaServicio from '../Transfer/tOfertaServicio';
+import { readByOferta } from '../daos/daoTags';
 import { obtenerProfesorInterno, obtenerProfesoresInternos } from '../daos/daoUsuario';
-import { readByOfertaIDs, readByOferta } from '../daos/daoTags';
 async function crearAnuncio(anuncio: TAnuncioServicio): Promise<number> {
 	try {
 		const [idAnuncio] = await knex('anuncio_servicio')
@@ -28,7 +28,7 @@ async function crearAnuncio(anuncio: TAnuncioServicio): Promise<number> {
 		throw error;
 	}
 }
-export async function crearOferta(oferta: TOfertaServicio): Promise<number> {
+export async function crearOferta(oferta: OfertaServicio): Promise<number> {
 	try {
 		const idAnuncio = await crearAnuncio(oferta); // Reutiliza la función de crearAnuncio
 
@@ -51,7 +51,7 @@ export async function crearOferta(oferta: TOfertaServicio): Promise<number> {
 	}
 }
 
-export async function obtenerOfertaServicio(id_oferta: number): Promise<TOfertaServicio | null> {
+export async function obtenerOfertaServicio(id_oferta: number): Promise<OfertaServicio | null> {
 	try {
 		const anuncio = await obtenerAnuncioServicio(id_oferta);
 
@@ -71,7 +71,7 @@ export async function obtenerOfertaServicio(id_oferta: number): Promise<TOfertaS
 		const asignaturas_ref = await obtenerAsignaturaObjetivo(id_oferta);
 		const tags_ref = tags.map((tag) => tag.nombre);
 
-		const tOfertaServicio: TOfertaServicio = {
+		const tOfertaServicio: OfertaServicio = {
 			id: oferta[0].id,
 			titulo: anuncio.titulo,
 			descripcion: anuncio.descripcion,
@@ -111,7 +111,7 @@ export async function contarTodasOfertasServicio(): Promise<number> {
         const fil = JSON.parse(filters);
         const creator_id = fil.creador || true;
         const tag_filter = fil.tags.length ? fil.tags : [];
-        
+
         console.log(fil);
 
         let query = knex("anuncio_servicio")
@@ -146,9 +146,15 @@ export async function contarTodasOfertasServicio(): Promise<number> {
 }
 */
 
-export async function obtenerTodasOfertasServicio(limit: number, offset: number, filters: string): Promise<TOfertaServicio[]> {
-	const fil = JSON.parse(filters);
+interface OfertasServicioFilter {
+	cuatrimestre: string[];
+	terminoBusqueda: string;
+	creador?: string;
+	profesor?: string;
+	tags?: string[];
+}
 
+export async function obtenerTodasOfertasServicio(limit: number, offset: number, filters: OfertasServicioFilter): Promise<OfertaServicio[]> {
 	// Construye la consulta base con los filtros básicos aplicados.
 	let baseQuery = knex('anuncio_servicio')
 		.join('oferta_servicio', 'anuncio_servicio.id', '=', 'oferta_servicio.id')
@@ -168,24 +174,24 @@ export async function obtenerTodasOfertasServicio(limit: number, offset: number,
 			'datos_personales_interno.nombre',
 			'datos_personales_interno.apellidos'
 		)
-		.whereIn('cuatrimestre', fil.cuatrimestre)
-		.where('titulo', 'like', `%${fil.terminoBusqueda}%`)
+		.whereIn('cuatrimestre', filters.cuatrimestre)
+		.where('titulo', 'like', `%${filters.terminoBusqueda}%`)
 		.modify((queryBuilder) => {
-			if (fil.creador) {
-				queryBuilder.where('creador', fil.creador);
+			if (filters.creador) {
+				queryBuilder.where('creador', filters.creador);
 			}
-			if (fil.profesores && fil.profesores.length > 0) {
-				queryBuilder.where('creador', fil.profesores[0].id);
+			if (filters.profesor) {
+				queryBuilder.where('creador', filters.profesor);
 			}
 		})
 		.limit(limit)
 		.offset(offset);
 
 	// Si hay filtros de tags aplicados, ajusta la consulta para incluir solo ofertas con esos tags.
-	if (fil.tags && fil.tags.length > 0) {
+	if (filters.tags && filters.tags.length > 0) {
 		const taggedOffers = await knex('oferta_demanda_tags')
 			.join('tags', 'tags.id', 'oferta_demanda_tags.tag_id')
-			.whereIn('tags.nombre', fil.tags)
+			.whereIn('tags.nombre', filters.tags)
 			.select('object_id');
 
 		const taggedOfferIds = taggedOffers.map((offer) => offer.object_id);
@@ -253,7 +259,7 @@ function obtenerAnuncioServicio(id_anuncio) {
 }
 
 //Funciones auxiliares
-async function obtenerAsignaturaObjetivo(id_oferta: number): Promise<String[]> {
+async function obtenerAsignaturaObjetivo(id_oferta: number): Promise<string[]> {
 	try {
 		const nombres = await knex('asignatura').where({ id_oferta }).select('nombre');
 		return nombres.map((n) => n.nombre);

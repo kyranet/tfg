@@ -1,8 +1,7 @@
-import { defineEventHandler, getQuery, createError } from 'h3';
-import { notificarPartenariadoRellenado } from '../../utils/database/services/daos/daoNotificacion';
 import TNotificacion from '../../utils/database/services/Transfer/tNotificacion';
+import { notificarPartenariadoRellenado } from '../../utils/database/services/daos/daoNotificacion';
 
-export default defineEventHandler(async (event) => {
+export default eventHandler(async (event) => {
 	try {
 		const query = getQuery(event);
 		const notificacion: TNotificacion = {

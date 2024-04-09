@@ -1,8 +1,7 @@
-import { defineEventHandler, readBody, createError } from 'h3';
-import { crearNotificacionDemandaRespalda } from '../../utils/database/services/daos/daoNotificacion';
 import TNotificacion from '../../utils/database/services/Transfer/tNotificacion';
+import { crearNotificacionDemandaRespalda } from '../../utils/database/services/daos/daoNotificacion';
 
-export default defineEventHandler(async (event) => {
+export default eventHandler(async (event) => {
 	try {
 		const body = await readBody(event);
 		const notificacion: TNotificacion = {
