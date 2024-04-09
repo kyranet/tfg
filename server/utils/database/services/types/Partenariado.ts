@@ -4,7 +4,7 @@ export interface Partenariado extends Colaboracion {
 	id: number;
 	id_demanda: number;
 	id_oferta: number;
-	status: PartenariadoStatus;
+	estado: PartenariadoStatus;
 	titulo: string;
 	descripcion: string;
 	admite_externos: boolean;

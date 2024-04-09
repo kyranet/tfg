@@ -14,7 +14,7 @@ export default eventHandler(async (event) => {
 		profesores: body.profesores,
 		id_demanda: body.demanda,
 		id_oferta: body.oferta,
-		status: PartenariadoStatus.EnCreacion
+		estado: PartenariadoStatus.EnCreacion
 	};
 	const id = await crearPartenariado(partenariado);
 	return { ...partenariado, id };

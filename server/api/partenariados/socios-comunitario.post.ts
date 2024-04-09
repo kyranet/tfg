@@ -20,13 +20,13 @@ export default eventHandler(async (event) => {
 	const body = await readValidatedBody(event, schemaBody.parse);
 	const user = await requireAuthSession(event); // Asegúrate de tener una forma de acceder al usuario actual
 
-	let status: PartenariadoStatus;
+	let estado: PartenariadoStatus;
 	let demandaId: number;
 	if ('demanda' in body) {
-		status = PartenariadoStatus.EnCreacion;
+		estado = PartenariadoStatus.EnCreacion;
 		demandaId = body.demanda;
 	} else {
-		status = PartenariadoStatus.EnNegociacion;
+		estado = PartenariadoStatus.EnNegociacion;
 		let demanda: DemandaServicio = {
 			id: null!,
 			titulo: body.titulo,
@@ -53,7 +53,6 @@ export default eventHandler(async (event) => {
 	}
 
 	let partenariadoId = await obtenerIdPartenariado(demandaId, body.oferta);
-
 	let partenariado: Partenariado = {
 		id: partenariadoId,
 		titulo: body.titulo,
@@ -63,7 +62,7 @@ export default eventHandler(async (event) => {
 		profesores: body.profesores,
 		id_demanda: demandaId,
 		id_oferta: body.oferta,
-		status
+		estado: estado
 	};
 
 	if (partenariadoId === null) {

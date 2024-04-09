@@ -12,7 +12,7 @@ export default eventHandler(async (event) => {
 	const body = await readValidatedBody(event, schemaBody.parse);
 
 	const partenariado = await obtenerPartenariado(id);
-	partenariado.status = body.estado;
+	partenariado.estado = body.estado;
 	await actualizarEstadoPartenariado(partenariado);
 	return partenariado;
 });

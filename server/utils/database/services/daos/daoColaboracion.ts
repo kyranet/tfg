@@ -38,7 +38,7 @@ export const crearPartenariado = async (partenariado: Partenariado): Promise<num
 			id,
 			id_demanda: partenariado.id_demanda,
 			id_oferta: partenariado.id_oferta,
-			estado: partenariado.status
+			estado: partenariado.estado
 		});
 		console.log('Se ha creado un partenariado con id', id);
 		return id;
@@ -124,7 +124,7 @@ export async function obtenerPartenariado(id: number): Promise<Partenariado> {
 			profesores: colaboracion.profesores,
 			id_demanda: partenariado.id_demanda,
 			id_oferta: partenariado.id_oferta,
-			status: partenariado.estado
+			estado: partenariado.estado
 		};
 		return partner;
 	} catch (err) {
@@ -370,7 +370,7 @@ export async function actualizarEstadoPartenariado(partenariado: Partenariado): 
 		}
 
 		await knex('partenariado').where('id', partenariado.id).update({
-			estado: partenariado.status
+			estado: partenariado.estado
 		});
 
 		console.log('Estado de partenariado actualizado con éxito. ID:', partenariado.id);
