@@ -1,12 +1,11 @@
 import { crearPartenariado } from '~/server/utils/database/services/daos/daoColaboracion';
-import { Partenariado, PartenariadoEstado } from '~/server/utils/database/services/types/Partenariado';
+import { PartenariadoEstado } from '~/server/utils/database/services/types/Partenariado';
 import { PartenariadoBody } from '~/server/utils/validators/Partenariados';
 
 const schemaBody = PartenariadoBody;
 export default eventHandler(async (event) => {
 	const body = await readValidatedBody(event, schemaBody.parse);
-	const partenariado: Partenariado = {
-		id: null!,
+	return crearPartenariado({
 		titulo: body.titulo,
 		descripcion: body.descripcion,
 		admite_externos: body.admiteExternos,
@@ -15,7 +14,5 @@ export default eventHandler(async (event) => {
 		id_demanda: body.demanda,
 		id_oferta: body.oferta,
 		estado: PartenariadoEstado.EnCreacion
-	};
-	const id = await crearPartenariado(partenariado);
-	return { ...partenariado, id };
+	});
 });

@@ -27,7 +27,7 @@ export const crearDemandas = eventHandler(async (event) => {
 		fecha_fin: body.fechas.end,
 		observaciones_temporales: body.observaciones,
 		necesidad_social: body.necesidad_social,
-		titulacionlocal: body.titulacionLocal,
+		titulacionlocal: body.titulacionesLocales,
 		area_servicio: body.areaServicio,
 		comunidad_beneficiaria: body.comunidadBeneficiaria,
 		dummy: 0

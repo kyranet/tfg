@@ -1,8 +1,10 @@
+import { isNullishOrEmpty } from '@sapphire/utilities';
 import knex from '../../config';
 import { obtenerSocioComunitario } from '../daos/daoUsuario';
 import { AnuncioServicio } from '../types/AnuncioServicio';
 import { AreaServicio } from '../types/AreaServicio';
 import { AreaServicioAnuncio } from '../types/AreaServicioAnuncio';
+import { AreaServicio_AnuncioServicio } from '../types/AreaServicio_AnuncioServicio';
 import { DemandaServicio } from '../types/DemandaServicio';
 import { TitulacionLocal } from '../types/TitulacionLocal';
 import { TitulacionLocal_Demanda } from '../types/TitulacionLocal_Demanda';
@@ -193,76 +195,62 @@ async function obtenerAnuncioServicio(id_anuncio: number): Promise<AnuncioServic
 		});
 }
 
-async function crearAnuncio(anuncio: AnuncioServicio): Promise<number> {
-	try {
-		// Insertar el anuncio de servicio
-		const [id_anuncio] = await knex('anuncio_servicio').insert({
-			titulo: anuncio.titulo,
-			descripcion: anuncio.descripcion,
-			imagen: anuncio.imagen,
-			dummy: anuncio.dummy
-		});
+export type AnuncioServicioCreateData = AnuncioServicio.CreateData & { areaServicio?: readonly number[] };
+async function crearAnuncio(data: AnuncioServicioCreateData): Promise<AnuncioServicio.Value> {
+	const [entry] = await knex(AnuncioServicio.Name)
+		.insert({
+			titulo: data.titulo,
+			descripcion: data.descripcion,
+			imagen: data.imagen,
+			dummy: data.dummy
+		})
+		.returning('*');
 
-		// Obtener las áreas de servicio del anuncio
-		const areasServicio = anuncio.area_servicio;
-
-		// Preparar los datos a insertar en la tabla areaservicio_anuncioservicio
-		const fieldsToInsert: AreaServicioAnuncio | AreaServicioAnuncio[] = Array.isArray(areasServicio)
-			? areasServicio.map((area) => ({
-					id_area: area.id_area,
-					id_anuncio: id_anuncio
-				}))
-			: { id_area: areasServicio, id_anuncio: id_anuncio };
-
-		// Insertar en la tabla areaservicio_anuncioservicio
-		await knex('areaservicio_anuncioservicio').insert(fieldsToInsert);
-
-		console.log('Se ha creado el anuncio con ID:', id_anuncio);
-		return id_anuncio;
-	} catch (error) {
-		console.error('Se ha producido un error al intentar crear el anuncio:', error);
-		throw error;
+	if (!isNullishOrEmpty(data.areaServicio)) {
+		await knex(AreaServicio_AnuncioServicio).insert(
+			data.areaServicio.map((area) => ({
+				id_area: area,
+				id_anuncio: entry.id
+			}))
+		);
 	}
+
+	return entry;
 }
 
-export async function crearDemanda(demanda: DemandaServicio): Promise<number> {
-	try {
-		// Crear el anuncio de servicio asociado a la demanda
-		const id_anuncio = await crearAnuncio(demanda);
+export type DemandaServicioCreateData = AnuncioServicioCreateData & DemandaServicio.CreateData & { titulacionesLocales?: readonly number[] };
+export async function crearDemanda(data: DemandaServicioCreateData): Promise<AnuncioServicio.Value & DemandaServicio.CreateData> {
+	// Crear el anuncio de servicio asociado a la demanda
+	const anuncio = await crearAnuncio(data);
 
-		// Insertar la demanda de servicio asociada al anuncio
-		await knex('demanda_servicio').insert({
-			id: id_anuncio,
-			creador: demanda.creador,
-			ciudad: demanda.ciudad,
-			finalidad: demanda.finalidad,
-			periodo_definicion_ini: demanda.periodo_definicion_ini,
-			periodo_definicion_fin: demanda.periodo_definicion_fin,
-			periodo_ejecucion_ini: demanda.periodo_ejecucion_ini,
-			periodo_ejecucion_fin: demanda.periodo_ejecucion_fin,
-			fecha_fin: demanda.fecha_fin,
-			observaciones_temporales: demanda.observaciones_temporales,
-			necesidad_social: demanda.necesidad_social,
-			comunidad_beneficiaria: demanda.comunidad_beneficiaria
-		});
+	// Insertar la demanda de servicio asociada al anuncio
+	const [demanda] = await knex(DemandaServicio.Name)
+		.insert({
+			id: anuncio.id,
+			creador: data.creador,
+			ciudad: data.ciudad,
+			finalidad: data.finalidad,
+			periodo_definicion_ini: data.periodo_definicion_ini,
+			periodo_definicion_fin: data.periodo_definicion_fin,
+			periodo_ejecucion_ini: data.periodo_ejecucion_ini,
+			periodo_ejecucion_fin: data.periodo_ejecucion_fin,
+			fecha_fin: data.fecha_fin,
+			observaciones_temporales: data.observaciones_temporales,
+			necesidad_social: data.necesidad_social,
+			comunidad_beneficiaria: data.comunidad_beneficiaria
+		})
+		.returning('*');
 
-		// Insertar las titulaciones locales demandadas asociadas a la demanda
-		const titulaciones = demanda.titulacionlocal;
-		const fieldsToInsert: TitulacionLocal_Demanda | TitulacionLocal_Demanda[] = Array.isArray(titulaciones)
-			? titulaciones.map((titulacion) => ({
-					id_titulacion: titulacion.id_titulacion,
-					id_demanda: id_anuncio
-				}))
-			: { id_titulacion: titulaciones, id_demanda: id_anuncio };
-
-		await knex('titulacionlocal_demanda').insert(fieldsToInsert);
-
-		console.log('Se ha creado la demanda de servicio con ID:', id_anuncio);
-		return id_anuncio;
-	} catch (error) {
-		console.error('Se ha producido un error al intentar crear la demanda de servicio:', error);
-		throw error;
+	if (!isNullishOrEmpty(data.titulacionesLocales)) {
+		await knex(TitulacionLocal_Demanda.Name).insert(
+			data.titulacionesLocales.map((titulacion) => ({
+				id_titulacion: titulacion,
+				id_demanda: anuncio.id
+			}))
+		);
 	}
+
+	return { ...anuncio, ...demanda };
 }
 
 export async function contarTodasDemandasServicio(): Promise<number> {

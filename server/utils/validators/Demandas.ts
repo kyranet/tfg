@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 export const DemandaBody = z.object({
-	areaServicio: z.string().array(),
-	titulacionLocal: z.string().array(),
+	areaServicio: z.number().int().array(),
+	titulacionesLocales: z.number().int().array(),
 	titulo: z.string(),
 	descripcion: z.string(),
 	imagen: z.string(),
@@ -20,6 +20,6 @@ export const DemandaBody = z.object({
 		end: z.coerce.date()
 	}),
 	observaciones: z.string(),
-	necesidad_social: z.string(),
+	necesidadSocial: z.number().int(),
 	comunidadBeneficiaria: z.string()
 });

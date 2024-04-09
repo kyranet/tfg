@@ -1,11 +1,12 @@
 import knex from '../../config';
 import type { Mail } from '../types/Mail';
-import type { Mensaje } from '../types/Mensaje';
+import { Mensaje } from '../types/Mensaje';
+import { MensajeColaboracion } from '../types/MensajeColaboracion';
 import type { Newsletter } from '../types/Newsletter';
 import type { Upload } from '../types/Upload';
 // Devuelve el upload correspondiente
 
-async function obtenerUploads(idUploads: number): Promise<Upload | null> {
+export async function obtenerUploads(idUploads: number): Promise<Upload | null> {
 	const uploadData: Upload | undefined = await knex<Upload>('upload').where({ id: idUploads }).select('*').first();
 
 	if (!uploadData) {
@@ -32,7 +33,7 @@ async function obtenerUploads(idUploads: number): Promise<Upload | null> {
 
 //Devolver mensaje correspondiente
 
-async function obtenerMensajes(idMensajes: number): Promise<Mensaje | null> {
+export async function obtenerMensajes(idMensajes: number): Promise<Mensaje | null> {
 	try {
 		const mensajeData: Mensaje | undefined = await knex<Mensaje>('mensaje')
 			.where({
@@ -66,7 +67,7 @@ async function obtenerMensajes(idMensajes: number): Promise<Mensaje | null> {
 
 //Devuelve todos los mensajes de un anuncio
 //REVISAR
-async function obtenerMensajesAnuncio(idAnuncio: number): Promise<Mensaje[] | null> {
+export async function obtenerMensajesAnuncio(idAnuncio: number): Promise<Mensaje[] | null> {
 	try {
 		const mensajes: Mensaje[] = await knex('mensaje_anuncioservicio')
 			.where({
@@ -103,7 +104,7 @@ async function obtenerMensajesAnuncio(idAnuncio: number): Promise<Mensaje[] | nu
 }
 
 //Devuelve todos los mensajes de una colaboración
-async function obtenerMensajesColab(idColab: number): Promise<Mensaje[] | null> {
+export async function obtenerMensajesColab(idColab: number): Promise<Mensaje[] | null> {
 	try {
 		const mensajes = await knex('mensaje_colaboracion')
 			.where({
@@ -138,7 +139,7 @@ async function obtenerMensajesColab(idColab: number): Promise<Mensaje[] | null> 
 }
 
 //Devuelve todos los uploads de un anuncio
-async function obtenerUploadsAnuncio(idAnuncio: number): Promise<Upload[] | null> {
+export async function obtenerUploadsAnuncio(idAnuncio: number): Promise<Upload[] | null> {
 	try {
 		const uploadsData = (await knex<Upload>('upload_anuncioservicio')
 			.where({
@@ -179,7 +180,7 @@ async function obtenerUploadsAnuncio(idAnuncio: number): Promise<Upload[] | null
 
 //Devuelve todos los uploads de una colaboración
 
-async function obtenerUploadsColab(idColab: number): Promise<Upload[] | null> {
+export async function obtenerUploadsColab(idColab: number): Promise<Upload[] | null> {
 	try {
 		const uploadsData = (await knex('uploads_colaboracion')
 			.where({
@@ -215,7 +216,7 @@ async function obtenerUploadsColab(idColab: number): Promise<Upload[] | null> {
 
 //Crear nuevo mensaje
 
-async function crearMensajeAnuncio(mensaje: Mensaje, anuncio: number): Promise<number | null> {
+export async function crearMensajeAnuncio(mensaje: Mensaje, anuncio: number): Promise<number | null> {
 	try {
 		const idMensaje = await knex('mensaje')
 			.insert({
@@ -248,39 +249,19 @@ async function crearMensajeAnuncio(mensaje: Mensaje, anuncio: number): Promise<n
 	}
 }
 
-async function crearMensajeColab(mensaje: Mensaje, colaboracion: number): Promise<number | null> {
-	try {
-		return knex('mensaje')
-			.insert({
-				texto: mensaje.text,
-				fecha: mensaje.datetime,
-				usuario: mensaje.user
-			})
-			.then((id_mensaje) => {
-				return knex('mensaje_colaboracion')
-					.insert({
-						id_mensaje,
-						id_colaboracion: colaboracion
-					})
-					.then(() => id_mensaje[0])
-					.catch((err) => {
-						console.error(err);
-						console.error('Se ha producido un error al intentar asociar el mensaje con la colaboración');
-						return null;
-					});
-			})
-			.catch((err) => {
-				console.error(err);
-				console.error('Se ha producido un error al intentar crear el mensaje con texto ', mensaje.text);
-				return null;
-			});
-	} catch (error) {
-		console.error(error);
-		return Promise.resolve(null);
-	}
+export function crearMensajeColaboracion(data: Mensaje.CreateData, colaboracionId: number): Promise<Mensaje.Value> {
+	return knex.transaction(async (trx) => {
+		const colaboraciones = await trx('colaboracion').where({ id: colaboracionId }).select('id');
+		const colaboracion = getFirstDatabaseEntry(colaboraciones, 'No se encontró la colaboración con el ID proporcionado');
+
+		const [mensaje] = await trx(Mensaje.Name).insert(data).returning('*');
+
+		await trx(MensajeColaboracion.Name).insert({ id_mensaje: mensaje.id, id_colaboracion: colaboracion.id });
+		return mensaje;
+	});
 }
 
-async function crearUploadAnuncio(upload: Upload, anuncio: number): Promise<number | null> {
+export async function crearUploadAnuncio(upload: Upload, anuncio: number): Promise<number | null> {
 	try {
 		return knex('upload')
 			.insert({
@@ -319,7 +300,7 @@ async function crearUploadAnuncio(upload: Upload, anuncio: number): Promise<numb
 	}
 }
 
-async function crearUploadColab(upload: Upload, colaboracion: number): Promise<number | null> {
+export async function crearUploadColab(upload: Upload, colaboracion: number): Promise<number | null> {
 	try {
 		return knex('upload')
 			.insert({
@@ -358,7 +339,7 @@ async function crearUploadColab(upload: Upload, colaboracion: number): Promise<n
 	}
 }
 
-async function eliminarMensaje(id_mensaje: number): Promise<void> {
+export async function eliminarMensaje(id_mensaje: number): Promise<void> {
 	try {
 		return knex('mensaje')
 			.where({
@@ -382,7 +363,7 @@ async function eliminarMensaje(id_mensaje: number): Promise<void> {
 	}
 }
 
-async function eliminarUpload(id_upload: number): Promise<void> {
+export async function eliminarUpload(id_upload: number): Promise<void> {
 	try {
 		return knex('upload')
 			.where({
@@ -406,7 +387,7 @@ async function eliminarUpload(id_upload: number): Promise<void> {
 	}
 }
 
-async function actualizarUpload(upload: Upload): Promise<void> {
+export async function actualizarUpload(upload: Upload): Promise<void> {
 	try {
 		return knex('upload')
 			.where('id', upload.id)
@@ -433,7 +414,7 @@ async function actualizarUpload(upload: Upload): Promise<void> {
 	}
 }
 
-async function actualizarMensaje(mensaje: Mensaje): Promise<void> {
+export async function actualizarMensaje(mensaje: Mensaje): Promise<void> {
 	try {
 		return knex('mensaje')
 			.where({
@@ -457,7 +438,7 @@ async function actualizarMensaje(mensaje: Mensaje): Promise<void> {
 }
 
 //Mail
-async function crearMail(mail: Mail): Promise<number | null> {
+export async function crearMail(mail: Mail): Promise<number | null> {
 	try {
 		return knex('mail')
 			.insert({
@@ -484,7 +465,7 @@ async function crearMail(mail: Mail): Promise<number | null> {
 	}
 }
 
-async function obtenerMail(id_mail: number): Promise<Mail | null> {
+export async function obtenerMail(id_mail: number): Promise<Mail | null> {
 	try {
 		const mail = await knex<Mail>('mail')
 			.where({
@@ -518,7 +499,7 @@ async function obtenerMail(id_mail: number): Promise<Mail | null> {
 	}
 }
 
-async function actualizarMail(mail: Mail): Promise<void> {
+export async function actualizarMail(mail: Mail): Promise<void> {
 	try {
 		return knex('mail')
 			.where('id', mail.id)
@@ -545,7 +526,7 @@ async function actualizarMail(mail: Mail): Promise<void> {
 	}
 }
 
-async function eliminarMail(id_mail: number): Promise<void> {
+export async function eliminarMail(id_mail: number): Promise<void> {
 	try {
 		return knex('mail')
 			.where({
@@ -570,7 +551,7 @@ async function eliminarMail(id_mail: number): Promise<void> {
 }
 //Newsletter
 
-async function crearNewsletter(news: Newsletter): Promise<number | null> {
+export async function crearNewsletter(news: Newsletter): Promise<number | null> {
 	try {
 		return knex('newsletter')
 			.insert({
@@ -590,7 +571,7 @@ async function crearNewsletter(news: Newsletter): Promise<number | null> {
 	}
 }
 
-async function obtenerNewsletter(id_news: number): Promise<Newsletter | null> {
+export async function obtenerNewsletter(id_news: number): Promise<Newsletter | null> {
 	try {
 		const news = await knex<Newsletter>('newsletter')
 			.where({
@@ -617,7 +598,7 @@ async function obtenerNewsletter(id_news: number): Promise<Newsletter | null> {
 	}
 }
 
-async function actualizarNewsletter(news: Newsletter): Promise<void> {
+export async function actualizarNewsletter(news: Newsletter): Promise<void> {
 	try {
 		return knex('newsletter')
 			.where({
@@ -640,7 +621,7 @@ async function actualizarNewsletter(news: Newsletter): Promise<void> {
 	}
 }
 
-async function eliminarNewsletter(id: number): Promise<void> {
+export async function eliminarNewsletter(id: number): Promise<void> {
 	try {
 		const result = await knex('newsletter')
 			.where({
@@ -660,28 +641,3 @@ async function eliminarNewsletter(id: number): Promise<void> {
 		return Promise.resolve();
 	}
 }
-
-module.exports = {
-	crearMensajeAnuncio,
-	crearMensajeColab,
-	crearUploadAnuncio,
-	crearUploadColab,
-	crearNewsletter,
-	crearMail,
-	obtenerUploads,
-	obtenerMensajes,
-	obtenerMensajesAnuncio,
-	obtenerMensajesColab,
-	obtenerUploadsAnuncio,
-	obtenerUploadsColab,
-	obtenerMail,
-	obtenerNewsletter,
-	actualizarUpload,
-	actualizarMensaje,
-	actualizarMail,
-	actualizarNewsletter,
-	eliminarUpload,
-	eliminarMail,
-	eliminarMensaje,
-	eliminarNewsletter
-};

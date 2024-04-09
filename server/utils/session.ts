@@ -3,7 +3,7 @@ import type { H3Event, SessionConfig } from 'h3';
 const sessionConfig = useRuntimeConfig().auth as SessionConfig;
 
 export interface AuthSession {
-	id: string;
+	id: number;
 	email: string;
 	nombre: string;
 	apellidos: string;

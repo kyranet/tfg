@@ -6,8 +6,7 @@ import {
 	obtenerIdPartenariado
 } from '~/server/utils/database/services/daos/daoColaboracion';
 import { crearDemanda } from '~/server/utils/database/services/daos/daoDemanda';
-import type { DemandaServicio } from '~/server/utils/database/services/types/DemandaServicio';
-import { PartenariadoEstado, type Partenariado } from '~/server/utils/database/services/types/Partenariado';
+import { PartenariadoEstado } from '~/server/utils/database/services/types/Partenariado';
 import { DemandaBody } from '~/server/utils/validators/Demandas';
 import { PartenariadoBody } from '~/server/utils/validators/Partenariados';
 import { CoercedIntegerId } from '~/server/utils/validators/shared';
@@ -27,12 +26,12 @@ export default eventHandler(async (event) => {
 		demandaId = body.demanda;
 	} else {
 		estado = PartenariadoEstado.EnNegociacion;
-		let demanda: DemandaServicio = {
+		const demanda = await crearDemanda({
 			id: null!,
 			titulo: body.titulo,
 			descripcion: body.descripcion,
 			imagen: body.imagen,
-			creador: user.id,
+			creador: user.data.id,
 			ciudad: body.ciudad,
 			finalidad: body.finalidad,
 			periodo_definicion_ini: body.fechas.definition.start,
@@ -41,38 +40,42 @@ export default eventHandler(async (event) => {
 			periodo_ejecucion_fin: body.fechas.execution.end,
 			fecha_fin: body.fechas.end,
 			observaciones_temporales: body.observaciones,
-			necesidad_social: body.necesidad_social,
-			titulacionlocal: body.titulacionLocal,
-			area_servicio: body.areaServicio,
+			necesidad_social: body.necesidadSocial,
+			titulacionesLocales: body.titulacionesLocales,
+			areaServicio: body.areaServicio,
 			comunidad_beneficiaria: '',
-			dummy: 1,
-			created_at: undefined,
-			updated_at: undefined
-		};
-		demandaId = await crearDemanda(demanda);
+			dummy: true,
+		});
+		demandaId = demanda.id;
 	}
 
 	let partenariadoId = await obtenerIdPartenariado(demandaId, body.oferta);
-	let partenariado: Partenariado = {
-		id: partenariadoId,
-		titulo: body.titulo,
-		descripcion: body.descripcion,
-		admite_externos: body.admiteExternos,
-		responsable: body.responsable,
-		profesores: body.profesores,
-		id_demanda: demandaId,
-		id_oferta: body.oferta,
-		estado: estado
-	};
-
-	if (partenariadoId === null) {
-		await crearPartenariado(partenariado);
-	} else {
-		await actualizarPartenariado(partenariado);
-	}
+	const partenariado =
+		partenariadoId === null
+			? await crearPartenariado({
+					titulo: body.titulo,
+					descripcion: body.descripcion,
+					admite_externos: body.admiteExternos,
+					responsable: body.responsable,
+					profesores: body.profesores,
+					id_demanda: demandaId,
+					id_oferta: body.oferta,
+					estado: estado
+				})
+			: await actualizarPartenariado({
+					id: partenariadoId,
+					titulo: body.titulo,
+					descripcion: body.descripcion,
+					admite_externos: body.admiteExternos,
+					responsable: body.responsable,
+					profesores: body.profesores,
+					id_demanda: demandaId,
+					id_oferta: body.oferta,
+					estado: estado
+				});
 
 	// Actualizar estado del partenariado previo, si necesario
-	//Revisar si es correcto los parametros que se pasan, en el cod original se envia 0,1 en vez de true/false
+	// Revisar si es correcto los parametros que se pasan, en el cod original se envia 0,1 en vez de true/false
 	await actualizarPrevioPartenariado(demandaId, body.oferta, false, true);
 
 	return partenariado;

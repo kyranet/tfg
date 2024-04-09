@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { crearMensajeColaboracion } from '~/server/utils/database/services/daos/daoComunicacion';
 import { CoercedIntegerId } from '~/server/utils/validators/shared';
 
 const schemaParams = z.object({ id: CoercedIntegerId });
@@ -8,16 +9,5 @@ export default eventHandler(async (event) => {
 	const body = await readValidatedBody(event, schemaBody.parse);
 	const user = await requireAuthSession(event);
 
-	const mensaje = {
-		texto: body.mensaje,
-		uid: user.data.id,
-		email: user.data.email,
-		nombre: user.data.nombre,
-		apellidos: user.data.apellidos,
-		rol: user.data.rol,
-		fecha: new Date()
-	};
-
-	await Partenariado.updateOne({ _id: id }, { $push: { mensajes: { $each: [mensaje], $position: 0 } } });
-	return mensaje;
+	return await crearMensajeColaboracion({ texto: body.mensaje, usuario: user.data.id }, id);
 });
