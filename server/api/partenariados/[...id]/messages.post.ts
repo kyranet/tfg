@@ -9,5 +9,5 @@ export default eventHandler(async (event) => {
 	const body = await readValidatedBody(event, schemaBody.parse);
 	const user = await requireAuthSession(event);
 
-	return await crearMensajeColaboracion({ texto: body.mensaje, usuario: user.data.id }, id);
+	return crearMensajeColaboracion({ texto: body.mensaje, usuario: user.data.id }, id);
 });

@@ -1,5 +1,4 @@
 import { crearDemanda } from '~/server/utils/database/services/daos/daoDemanda';
-import { DemandaServicio } from '~/server/utils/database/services/types/DemandaServicio';
 import { DemandaBody } from '~/server/utils/validators/Demandas';
 
 const schemaBody = DemandaBody;
@@ -7,17 +6,11 @@ export const crearDemandas = eventHandler(async (event) => {
 	const body = await readValidatedBody(event, schemaBody.parse);
 	const user = await requireAuthSession(event);
 
-	// Crear la instancia de la demanda siguiendo la original
-	const demanda: DemandaServicio = {
-		id: null!, // id
+	return crearDemanda({
 		titulo: body.titulo,
 		descripcion: body.descripcion,
 		imagen: body.imagen,
-		created_at: null,
-		updated_at: null,
-		// NOTE: No hagamos body.current_user, sino que usemos el usuario actual
-		// que viene en el evento
-		creador: user.id, // Esta en el original, correcto?
+		creador: user.data.id,
 		ciudad: body.ciudad,
 		finalidad: body.finalidad,
 		periodo_definicion_ini: body.fechas.definition.start,
@@ -26,14 +19,9 @@ export const crearDemandas = eventHandler(async (event) => {
 		periodo_ejecucion_fin: body.fechas.execution.end,
 		fecha_fin: body.fechas.end,
 		observaciones_temporales: body.observaciones,
-		necesidad_social: body.necesidad_social,
-		titulacionlocal: body.titulacionesLocales,
-		area_servicio: body.areaServicio,
-		comunidad_beneficiaria: body.comunidadBeneficiaria,
-		dummy: 0
-	};
-
-	// Llamada al DAO para guardar la nueva demanda
-	const id = await crearDemanda(demanda);
-	return { ...demanda, id };
+		necesidad_social: body.necesidadSocial,
+		titulacionesLocales: body.titulacionesLocales,
+		areaServicio: body.areaServicio,
+		comunidad_beneficiaria: body.comunidadBeneficiaria
+	});
 });

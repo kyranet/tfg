@@ -15,13 +15,7 @@ const schemaBody = z.object({
 export default eventHandler(async (event) => {
 	const { id } = await getValidatedRouterParams(event, schemaParams.parse);
 	const body = await readValidatedBody(event, schemaBody.parse);
-	let partenariado = await obtenerPartenariado(id);
-
-	if (!partenariado) {
-		throw createError({ statusCode: 404, statusMessage: 'Partenariado no encontrado' });
-	}
-
-	return await actualizarPartenariado({
+	return actualizarPartenariado({
 		id,
 		id_demanda: body.demanda,
 		titulo: body.titulo,

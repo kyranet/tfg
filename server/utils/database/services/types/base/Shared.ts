@@ -36,7 +36,4 @@ export type GetType<Table extends object> = { [K in keyof Table]: ExtractTypeVal
 type IsAutomaticValue<Type> = Type extends AutoIncrement<infer _> | Defaults<infer _> ? true : false;
 type GetAutomaticKeys<Table extends object> = { [K in keyof Table]: IsAutomaticValue<Table[K]> extends true ? K : never }[keyof Table];
 type PartializeKeys<Value extends object, Keys extends keyof Value> = Omit<Value, Keys> & Partial<Pick<Value, Keys>>;
-export type GetCreateType<
-	Table extends object, //
-	GeneratedOrDefaultedKeys extends keyof Table = GetAutomaticKeys<Table>
-> = PartializeKeys<GetType<Table>, GeneratedOrDefaultedKeys>;
+export type GetCreateType<Table extends object> = PartializeKeys<GetType<Table>, GetAutomaticKeys<Table>>;

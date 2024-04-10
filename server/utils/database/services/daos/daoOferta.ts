@@ -32,34 +32,23 @@ async function crearAnuncio(anuncio: AnuncioServicioCreateData): Promise<number>
 	}
 }
 
-type OfertaServicioCreateDataKeys =
-	| 'asignatura_objetivo'
-	| 'cuatrimestre'
-	| 'anio_academico'
-	| 'fecha_limite'
-	| 'observaciones_temporales'
-	| 'creador'
-	| 'tags'
-	| 'profesores';
-export type OfertaServicioCreateData = AnuncioServicioCreateData & Pick<OfertaServicio, OfertaServicioCreateDataKeys>;
+type OfertaServicioCreateDataKeys = 'cuatrimestre' | 'anio_academico' | 'fecha_limite' | 'observaciones_temporales' | 'creador';
+export type OfertaServicioCreateData = AnuncioServicioCreateData & Pick<OfertaServicio.CreateData, OfertaServicioCreateDataKeys>;
 export async function crearOferta(oferta: OfertaServicioCreateData): Promise<OfertaServicio> {
 	const idAnuncio = await crearAnuncio(oferta); // Reutiliza la función de crearAnuncio
-	const [entry] = await knex<OfertaServicio>('oferta_servicio')
+	const [entry] = await knex('oferta_servicio')
 		.insert({
 			id: idAnuncio,
-			asignatura_objetivo: oferta.asignatura_objetivo,
 			cuatrimestre: oferta.cuatrimestre,
 			anio_academico: oferta.anio_academico,
 			fecha_limite: oferta.fecha_limite,
 			observaciones_temporales: oferta.observaciones_temporales,
-			creador: oferta.creador,
+			creador: oferta.creador
 			//Revisar esta logica de insercion de profesores/tags
-			tags: oferta.tags,
-			profesores: oferta.profesores
 		})
 		.returning('*');
 
-	await knex<Profesor>('profesor_colaboracion').whereIn('id', oferta.profesores).update({ oferta_servicio: entry.id });
+	await knex('profesor_colaboracion').whereIn('id', oferta.profesores).update({ oferta_servicio: entry.id });
 
 	return entry;
 }
