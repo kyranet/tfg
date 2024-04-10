@@ -23,17 +23,10 @@ export function readByOfertaIDs(ofertasIds: number[]): Promise<any[]> {
 		.where('tipo', 'like', 'oferta');
 }
 
-function getOfertasByTags(tagsNames: string[]): Promise<OfertaServicio[]> {
+export function getOfertasByTags(tagsNames: string[]): Promise<OfertaServicio[]> {
 	return knex<OfertaServicio>('oferta_demanda_tags')
 		.distinct('oferta_demanda_tags.object_id')
 		.from('oferta_demanda_tags')
 		.innerJoin('tags', 'oferta_demanda_tags.tag_id', 'tags.id')
 		.whereIn('tags.nombre', tagsNames);
 }
-
-module.exports = {
-	readByStartWithWord,
-	readByOferta,
-	readByOfertaIDs,
-	getOfertasByTags
-};

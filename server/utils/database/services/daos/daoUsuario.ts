@@ -1,346 +1,232 @@
+import { isNullishOrEmpty } from '@sapphire/utilities';
 import knex from '../../config';
-import type { Admin } from '../types/Admin';
+import { Admin } from '../types/Admin';
+import { AreaConocimiento_Profesor } from '../types/AreaConocimiento_Profesor';
 import type { AreaServicio } from '../types/AreaServicio';
-import type { Estudiante } from '../types/Estudiante';
-import type { EstudianteExterno } from '../types/EstudianteExterno';
-import type { EstudianteInterno } from '../types/EstudianteInterno';
-import type { OficinaAps } from '../types/OficinaAps';
-import type { Profesor } from '../types/Profesor';
-import type { ProfesorExterno } from '../types/ProfesorExterno';
-import type { ProfesorInterno } from '../types/ProfesorInterno';
-import type { SocioComunitario } from '../types/SocioComunitario';
+import { DatosPersonalesExterno } from '../types/DatosPersonalesExterno';
+import { DatosPersonalesInterno } from '../types/DatosPersonalesInterno';
+import { Estudiante } from '../types/Estudiante';
+import { EstudianteExterno } from '../types/EstudianteExterno';
+import { EstudianteInterno } from '../types/EstudianteInterno';
+import { OficinaAps } from '../types/OficinaAps';
+import { Profesor } from '../types/Profesor';
+import { ProfesorExterno } from '../types/ProfesorExterno';
+import { ProfesorInterno } from '../types/ProfesorInterno';
+import { SocioComunitario } from '../types/SocioComunitario';
 import type { TitulacionLocal } from '../types/TitulacionLocal';
-import type { Usuario } from '../types/Usuario';
+import { TitulacionLocal_Profesor } from '../types/TitulacionLocal_Profesor';
+import { Universidad } from '../types/Universidad';
+import { Usuario } from '../types/Usuario';
+import { sharedDeleteEntryTable } from './daoUtils';
 
-//Insertar------------------------------------------------------------------------------------------------
-// Inserta en la base de datos un nuevo usuario
-async function insertarUsuario(usuario: Usuario): Promise<number> {
-	try {
-		const [id] = await knex<Usuario>('usuario')
-			.insert({
-				origin_login: usuario.origin_login,
-				origin_img: usuario.origin_img,
-				createdAt: usuario.createdAt,
-				updatedAt: usuario.updatedAt,
-				terminos_aceptados: usuario.terminos_aceptados
-			})
-			.returning('id');
-
-		return id as unknown as number;
-	} catch (error) {
-		console.error(error);
-		console.error('Se ha producido un error al insertar el usuario');
-		return -1;
-	}
-}
-//Inserta en la base de datos un nuevo admin
-async function insertarAdmin(admin: Admin): Promise<number> {
-	try {
-		const idUsuario: number = await insertarUsuario(admin);
-
-		const idDatosPersonales: number = await knex('datos_personales_interno')
-			.insert({
-				correo: admin.correo,
-				password: admin.password,
-				apellidos: admin.apellidos,
-				nombre: admin.nombre,
-				telefono: admin.telefono
-			})
-			.returning('id')
-			.then((result) => result[0]);
-
-		await knex('admin').insert({
-			id: idUsuario,
-			datos_personales_Id: idDatosPersonales
-		});
-
-		return idUsuario;
-	} catch (error) {
-		console.error(error);
-		console.error('Se ha producido un error al insertar el admin');
-		return -1;
-	}
-}
-// Inserta en la base de datos una nueva oficinaAPS
-async function insertarOficinaAps(usuario: OficinaAps): Promise<number> {
-	try {
-		const idUsuario: number = await insertarUsuario(usuario);
-
-		const datosPersonalesId: number = await knex('datos_personales_interno')
-			.insert({
-				correo: usuario.correo,
-				password: usuario.password,
-				apellidos: usuario.apellidos,
-				nombre: usuario.nombre,
-				telefono: usuario.telefono
-			})
-			.returning('id')
-			.then((result) => result[0]);
-
-		await knex('oficinaaps').insert({ id: idUsuario, datos_personales_Id: datosPersonalesId });
-
-		return idUsuario;
-	} catch (error) {
-		console.error(error);
-		console.error('Se ha producido un error al insertar la oficinaAPS');
-		return -1;
-	}
-}
-//Inserta en la base de datos un nuevo estudiante
-async function insertarEstudiante(usuario: Usuario): Promise<number> {
-	try {
-		const idF: number = await insertarUsuario(usuario); // Cambiar a un solo número
-
-		if (idF !== -1) {
-			await knex('estudiante').insert({ id: idF });
-
-			return idF;
-		} else {
-			console.error('Se ha producido un error al insertar el estudiante');
-			return -1;
-		}
-	} catch (error) {
-		console.error(error);
-		console.error('Se ha producido un error al insertar el estudiante');
-		return -1;
-	}
-}
-//Inserta en la base de datos un nuevo estudiante interno
-async function insertarEstudianteInterno(usuario: EstudianteInterno): Promise<number> {
-	try {
-		const idF: number = await insertarEstudiante(usuario);
-
-		const result = await knex('datos_personales_interno')
-			.insert({
-				correo: usuario.correo,
-				password: usuario.password,
-				apellidos: usuario.apellidos,
-				nombre: usuario.nombre,
-				telefono: usuario.telefono
-			})
-			.returning('id');
-
-		await knex('estudiante_interno').insert({
-			id: idF,
-			titulacion_local: usuario.titulacion_local,
-			datos_personales_Id: result[0]
-		});
-
-		return idF;
-	} catch (error) {
-		console.error(error);
-		console.error('Se ha producido un error al insertar el estudiante interno');
-		return -1;
-	}
-}
-//Inserta en la base de datos un nuevo profesor
-async function insertarProfesor(usuario: Usuario): Promise<number> {
-	try {
-		const id: number = await insertarUsuario(usuario);
-
-		if (id !== -1) {
-			await knex('profesor').insert({ id: id });
-
-			return id;
-		} else {
-			console.error('Se ha producido un error al insertar el profesor');
-			return -1;
-		}
-	} catch (error) {
-		console.error(error);
-		console.error('Se ha producido un error al insertar el profesor');
-		return -1;
-	}
-}
-// Inserta en la base de datos un nuevo socio comunitario
-export async function insertarSocioComunitario(usuario: SocioComunitario): Promise<number> {
-	try {
-		const idF: number = await insertarUsuario(usuario);
-
-		if (idF > 0) {
-			const result = await knex('datos_personales_externo')
-				.insert({
-					correo: usuario.correo,
-					password: usuario.password,
-					apellidos: usuario.apellidos,
-					nombre: usuario.nombre,
-					telefono: usuario.telefono
-				})
-				.returning('id');
-
-			await knex('socio_comunitario').insert({
-				id: idF,
-				sector: usuario.sector,
-				nombre_socioComunitario: usuario.nombre_socioComunitario,
-				url: usuario.url,
-				mision: usuario.mision,
-				datos_personales_Id: result[0]
-			});
-
-			return idF;
-		} else {
-			console.error('Se ha producido un error al insertar el socio comunitario');
-			return -1;
-		}
-	} catch (error) {
-		console.error(error);
-		console.error('Se ha producido un error al insertar el socio comunitario');
-		return -1;
-	}
-}
-//Inserta en la base de datos un nuevo profesor interno
-async function insertarProfesorInterno(usuario: ProfesorInterno): Promise<number> {
-	try {
-		const idF: number = await insertarProfesor(usuario);
-
-		const result = await knex('datos_personales_interno')
-			.insert({
-				correo: usuario.correo,
-				password: usuario.password,
-				apellidos: usuario.apellidos,
-				nombre: usuario.nombre,
-				telefono: usuario.telefono
-			})
-			.returning('id');
-
-		await knex('profesor_interno').insert({ id: idF, datos_personales_Id: result[0] });
-
-		const idTitulaciones = usuario.titulacion_local;
-		const fieldsToInsert = idTitulaciones.map((field) => ({
-			id_titulacion: field,
-			id_profesor: idF
-		}));
-
-		await knex('titulacionlocal_profesor').insert(fieldsToInsert);
-
-		const idAreasC = usuario.area_conocimiento;
-		const fieldsToInsertArea = idAreasC.map((field) => ({
-			id_area: field,
-			id_profesor: idF
-		}));
-
-		await knex('areaconocimiento_profesor').insert(fieldsToInsertArea);
-
-		return idF;
-	} catch (error) {
-		console.error(error);
-		console.error('Se ha producido un error al insertar el profesor interno');
-		return -1;
-	}
-}
-//Inserta en la base de datos un nuevo estudiante externo
-export async function insertarEstudianteExterno(usuario: EstudianteExterno): Promise<number> {
-	try {
-		const idF: number = await insertarEstudiante(usuario);
-
-		if (idF === -1) {
-			console.error('No se recibió un ID válido al insertar el estudiante.');
-			return -1;
-		}
-
-		const values = await knex('universidad').select('id').where('nombre', 'like', `%${usuario.nombreUniversidad}%`);
-
-		if (values.length === 0 || !values[0]['id']) {
-			console.error('No se encontró una universidad válida.');
-			return -1;
-		}
-
-		const idUniversidad: number = values[0]['id'];
-
-		await knex('estudiante_externo').insert({
-			id: idF,
-			universidad: idUniversidad,
-			titulacion: usuario.titulacion,
-			datos_personales_Id: idF
-		});
-
-		return idF;
-	} catch (error) {
-		console.error(error);
-		console.error('Se ha producido un error al insertar el estudiante externo');
-		return -1;
-	}
+async function sharedInsertaDatosPersonalesInterno(data: DatosPersonalesInterno.CreateData) {
+	const [datos] = await knex(DatosPersonalesInterno.Name)
+		.insert({ correo: data.correo, password: data.password, apellidos: data.apellidos, nombre: data.nombre, telefono: data.telefono })
+		.returning('*');
+	return datos;
 }
 
-export async function insertarProfesorExterno(usuario) {
-	try {
-		// Insertar profesor y obtener ID
-		const idF = await insertarProfesor(usuario);
-		if (idF === -1) throw new Error('Error insertando profesor');
-
-		// Insertar datos personales externos
-		const resultDatosPersonales = await knex('datos_personales_externo').insert(
-			{
-				correo: usuario.getCorreo(),
-				password: usuario.getPassword(),
-				apellidos: usuario.getApellidos(),
-				nombre: usuario.getNombre(),
-				telefono: usuario.getTelefono()
-			},
-			'id'
-		); // Asegúrate de que 'id' se devuelve correctamente después de la inserción
-
-		if (!resultDatosPersonales || resultDatosPersonales.length === 0) throw new Error('Error insertando datos personales externos');
-
-		// Insertar áreas de conocimiento
-		const fieldsToInsert = usuario.getAreaConocimiento().map((area) => ({
-			id_area: area.id,
-			id_profesor: idF[0]
-		}));
-
-		await knex('areaconocimiento_profesor').insert(fieldsToInsert);
-
-		// Buscar universidad por nombre
-		const valuesUniversidad = await knex('universidad').select('id').where('nombre', 'like', `%${usuario.getnombreUniversidad()}%`);
-
-		if (!valuesUniversidad || valuesUniversidad.length === 0) throw new Error('Universidad no encontrada');
-
-		// Insertar profesor externo
-		await knex('profesor_externo').insert({
-			id: idF[0],
-			universidad: valuesUniversidad[0]['id'],
-			datos_personales_Id: resultDatosPersonales[0],
-			facultad: usuario.getFacultad()
-		});
-
-		return idF[0];
-	} catch (err) {
-		console.error('Se ha producido un error:', err);
-		return -1; //No se ha podido insertar
-	}
+async function sharedInsertaDatosPersonalesExterno(data: DatosPersonalesExterno.CreateData) {
+	const [datos] = await knex(DatosPersonalesExterno.Name)
+		.insert({ correo: data.correo, password: data.password, apellidos: data.apellidos, nombre: data.nombre, telefono: data.telefono })
+		.returning('*');
+	return datos;
 }
 
-async function borrarDatosPersonalesInternos(id: number): Promise<number> {
-	try {
-		const result = await knex('datos_personales_interno').where({ id }).del();
-		return result > 0 ? id : -1;
-	} catch (err) {
-		console.error('Error al borrar datos personales internos:', err);
-		return -1;
+export type UniversidadExterna = { universidad: string };
+export async function sharedEnsureUniversidadId(data: UniversidadExterna): Promise<number> {
+	const entries = await knex(Universidad.Name).select('id').where('nombre', 'like', `%${data.universidad}%`);
+	if (isNullishOrEmpty(entries)) {
+		throw createNotFoundError('No se encontró la universidad con el nombre proporcionado');
 	}
+
+	return entries[0].id;
 }
 
-async function borrarDatosPersonalesExternos(id: number): Promise<number> {
-	try {
-		const result = await knex('datos_personales_externo').where({ id }).del();
-		return result > 0 ? id : -1;
-	} catch (err) {
-		console.error('Error al borrar datos personales externos:', err);
-		return -1;
-	}
+export type UsuarioCreateData = Usuario.CreateData;
+export type UsuarioCreateResult = Usuario.Value;
+export async function insertarUsuario(data: UsuarioCreateData): Promise<UsuarioCreateResult> {
+	const [entry] = await knex(Usuario.Name)
+		.insert({
+			origin_login: data.origin_login,
+			origin_img: data.origin_img,
+			createdAt: data.createdAt,
+			updatedAt: data.updatedAt,
+			terminos_aceptados: data.terminos_aceptados
+		})
+		.returning('*');
+
+	return entry;
 }
 
-export async function borrarUsuario(id: number): Promise<number> {
-	try {
-		const result = await knex('usuario').where({ id }).del();
-		return result > 0 ? id : -1;
-	} catch (err) {
-		console.error('Error al borrar usuario:', err);
-		return -1;
-	}
+export type AdminCreateData = UsuarioCreateData & DatosPersonalesInterno.CreateData & Admin.CreateData;
+export type AdminCreateResult = Usuario.Value & DatosPersonalesInterno.Value;
+export async function insertarAdmin(data: AdminCreateData): Promise<AdminCreateResult> {
+	const usuario = await insertarUsuario(data);
+	const datos = await sharedInsertaDatosPersonalesInterno(data);
+	await knex(Admin.Name) //
+		.insert({ id: usuario.id, datos_personales_Id: datos.id });
+
+	return { ...datos, ...usuario };
 }
 
-async function borrarEstudianteInterno(id: number): Promise<number> {
+export type OficinaApsCreateData = UsuarioCreateData & DatosPersonalesInterno.CreateData & OficinaAps.CreateData;
+export type OficinaApsCreateResult = Usuario.Value & DatosPersonalesInterno.Value;
+export async function insertarOficinaAps(data: OficinaApsCreateData): Promise<OficinaApsCreateResult> {
+	const usuario = await insertarUsuario(data);
+	const datos = await sharedInsertaDatosPersonalesInterno(data);
+	await knex(OficinaAps.Name).insert({ id: usuario.id, datos_personales_Id: datos.id });
+
+	return { ...datos, ...usuario };
+}
+
+export type EstudianteCreateData = UsuarioCreateData;
+export type EstudianteCreateResult = Usuario.Value & Estudiante.Value;
+export async function insertarEstudiante(data: EstudianteCreateData): Promise<EstudianteCreateResult> {
+	const usuario = await insertarUsuario(data); // Cambiar a un solo número
+	await knex(Estudiante.Name).insert({ id: usuario.id });
+
+	return usuario;
+}
+
+export type EstudianteInternoCreateData = EstudianteCreateData & DatosPersonalesInterno.CreateData & EstudianteInterno.CreateData;
+export type EstudianteInternoCreateResult = EstudianteCreateResult & DatosPersonalesInterno.Value & Pick<EstudianteInterno.Value, 'titulacion_local'>;
+export async function insertarEstudianteInterno(data: EstudianteInternoCreateData): Promise<EstudianteInternoCreateResult> {
+	const estudiante = await insertarEstudiante(data);
+	const datos = await sharedInsertaDatosPersonalesInterno(data);
+	await knex(EstudianteInterno.Name).insert({
+		id: estudiante.id,
+		titulacion_local: data.titulacion_local,
+		datos_personales_Id: datos.id
+	});
+
+	return { ...datos, ...estudiante, titulacion_local: data.titulacion_local };
+}
+
+export type EstudianteExternoCreateData = EstudianteCreateData &
+	DatosPersonalesExterno.CreateData &
+	Omit<EstudianteExterno.CreateData, 'id' | 'datos_personales_Id' | 'universidad'> &
+	UniversidadExterna;
+export type EstudianteExternoCreateResult = EstudianteCreateResult &
+	DatosPersonalesExterno.Value &
+	Pick<EstudianteExterno.Value, 'universidad' | 'titulacion'>;
+export async function insertarEstudianteExterno(data: EstudianteExternoCreateData): Promise<EstudianteExternoCreateResult> {
+	const universidadId = await sharedEnsureUniversidadId(data);
+	const estudiante = await insertarEstudiante(data);
+	const datos = await sharedInsertaDatosPersonalesExterno(data);
+	await knex(EstudianteExterno.Name).insert({
+		id: estudiante.id,
+		universidad: universidadId,
+		titulacion: data.titulacion,
+		datos_personales_Id: datos.id
+	});
+
+	return { ...datos, ...estudiante, universidad: universidadId, titulacion: data.titulacion };
+}
+
+export type ProfesorCreateData = UsuarioCreateData & Omit<Profesor.CreateData, 'id'>;
+export type ProfesorCreateResult = Usuario.Value & Profesor.Value;
+export async function insertarProfesor(data: ProfesorCreateData): Promise<ProfesorCreateResult> {
+	const usuario = await insertarUsuario(data);
+	await knex(Profesor.Name).insert({ id: usuario.id });
+
+	return usuario;
+}
+
+export type ProfesorInternoCreateData = ProfesorCreateData &
+	DatosPersonalesInterno.CreateData &
+	ProfesorInterno.CreateData & { titulacionesLocales?: readonly number[]; areasConocimiento?: readonly number[] };
+export type ProfesorInternoCreateResult = ProfesorCreateResult & DatosPersonalesInterno.Value;
+export async function insertarProfesorInterno(data: ProfesorInternoCreateData): Promise<ProfesorInternoCreateResult> {
+	const profesor = await insertarProfesor(data);
+	const datos = await sharedInsertaDatosPersonalesInterno(data);
+	await knex(ProfesorInterno.Name).insert({ id: profesor.id, datos_personales_Id: datos.id });
+
+	if (!isNullishOrEmpty(data.titulacionesLocales)) {
+		await knex(TitulacionLocal_Profesor.Name).insert(
+			data.titulacionesLocales.map((field) => ({
+				id_titulacion: field,
+				id_profesor: profesor.id
+			}))
+		);
+	}
+
+	if (!isNullishOrEmpty(data.areasConocimiento)) {
+		await knex(AreaConocimiento_Profesor.Name).insert(
+			data.areasConocimiento.map((field) => ({
+				id_area: field,
+				id_profesor: profesor.id
+			}))
+		);
+	}
+
+	return { ...datos, ...profesor };
+}
+
+export type ProfesorExternoCreateData = ProfesorCreateData &
+	DatosPersonalesExterno.CreateData &
+	Omit<ProfesorExterno.CreateData, 'id' | 'datos_personales_Id' | 'universidad'> &
+	UniversidadExterna & { areasConocimiento?: readonly number[] };
+export type ProfesorExternoCreateResult = ProfesorCreateResult &
+	DatosPersonalesExterno.Value &
+	Pick<ProfesorExterno.Value, 'universidad' | 'facultad'>;
+export async function insertarProfesorExterno(data: ProfesorExternoCreateData) {
+	const universidadId = await sharedEnsureUniversidadId(data);
+	const profesor = await insertarProfesor(data);
+	const datos = await sharedInsertaDatosPersonalesExterno(data);
+
+	await knex(ProfesorExterno.Name).insert({
+		id: profesor.id,
+		universidad: universidadId,
+		facultad: data.facultad,
+		datos_personales_Id: datos.id
+	});
+
+	if (!isNullishOrEmpty(data.areasConocimiento)) {
+		await knex(AreaConocimiento_Profesor.Name).insert(
+			data.areasConocimiento.map((field) => ({
+				id_area: field,
+				id_profesor: profesor.id
+			}))
+		);
+	}
+
+	return { ...datos, ...profesor, universidad: universidadId, facultad: data.facultad };
+}
+
+export type SocioComunitarioCreateData = UsuarioCreateData &
+	DatosPersonalesExterno.CreateData &
+	Omit<SocioComunitario.CreateData, 'id' | 'datos_personales_Id'>;
+export type SocioComunitarioCreateResult = Usuario.Value & DatosPersonalesExterno.Value & Omit<SocioComunitario.Value, 'datos_personales_Id'>;
+export async function insertarSocioComunitario(data: SocioComunitarioCreateData): Promise<SocioComunitarioCreateResult> {
+	const usuario = await insertarUsuario(data);
+	const datos = await sharedInsertaDatosPersonalesExterno(data);
+
+	await knex(SocioComunitario.Name).insert({
+		id: usuario.id,
+		sector: data.sector,
+		nombre_socioComunitario: data.nombre_socioComunitario,
+		url: data.url,
+		mision: data.mision,
+		datos_personales_Id: datos.id
+	});
+
+	return { ...datos, ...usuario, sector: data.sector, nombre_socioComunitario: data.nombre_socioComunitario, url: data.url, mision: data.mision };
+}
+
+export function borrarDatosPersonalesInternos(id: number): Promise<boolean> {
+	return sharedDeleteEntryTable(DatosPersonalesInterno.Name, id);
+}
+
+export function borrarDatosPersonalesExternos(id: number): Promise<boolean> {
+	return sharedDeleteEntryTable(DatosPersonalesExterno.Name, id);
+}
+
+export function borrarUsuario(id: number): Promise<boolean> {
+	return sharedDeleteEntryTable(Usuario.Name, id);
+}
+
+export async function borrarEstudianteInterno(id: number): Promise<number> {
 	try {
 		const res = await obtenerEstudianteInterno(id);
 		if (!res) return -1;
@@ -357,7 +243,7 @@ async function borrarEstudianteInterno(id: number): Promise<number> {
 	}
 }
 
-async function borrarEstudianteExterno(id: number): Promise<number> {
+export async function borrarEstudianteExterno(id: number): Promise<number> {
 	try {
 		const res = await obtenerEstudianteExterno(id);
 		if (!res) return -1;
@@ -373,7 +259,7 @@ async function borrarEstudianteExterno(id: number): Promise<number> {
 	}
 }
 
-async function borrarProfesorExterno(id: number): Promise<number> {
+export async function borrarProfesorExterno(id: number): Promise<number> {
 	try {
 		const res = await obtenerProfesorExterno(id);
 		if (!res) return -1;
@@ -389,7 +275,7 @@ async function borrarProfesorExterno(id: number): Promise<number> {
 	}
 }
 
-async function borrarProfesorInterno(id: number): Promise<number> {
+export async function borrarProfesorInterno(id: number): Promise<number> {
 	try {
 		const res = await obtenerProfesorInterno(id);
 		if (!res) return -1;
@@ -405,7 +291,7 @@ async function borrarProfesorInterno(id: number): Promise<number> {
 	}
 }
 
-async function borrarAdmin(id: number): Promise<number> {
+export async function borrarAdmin(id: number): Promise<number> {
 	try {
 		const res = await obtenerAdmin(id);
 		if (!res) return -1;
@@ -421,7 +307,7 @@ async function borrarAdmin(id: number): Promise<number> {
 	}
 }
 
-async function borrarOficinaAPS(id: number): Promise<number> {
+export async function borrarOficinaAPS(id: number): Promise<number> {
 	try {
 		const res = await obtenerOficinaAps(id);
 		if (!res) return -1;
@@ -486,7 +372,7 @@ export async function obtenerUsuarioSinRolPorEmail(email: string): Promise<any |
 	}
 }
 
-async function obtenerRolInterno(idInterno: number): Promise<Usuario> {
+export async function obtenerRolInterno(idInterno: number): Promise<Usuario> {
 	try {
 		let profeInterno = await obtenerProfesorInternoPorDatosPersonales(idInterno);
 		if (profeInterno !== null) return profeInterno;
@@ -508,7 +394,7 @@ async function obtenerRolInterno(idInterno: number): Promise<Usuario> {
 	}
 }
 
-async function obtenerRolExterno(idExterno: number): Promise<Usuario> {
+export async function obtenerRolExterno(idExterno: number): Promise<Usuario> {
 	try {
 		let socio = await obtenerSocioComunitarioPorDatosPersonales(idExterno);
 		if (socio !== null) return socio;
@@ -612,7 +498,7 @@ export async function obtenerAreasConocimiento(): Promise<any[]> {
 	}
 }
 
-async function obtenerDatosPersonalesInterno(id: number): Promise<any> {
+export async function obtenerDatosPersonalesInterno(id: number): Promise<any> {
 	try {
 		const response = await knex('datos_personales_interno').where({ id }).select('*');
 		return response[0];
@@ -622,7 +508,7 @@ async function obtenerDatosPersonalesInterno(id: number): Promise<any> {
 	}
 }
 
-async function obtenerDatosPersonalesExterno(id: number): Promise<any> {
+export async function obtenerDatosPersonalesExterno(id: number): Promise<any> {
 	try {
 		const response = await knex('datos_personales_externo').where({ id }).select('*');
 		return response[0] || null;
@@ -632,36 +518,44 @@ async function obtenerDatosPersonalesExterno(id: number): Promise<any> {
 	}
 }
 
-async function obtenerAdmin(id: number): Promise<Admin> {
-	try {
-		const admin = await knex('admin').where({ id }).select('*');
-		if (admin.length === 0) return null;
+export async function obtenerAdmin(id: number) {
+	// TODO: Ignore `datos_personales_Id` from select
+	const [entry] = await knex(Admin.Name)
+		.join(Usuario.Name, Admin.Key('id'), '=', Usuario.Key('id'))
+		.join(DatosPersonalesInterno.Name, Admin.Key('datos_personales_Id'), '=', DatosPersonalesInterno.Key('id'))
+		.where({ id })
+		.select('*');
 
-		const usuario = await obtenerUsuario(id);
-		const datos = await obtenerDatosPersonalesInterno(admin[0]['datos_personales_Id']);
+	return entry;
+	// try {
+	// 	const admin = await knex('admin').where({ id }).select('*');
+	// 	if (admin.length === 0) return null;
 
-		const Tadmin: Admin = {
-			id: usuario.id,
-			correo: datos.correo,
-			nombre: datos.nombre,
-			apellidos: datos.apellidos,
-			password: datos.password,
-			origin_login: usuario.origin_login,
-			origin_img: usuario.origin_img,
-			createdAt: usuario.createdAt,
-			updatedAt: usuario.updatedAt,
-			terminos_aceptados: usuario.terminos_aceptados,
-			telefono: datos.telefono,
-			rol: 'admin'
-		};
-		return Tadmin;
-	} catch (err) {
-		console.error('Se ha producido un error al obtener admin:', err);
-		return null;
-	}
+	// 	const usuario = await obtenerUsuario(id);
+	// 	const datos = await obtenerDatosPersonalesInterno(admin[0]['datos_personales_Id']);
+
+	// 	const Tadmin: Admin = {
+	// 		id: usuario.id,
+	// 		correo: datos.correo,
+	// 		nombre: datos.nombre,
+	// 		apellidos: datos.apellidos,
+	// 		password: datos.password,
+	// 		origin_login: usuario.origin_login,
+	// 		origin_img: usuario.origin_img,
+	// 		createdAt: usuario.createdAt,
+	// 		updatedAt: usuario.updatedAt,
+	// 		terminos_aceptados: usuario.terminos_aceptados,
+	// 		telefono: datos.telefono,
+	// 		rol: 'admin'
+	// 	};
+	// 	return Tadmin;
+	// } catch (err) {
+	// 	console.error('Se ha producido un error al obtener admin:', err);
+	// 	return null;
+	// }
 }
 
-async function obtenerAdminPorDatosPersonales(id: number): Promise<Admin> {
+export async function obtenerAdminPorDatosPersonales(id: number): Promise<Admin> {
 	try {
 		const admin = await knex('admin').where({ datos_personales_Id: id }).select('*');
 		if (admin.length === 0) return null;
@@ -690,7 +584,7 @@ async function obtenerAdminPorDatosPersonales(id: number): Promise<Admin> {
 	}
 }
 
-async function obtenerOficinaAps(id: number): Promise<OficinaAps> {
+export async function obtenerOficinaAps(id: number): Promise<OficinaAps> {
 	try {
 		const admin = await knex('oficinaaps').where({ id }).select('*');
 		if (admin.length === 0) return null;
@@ -719,7 +613,7 @@ async function obtenerOficinaAps(id: number): Promise<OficinaAps> {
 	}
 }
 
-async function obtenerOficinaApsPorDatosPersonales(id: number): Promise<OficinaAps> {
+export async function obtenerOficinaApsPorDatosPersonales(id: number): Promise<OficinaAps> {
 	try {
 		const admin = await knex('oficinaaps').where({ datos_personales_Id: id }).select('*');
 		if (admin.length === 0) return null;
@@ -781,7 +675,7 @@ export async function obtenerSocioComunitario(id: number): Promise<SocioComunita
 	}
 }
 
-async function obtenerSocioComunitarioPorDatosPersonales(id: number): Promise<SocioComunitario> {
+export async function obtenerSocioComunitarioPorDatosPersonales(id: number): Promise<SocioComunitario> {
 	try {
 		const socio = await knex('socio_comunitario').where({ datos_personales_Id: id }).select('*');
 		if (socio.length === 0) return null;
@@ -826,7 +720,7 @@ export async function obtenerSociosComunitarios(): Promise<SocioComunitario[]> {
 	}
 }
 
-async function obtenerProfesor(id: number): Promise<Profesor> {
+export async function obtenerProfesor(id: number): Promise<Profesor> {
 	try {
 		const profesor = await knex('profesor').where({ id }).select('*');
 		return profesor[0] || null; // Retorna el profesor encontrado o null si no existe
@@ -881,7 +775,7 @@ export async function obtenerProfesorInterno(id: number): Promise<ProfesorIntern
 	}
 }
 
-async function obtenerProfesorInternoPorDatosPersonales(datosPersonalesId: number): Promise<ProfesorInterno> {
+export async function obtenerProfesorInternoPorDatosPersonales(datosPersonalesId: number): Promise<ProfesorInterno> {
 	try {
 		// Encontrar el profesor interno por su ID de datos personales
 		const profesorInterno = await knex('profesor_interno').where({ datos_personales_Id: datosPersonalesId }).select('*');
@@ -918,7 +812,7 @@ async function obtenerProfesorInternoPorDatosPersonales(datosPersonalesId: numbe
 	}
 }
 
-async function obtenerAreasConocimientoDelProfesor(idProfesor: number): Promise<string[]> {
+export async function obtenerAreasConocimientoDelProfesor(idProfesor: number): Promise<string[]> {
 	const idAreas = await knex('areaconocimiento_profesor').where({ id_profesor: idProfesor }).select('id_area');
 	const areas = await knex
 		.select('nombre')
@@ -930,7 +824,7 @@ async function obtenerAreasConocimientoDelProfesor(idProfesor: number): Promise<
 	return areas.map((area) => area.nombre);
 }
 
-async function obtenerTitulacionesDelProfesor(idProfesor: number): Promise<string[]> {
+export async function obtenerTitulacionesDelProfesor(idProfesor: number): Promise<string[]> {
 	const idTitulaciones = await knex('titulacionlocal_profesor').where({ id_profesor: idProfesor }).select('id_titulacion');
 	const titulaciones = await knex
 		.select('nombre')
@@ -942,7 +836,7 @@ async function obtenerTitulacionesDelProfesor(idProfesor: number): Promise<strin
 	return titulaciones.map((titulacion) => titulacion.nombre);
 }
 
-async function obtenerProfesorExterno(id: number): Promise<ProfesorExterno> {
+export async function obtenerProfesorExterno(id: number): Promise<ProfesorExterno> {
 	try {
 		const profesorExterno = await knex('profesor_externo').where({ id }).select('*');
 		if (profesorExterno.length === 0) return null;
@@ -976,7 +870,7 @@ async function obtenerProfesorExterno(id: number): Promise<ProfesorExterno> {
 	}
 }
 
-async function obtenerProfesorExternoPorDatosPersonales(datosPersonalesId: number): Promise<ProfesorExterno> {
+export async function obtenerProfesorExternoPorDatosPersonales(datosPersonalesId: number): Promise<ProfesorExterno> {
 	try {
 		const profesorExterno = await knex('profesor_externo').where({ datos_personales_Id: datosPersonalesId }).select('*');
 		if (profesorExterno.length === 0) return null;
@@ -1012,7 +906,7 @@ async function obtenerProfesorExternoPorDatosPersonales(datosPersonalesId: numbe
 }
 
 //Se utiliza?
-async function obtenerEstudiante(id: number): Promise<Estudiante> {
+export async function obtenerEstudiante(id: number): Promise<Estudiante> {
 	try {
 		const estudiante = await knex('estudiante').where({ id }).select('*');
 		if (estudiante.length === 0) {
@@ -1026,7 +920,7 @@ async function obtenerEstudiante(id: number): Promise<Estudiante> {
 	}
 }
 
-async function obtenerEstudianteInterno(id: number): Promise<EstudianteInterno | null> {
+export async function obtenerEstudianteInterno(id: number): Promise<EstudianteInterno | null> {
 	try {
 		const estudianteInterno = await knex('estudiante_interno').where({ id }).select('*');
 		if (estudianteInterno.length === 0) return null;
@@ -1056,7 +950,7 @@ async function obtenerEstudianteInterno(id: number): Promise<EstudianteInterno |
 	}
 }
 
-async function obtenerEstudianteInternoPorDatosPersonales(datosPersonalesId: number): Promise<EstudianteInterno | null> {
+export async function obtenerEstudianteInternoPorDatosPersonales(datosPersonalesId: number): Promise<EstudianteInterno | null> {
 	try {
 		const estudianteInterno = await knex('estudiante_interno').where({ datos_personales_Id: datosPersonalesId }).select('*');
 		if (estudianteInterno.length === 0) return null;
@@ -1087,7 +981,7 @@ async function obtenerEstudianteInternoPorDatosPersonales(datosPersonalesId: num
 	}
 }
 
-async function obtenerEstudianteExterno(id: number): Promise<EstudianteExterno | null> {
+export async function obtenerEstudianteExterno(id: number): Promise<EstudianteExterno | null> {
 	try {
 		const estudianteExterno = await knex('estudiante_externo').where({ id }).select('*');
 		if (estudianteExterno.length === 0) return null;
@@ -1118,7 +1012,7 @@ async function obtenerEstudianteExterno(id: number): Promise<EstudianteExterno |
 	}
 }
 
-async function obtenerEstudianteExternoPorDatosPersonales(datosPersonalesId: number): Promise<EstudianteExterno | null> {
+export async function obtenerEstudianteExternoPorDatosPersonales(datosPersonalesId: number): Promise<EstudianteExterno | null> {
 	try {
 		const estudianteExterno = await knex('estudiante_externo').where({ datos_personales_Id: datosPersonalesId }).select('*');
 		if (estudianteExterno.length === 0) return null;
@@ -1164,7 +1058,7 @@ export async function getPathAvatar(id: number): Promise<ProfesorInterno> {
 }
 
 //UPDATES
-async function updateAvatar(id: number, photo: string): Promise<number> {
+export async function updateAvatar(id: number, photo: string): Promise<number> {
 	try {
 		await knex('usuario').where('id', id).update({ origin_img: photo });
 		return id;
@@ -1191,7 +1085,7 @@ export async function actualizarUsuario(usuario: Usuario): Promise<number> {
 	}
 }
 
-async function actualizarAdmin(usuario: Admin): Promise<number> {
+export async function actualizarAdmin(usuario: Admin): Promise<number> {
 	try {
 		// Actualizar la información básica del usuario en la tabla 'usuario'
 		const resUsuario = await actualizarUsuario(usuario);
@@ -1220,7 +1114,7 @@ async function actualizarAdmin(usuario: Admin): Promise<number> {
 	}
 }
 
-async function actualizarOficinaAPS(usuario: OficinaAps): Promise<number> {
+export async function actualizarOficinaAPS(usuario: OficinaAps): Promise<number> {
 	try {
 		// Actualizar la información básica del usuario en la tabla 'usuario'
 		const resUsuario = await actualizarUsuario(usuario);
@@ -1249,7 +1143,7 @@ async function actualizarOficinaAPS(usuario: OficinaAps): Promise<number> {
 	}
 }
 
-async function actualizarSocioComunitario(usuario: SocioComunitario): Promise<number> {
+export async function actualizarSocioComunitario(usuario: SocioComunitario): Promise<number> {
 	try {
 		//Actualizamos datos generales usuario
 		const res = await actualizarUsuario(usuario);
@@ -1284,7 +1178,7 @@ async function actualizarSocioComunitario(usuario: SocioComunitario): Promise<nu
 	}
 }
 
-async function actualizarEstudiante(usuario: Estudiante): Promise<number> {
+export async function actualizarEstudiante(usuario: Estudiante): Promise<number> {
 	try {
 		const res = await actualizarUsuario(usuario);
 		return res > 0 ? usuario.id : -1;
@@ -1294,7 +1188,7 @@ async function actualizarEstudiante(usuario: Estudiante): Promise<number> {
 	}
 }
 
-async function actualizarProfesor(usuario: Profesor): Promise<number> {
+export async function actualizarProfesor(usuario: Profesor): Promise<number> {
 	try {
 		const res = await actualizarUsuario(usuario);
 		//Devolvemos idProfesor actu
@@ -1305,7 +1199,7 @@ async function actualizarProfesor(usuario: Profesor): Promise<number> {
 	}
 }
 
-async function actualizarEstudianteExterno(usuario: EstudianteExterno): Promise<number> {
+export async function actualizarEstudianteExterno(usuario: EstudianteExterno): Promise<number> {
 	try {
 		// Eliminada comprobacion previa de correo, tiene sentido?
 		const resUsuario = await actualizarUsuario(usuario);
@@ -1345,7 +1239,7 @@ async function actualizarEstudianteExterno(usuario: EstudianteExterno): Promise<
 	}
 }
 
-async function actualizarProfesorExterno(usuario: ProfesorExterno): Promise<number> {
+export async function actualizarProfesorExterno(usuario: ProfesorExterno): Promise<number> {
 	try {
 		const res = await actualizarUsuario(usuario);
 		if (res <= 0) {
@@ -1376,7 +1270,7 @@ async function actualizarProfesorExterno(usuario: ProfesorExterno): Promise<numb
 	}
 }
 
-async function actualizarProfesorInterno(usuario: ProfesorInterno, areas: AreaServicio[], titulaciones: TitulacionLocal[]): Promise<number> {
+export async function actualizarProfesorInterno(usuario: ProfesorInterno, areas: AreaServicio[], titulaciones: TitulacionLocal[]): Promise<number> {
 	try {
 		await actualizarUsuario(usuario);
 
@@ -1412,7 +1306,7 @@ async function actualizarProfesorInterno(usuario: ProfesorInterno, areas: AreaSe
 	}
 }
 
-async function actualizarEstudianteInterno(usuario: EstudianteInterno): Promise<number> {
+export async function actualizarEstudianteInterno(usuario: EstudianteInterno): Promise<number> {
 	try {
 		const res = await actualizarUsuario(usuario);
 		if (res <= 0) {
@@ -1484,17 +1378,3 @@ export async function obtenerProfesoresInternos(arrayProfesores: number[]): Prom
 		throw err;
 	}
 }
-
-module.exports = {
-	insertarUsuario,
-	insertarAdmin,
-	insertarOficinaAps,
-	insertarEstudiante,
-	insertarEstudianteInterno,
-	insertarProfesor,
-	insertarSocioComunitario,
-	insertarProfesorInterno,
-	insertarEstudianteExterno,
-	insertarProfesorExterno,
-	obtenerProfesorInterno
-};

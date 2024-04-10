@@ -1,6 +1,6 @@
 import type { AnuncioServicio } from './AnuncioServicio';
 import type { Upload } from './Upload';
-import type { ForeignKey, GetCreateType, GetType, PrimaryKey } from './base/Shared';
+import { makeKeyFunction, type ForeignKey, type GetCreateType, type GetType, type PrimaryKey } from './base/Shared';
 
 export interface Upload_AnuncioServicio {
 	/** Foreign key of {@linkcode Upload.id} */
@@ -11,6 +11,7 @@ export interface Upload_AnuncioServicio {
 
 export namespace Upload_AnuncioServicio {
 	export const Name = 'upload_anuncioservicio';
+	export const Key = makeKeyFunction(Name);
 
 	export interface Value extends GetType<Upload_AnuncioServicio> {}
 	export interface CreateData extends GetCreateType<Upload_AnuncioServicio> {}

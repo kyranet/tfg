@@ -1,6 +1,15 @@
 import type { AnuncioServicio } from './AnuncioServicio';
 import type { ProfesorInterno } from './ProfesorInterno';
-import type { Defaults, ForeignKey, GetCreateType, GetType, Int, PrimaryKey, VarChar } from './base/Shared';
+import {
+	makeKeyFunction,
+	type Defaults,
+	type ForeignKey,
+	type GetCreateType,
+	type GetType,
+	type Int,
+	type PrimaryKey,
+	type VarChar
+} from './base/Shared';
 
 export interface OfertaServicio {
 	/** Foreign key of {@linkcode AnuncioServicio.id} */
@@ -15,6 +24,7 @@ export interface OfertaServicio {
 
 export namespace OfertaServicio {
 	export const Name = 'oferta_servicio';
+	export const Key = makeKeyFunction(Name);
 
 	export interface Value extends GetType<OfertaServicio> {}
 	export interface CreateData extends GetCreateType<OfertaServicio> {}

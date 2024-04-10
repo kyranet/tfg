@@ -1,4 +1,13 @@
-import type { AutoIncrement, GetCreateType, GetType, Int, PrimaryKey, Unique, VarChar } from './base/Shared';
+import {
+	makeKeyFunction,
+	type AutoIncrement,
+	type GetCreateType,
+	type GetType,
+	type Int,
+	type PrimaryKey,
+	type Unique,
+	type VarChar
+} from './base/Shared';
 
 export interface DatosPersonalesInterno {
 	id: PrimaryKey<AutoIncrement<Int>>;
@@ -11,6 +20,7 @@ export interface DatosPersonalesInterno {
 
 export namespace DatosPersonalesInterno {
 	export const Name = 'datos_personales_interno';
+	export const Key = makeKeyFunction(Name);
 
 	export interface Value extends GetType<DatosPersonalesInterno> {}
 	export interface CreateData extends GetCreateType<DatosPersonalesInterno> {}

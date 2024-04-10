@@ -1,6 +1,6 @@
 import type { Notificacion } from './Notificacion';
 import type { OfertaAceptada } from './OfertaAceptada';
-import type { ForeignKey, GetCreateType, GetType, PrimaryKey } from './base/Shared';
+import { makeKeyFunction, type ForeignKey, type GetCreateType, type GetType, type PrimaryKey } from './base/Shared';
 
 export interface AceptacionRechazada {
 	/** Foreign key of {@linkcode Notificacion.id} */
@@ -11,6 +11,7 @@ export interface AceptacionRechazada {
 
 export namespace AceptacionRechazada {
 	export const Name = 'aceptacionrechazado';
+	export const Key = makeKeyFunction(Name);
 
 	export interface Value extends GetType<AceptacionRechazada> {}
 	export interface CreateData extends GetCreateType<AceptacionRechazada> {}

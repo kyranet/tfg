@@ -1,5 +1,15 @@
 import type { Usuario } from './Usuario';
-import type { AutoIncrement, Defaults, ForeignKey, GetCreateType, GetType, Int, PrimaryKey, VarChar } from './base/Shared';
+import {
+	makeKeyFunction,
+	type AutoIncrement,
+	type Defaults,
+	type ForeignKey,
+	type GetCreateType,
+	type GetType,
+	type Int,
+	type PrimaryKey,
+	type VarChar
+} from './base/Shared';
 
 export interface Upload {
 	id: PrimaryKey<AutoIncrement<Int>>;
@@ -19,6 +29,7 @@ export interface Upload {
 
 export namespace Upload {
 	export const Name = 'upload';
+	export const Key = makeKeyFunction(Name);
 
 	export interface Value extends GetType<Upload> {}
 	export interface CreateData extends GetCreateType<Upload> {}

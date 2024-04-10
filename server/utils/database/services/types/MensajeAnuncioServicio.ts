@@ -1,6 +1,6 @@
 import type { AnuncioServicio } from './AnuncioServicio';
 import type { Mensaje } from './Mensaje';
-import type { ForeignKey, GetCreateType, GetType, PrimaryKey } from './base/Shared';
+import { makeKeyFunction, type ForeignKey, type GetCreateType, type GetType, type PrimaryKey } from './base/Shared';
 
 export interface MensajeAnuncioServicio {
 	/** Foreign key of {@linkcode Mensaje.id} */
@@ -11,6 +11,7 @@ export interface MensajeAnuncioServicio {
 
 export namespace MensajeAnuncioServicio {
 	export const Name = 'mensaje_anuncioservicio';
+	export const Key = makeKeyFunction(Name);
 
 	export interface Value extends GetType<MensajeAnuncioServicio> {}
 	export interface CreateData extends GetCreateType<MensajeAnuncioServicio> {}

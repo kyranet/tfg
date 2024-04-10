@@ -1,6 +1,6 @@
 import type { DemandaServicio } from './DemandaServicio';
 import type { OfertaServicio } from './OfertaServicio';
-import type { Float, ForeignKey, GetCreateType, GetType, PrimaryKey } from './base/Shared';
+import { makeKeyFunction, type Float, type ForeignKey, type GetCreateType, type GetType, type PrimaryKey } from './base/Shared';
 
 export interface Matching {
 	/** Foreign key of {@linkcode OfertaServicio.id} */
@@ -13,6 +13,7 @@ export interface Matching {
 
 export namespace Matching {
 	export const Name = 'matching';
+	export const Key = makeKeyFunction(Name);
 
 	export interface Value extends GetType<Matching> {}
 	export interface CreateData extends GetCreateType<Matching> {}

@@ -1,6 +1,6 @@
 import type { Colaboracion } from './Colaboracion';
 import type { Upload } from './Upload';
-import type { ForeignKey, GetCreateType, GetType, PrimaryKey } from './base/Shared';
+import { makeKeyFunction, type ForeignKey, type GetCreateType, type GetType, type PrimaryKey } from './base/Shared';
 
 export interface Upload_Colaboracion {
 	/** Foreign key of {@linkcode Upload.id} */
@@ -11,6 +11,7 @@ export interface Upload_Colaboracion {
 
 export namespace Upload_Colaboracion {
 	export const Name = 'uploads_colaboracion';
+	export const Key = makeKeyFunction(Name);
 
 	export interface Value extends GetType<Upload_Colaboracion> {}
 	export interface CreateData extends GetCreateType<Upload_Colaboracion> {}

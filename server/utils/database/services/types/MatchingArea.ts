@@ -1,4 +1,4 @@
-import type { AutoIncrement, GetCreateType, GetType, Int, PrimaryKey, VarChar } from './base/Shared';
+import { makeKeyFunction, type AutoIncrement, type GetCreateType, type GetType, type Int, type PrimaryKey, type VarChar } from './base/Shared';
 
 export interface MatchingArea {
 	id: PrimaryKey<AutoIncrement<Int>>;
@@ -8,6 +8,7 @@ export interface MatchingArea {
 
 export namespace MatchingArea {
 	export const Name = 'matching_areas';
+	export const Key = makeKeyFunction(Name);
 
 	export interface Value extends GetType<MatchingArea> {}
 	export interface CreateData extends GetCreateType<MatchingArea> {}

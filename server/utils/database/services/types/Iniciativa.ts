@@ -1,7 +1,17 @@
 import type { DemandaServicio } from './DemandaServicio';
 import type { Estudiante } from './Estudiante';
 import type { NecesidadSocial } from './NecesidadSocial';
-import type { AutoIncrement, ForeignKey, GetCreateType, GetType, Int, PrimaryKey, Unique, VarChar } from './base/Shared';
+import {
+	makeKeyFunction,
+	type AutoIncrement,
+	type ForeignKey,
+	type GetCreateType,
+	type GetType,
+	type Int,
+	type PrimaryKey,
+	type Unique,
+	type VarChar
+} from './base/Shared';
 
 export interface Iniciativa {
 	id: PrimaryKey<AutoIncrement<Int>>;
@@ -17,6 +27,7 @@ export interface Iniciativa {
 
 export namespace Iniciativa {
 	export const Name = 'iniciativa';
+	export const Key = makeKeyFunction(Name);
 
 	export interface Value extends GetType<Iniciativa> {}
 	export interface CreateData extends GetCreateType<Iniciativa> {}

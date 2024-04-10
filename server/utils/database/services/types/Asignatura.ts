@@ -1,5 +1,5 @@
 import type { OfertaServicio } from './OfertaServicio';
-import type { ForeignKey, GetCreateType, GetType, PrimaryKey, VarChar } from './base/Shared';
+import { makeKeyFunction, type ForeignKey, type GetCreateType, type GetType, type PrimaryKey, type VarChar } from './base/Shared';
 
 export interface Asignatura {
 	/** Foreign key of {@linkcode OfertaServicio.id} */
@@ -9,6 +9,7 @@ export interface Asignatura {
 
 export namespace Asignatura {
 	export const Name = 'asignatura';
+	export const Key = makeKeyFunction(Name);
 
 	export interface Value extends GetType<Asignatura> {}
 	export interface CreateData extends GetCreateType<Asignatura> {}

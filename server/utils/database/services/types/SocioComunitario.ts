@@ -1,6 +1,6 @@
 import type { DatosPersonalesExterno } from './DatosPersonalesExterno';
 import type { Usuario } from './Usuario';
-import type { ForeignKey, GetCreateType, GetType, PrimaryKey, VarChar } from './base/Shared';
+import { makeKeyFunction, type ForeignKey, type GetCreateType, type GetType, type PrimaryKey, type VarChar } from './base/Shared';
 
 export interface SocioComunitario {
 	/** Foreign key of {@linkcode Usuario.id} */
@@ -15,6 +15,7 @@ export interface SocioComunitario {
 
 export namespace SocioComunitario {
 	export const Name = 'socio_comunitario';
+	export const Key = makeKeyFunction(Name);
 
 	export interface Value extends GetType<SocioComunitario> {}
 	export interface CreateData extends GetCreateType<SocioComunitario> {}

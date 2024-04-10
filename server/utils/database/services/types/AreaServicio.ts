@@ -1,4 +1,4 @@
-import type { AutoIncrement, GetCreateType, GetType, Int, PrimaryKey, VarChar } from './base/Shared';
+import { makeKeyFunction, type AutoIncrement, type GetCreateType, type GetType, type Int, type PrimaryKey, type VarChar } from './base/Shared';
 
 export interface AreaServicio {
 	id: PrimaryKey<AutoIncrement<Int>>;
@@ -7,6 +7,7 @@ export interface AreaServicio {
 
 export namespace AreaServicio {
 	export const Name = 'area_servicio';
+	export const Key = makeKeyFunction(Name);
 
 	export interface Value extends GetType<AreaServicio> {}
 	export interface CreateData extends GetCreateType<AreaServicio> {}

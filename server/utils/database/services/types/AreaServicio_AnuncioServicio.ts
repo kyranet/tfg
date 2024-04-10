@@ -1,6 +1,6 @@
 import type { AnuncioServicio } from './AnuncioServicio';
 import type { AreaServicio } from './AreaServicio';
-import type { ForeignKey, GetCreateType, GetType, PrimaryKey } from './base/Shared';
+import { makeKeyFunction, type ForeignKey, type GetCreateType, type GetType, type PrimaryKey } from './base/Shared';
 
 export interface AreaServicio_AnuncioServicio {
 	/** Foreign key of @linkcode {@linkcode AreaServicio.id} */
@@ -11,6 +11,7 @@ export interface AreaServicio_AnuncioServicio {
 
 export namespace AreaServicio_AnuncioServicio {
 	export const Name = 'areaservicio_anuncioservicio';
+	export const Key = makeKeyFunction(Name);
 
 	export interface Value extends GetType<AreaServicio_AnuncioServicio> {}
 	export interface CreateData extends GetCreateType<AreaServicio_AnuncioServicio> {}

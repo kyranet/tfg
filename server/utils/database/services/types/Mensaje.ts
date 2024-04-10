@@ -1,5 +1,15 @@
 import type { Usuario } from './Usuario';
-import type { AutoIncrement, Defaults, ForeignKey, GetCreateType, GetType, Int, PrimaryKey, VarChar } from './base/Shared';
+import {
+	makeKeyFunction,
+	type AutoIncrement,
+	type Defaults,
+	type ForeignKey,
+	type GetCreateType,
+	type GetType,
+	type Int,
+	type PrimaryKey,
+	type VarChar
+} from './base/Shared';
 
 export interface Mensaje {
 	id: PrimaryKey<AutoIncrement<Int>>;
@@ -11,6 +21,7 @@ export interface Mensaje {
 
 export namespace Mensaje {
 	export const Name = 'mensaje';
+	export const Key = makeKeyFunction(Name);
 
 	export interface Value extends GetType<Mensaje> {}
 	export interface CreateData extends GetCreateType<Mensaje> {}

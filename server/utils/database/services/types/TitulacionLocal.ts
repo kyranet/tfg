@@ -1,4 +1,4 @@
-import type { AutoIncrement, GetCreateType, GetType, Int, PrimaryKey, VarChar } from './base/Shared';
+import { makeKeyFunction, type AutoIncrement, type GetCreateType, type GetType, type Int, type PrimaryKey, type VarChar } from './base/Shared';
 
 export interface TitulacionLocal {
 	id: PrimaryKey<AutoIncrement<Int>>;
@@ -7,6 +7,7 @@ export interface TitulacionLocal {
 
 export namespace TitulacionLocal {
 	export const Name = 'titulacion_local';
+	export const Key = makeKeyFunction(Name);
 
 	export interface Value extends GetType<TitulacionLocal> {}
 	export interface CreateData extends GetCreateType<TitulacionLocal> {}

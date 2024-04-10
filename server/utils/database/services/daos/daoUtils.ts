@@ -1,9 +1,15 @@
+import type { Knex } from 'knex';
 import knex from '../../config';
 
 // Define un tipo para el parámetro 'type'
 type ObjectType = 'oferta' | 'demanda';
 
-async function createAndLinkedTags(tagName: string, objectId: number, type: ObjectType): Promise<void> {
+export async function sharedDeleteEntryTable(table: Knex.TableNames, id: number) {
+	const result = await knex(table).where({ id }).del();
+	return result > 0;
+}
+
+export async function createAndLinkedTags(tagName: string, objectId: number, type: ObjectType): Promise<void> {
 	try {
 		let tag = await knex('tags').where({ nombre: tagName }).first();
 
@@ -34,5 +40,3 @@ async function createAndLinkedTags(tagName: string, objectId: number, type: Obje
 		console.error('Error al crear o vincular tag:', error);
 	}
 }
-
-export { createAndLinkedTags };

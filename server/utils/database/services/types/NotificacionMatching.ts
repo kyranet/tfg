@@ -1,6 +1,6 @@
 import type { Matching } from './Matching';
 import type { Notificacion } from './Notificacion';
-import type { ForeignKey, GetCreateType, GetType, PrimaryKey } from './base/Shared';
+import { makeKeyFunction, type ForeignKey, type GetCreateType, type GetType, type PrimaryKey } from './base/Shared';
 
 export interface NotificacionMatching {
 	/** Foreign key of {@linkcode Notificacion.id} */
@@ -13,6 +13,7 @@ export interface NotificacionMatching {
 
 export namespace NotificacionMatching {
 	export const Name = 'notificacionmatching';
+	export const Key = makeKeyFunction(Name);
 
 	export interface Value extends GetType<NotificacionMatching> {}
 	export interface CreateData extends GetCreateType<NotificacionMatching> {}

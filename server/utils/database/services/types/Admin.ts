@@ -1,5 +1,5 @@
 import type { DatosPersonalesInterno } from './DatosPersonalesInterno';
-import type { ForeignKey, GetCreateType, GetType, Int, PrimaryKey } from './base/Shared';
+import { makeKeyFunction, type ForeignKey, type GetCreateType, type GetType, type Int, type PrimaryKey } from './base/Shared';
 
 export interface Admin {
 	id: PrimaryKey<Int>;
@@ -9,6 +9,7 @@ export interface Admin {
 
 export namespace Admin {
 	export const Name = 'admin';
+	export const Key = makeKeyFunction(Name);
 
 	export interface Value extends GetType<Admin> {}
 	export interface CreateData extends GetCreateType<Admin> {}

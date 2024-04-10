@@ -1,6 +1,6 @@
 import type { ProfesorInterno } from './ProfesorInterno';
 import type { TitulacionLocal } from './TitulacionLocal';
-import type { ForeignKey, GetCreateType, GetType, PrimaryKey } from './base/Shared';
+import { makeKeyFunction, type ForeignKey, type GetCreateType, type GetType, type PrimaryKey } from './base/Shared';
 
 export interface TitulacionLocal_Profesor {
 	/** Foreign key of {@linkcode TitulacionLocal.id} */
@@ -11,6 +11,7 @@ export interface TitulacionLocal_Profesor {
 
 export namespace TitulacionLocal_Profesor {
 	export const Name = 'titulacionlocal_profesor';
+	export const Key = makeKeyFunction(Name);
 
 	export interface Value extends GetType<TitulacionLocal_Profesor> {}
 	export interface CreateData extends GetCreateType<TitulacionLocal_Profesor> {}

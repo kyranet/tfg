@@ -1,5 +1,15 @@
 import type { Profesor } from './Profesor';
-import type { AutoIncrement, Defaults, ForeignKey, GetCreateType, GetType, Int, PrimaryKey, VarChar } from './base/Shared';
+import {
+	makeKeyFunction,
+	type AutoIncrement,
+	type Defaults,
+	type ForeignKey,
+	type GetCreateType,
+	type GetType,
+	type Int,
+	type PrimaryKey,
+	type VarChar
+} from './base/Shared';
 
 export interface Colaboracion {
 	id: PrimaryKey<AutoIncrement<Int>>;
@@ -13,6 +23,7 @@ export interface Colaboracion {
 
 export namespace Colaboracion {
 	export const Name = 'colaboracion';
+	export const Key = makeKeyFunction(Name);
 
 	export interface Value extends GetType<Colaboracion> {}
 	export interface CreateData extends GetCreateType<Colaboracion> {}

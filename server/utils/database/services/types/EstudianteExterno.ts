@@ -1,7 +1,7 @@
 import type { DatosPersonalesExterno } from './DatosPersonalesExterno';
 import type { Estudiante } from './Estudiante';
 import type { Universidad } from './Universidad';
-import type { ForeignKey, GetCreateType, GetType, PrimaryKey, VarChar } from './base/Shared';
+import { makeKeyFunction, type ForeignKey, type GetCreateType, type GetType, type PrimaryKey, type VarChar } from './base/Shared';
 
 export interface EstudianteExterno {
 	/** Foreign key of {@linkcode Estudiante.id} */
@@ -15,6 +15,7 @@ export interface EstudianteExterno {
 
 export namespace EstudianteExterno {
 	export const Name = 'estudiante_externo';
+	export const Key = makeKeyFunction(Name);
 
 	export interface Value extends GetType<EstudianteExterno> {}
 	export interface CreateData extends GetCreateType<EstudianteExterno> {}

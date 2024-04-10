@@ -6,9 +6,6 @@ import {
 	insertarSocioComunitario,
 	obtenerUsuarioSinRolPorEmail
 } from '../../utils/database/services/daos/daoUsuario';
-import type { EstudianteExterno } from '../../utils/database/services/types/EstudianteExterno';
-import type { ProfesorExterno } from '../../utils/database/services/types/ProfesorExterno';
-import type { SocioComunitario } from '../../utils/database/services/types/SocioComunitario';
 
 export default eventHandler(async (event) => {
 	try {
@@ -24,11 +21,9 @@ export default eventHandler(async (event) => {
 		let passwordNew = bcrypt.hashSync(password, bcrypt.genSaltSync());
 		let usuarioCreado;
 		let token;
-		let fecha = new Date().toLocaleDateString();
 		switch (rol) {
 			case 'ROL_SOCIO_COMUNITARIO':
-				let socioComunitario: SocioComunitario = {
-					id: null,
+				usuarioCreado = await insertarSocioComunitario({
 					correo: email,
 					nombre: body.nombre,
 					apellidos: body.apellidos,
@@ -40,23 +35,11 @@ export default eventHandler(async (event) => {
 					mision: body.mision,
 					origin_login: 'Portal APS',
 					origin_img: 'imagen', //Esta correcto?
-					createdAt: fecha as unknown as Date, //Que formato queremos de fechas? Cambiar tipado a string en vez de date?
-					updatedAt: fecha as unknown as Date,
-					terminos_aceptados: body.terminos_aceptados,
-					rol: 'SOCIO_COMUNITARIO'
-				};
-				let idSocio = await insertarSocioComunitario(socioComunitario);
-
-				if (idSocio === -1) {
-					throw createError({ statusCode: 400, statusMessage: 'Ha ocurrido un error al crear el socio' });
-				}
-
-				usuarioCreado = socioComunitario;
-				usuarioCreado.id = idSocio;
+					terminos_aceptados: body.terminos_aceptados
+				});
 				break;
 			case 'ROL_ESTUDIANTE':
-				let estudiante: EstudianteExterno = {
-					id: null,
+				usuarioCreado = await insertarEstudianteExterno({
 					correo: email,
 					nombre: body.nombre,
 					apellidos: body.apellidos,
@@ -64,25 +47,13 @@ export default eventHandler(async (event) => {
 					telefono: body.telefono,
 					origin_login: 'Portal APS',
 					origin_img: 'imagen', //Esta correcto?
-					createdAt: fecha as unknown as Date, //Que formato queremos de fechas? Cambiar tipado a string en vez de date?
-					updatedAt: fecha as unknown as Date,
 					terminos_aceptados: body.terminos_aceptados,
-					rol: 'SOCIO_COMUNITARIO',
 					titulacion: body.titulacion,
-					nombreUniversidad: body.universidad
-				};
-				let idEstu = await insertarEstudianteExterno(estudiante);
-
-				if (idEstu === -1) {
-					throw createError({ statusCode: 400, statusMessage: 'Ha ocurrido un error al crear el estudiante' });
-				}
-
-				usuarioCreado = estudiante;
-				usuarioCreado.id = idEstu;
+					universidad: body.universidad
+				});
 				break;
 			case 'ROL_PROFESOR':
-				let profesor: ProfesorExterno = {
-					id: null,
+				usuarioCreado = await insertarProfesorExterno({
 					correo: email,
 					nombre: body.nombre,
 					apellidos: body.apellidos,
@@ -90,23 +61,11 @@ export default eventHandler(async (event) => {
 					telefono: body.telefono,
 					origin_login: 'Portal APS',
 					origin_img: 'imagen', //Esta correcto?
-					createdAt: fecha as unknown as Date, //Que formato queremos de fechas? Cambiar tipado a string en vez de date?
-					updatedAt: fecha as unknown as Date,
 					terminos_aceptados: body.terminos_aceptados,
-					rol: 'SOCIO_COMUNITARIO',
 					universidad: body.universidad,
 					facultad: body.facultad,
-					area_conocimiento: body.areaconocimiento_profesor
-				};
-				let idProfe = await insertarProfesorExterno(estudiante);
-
-				if (idProfe === -1) {
-					throw createError({ statusCode: 400, statusMessage: 'Ha ocurrido un error al crear el profesor' });
-				}
-
-				usuarioCreado = profesor;
-				usuarioCreado.id = idProfe;
-
+					areasConocimiento: body.areaconocimiento_profesor
+				});
 				break;
 			default:
 				throw createError({ statusCode: 400, statusMessage: 'Rol no válido' });

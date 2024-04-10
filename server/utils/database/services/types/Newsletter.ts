@@ -1,4 +1,13 @@
-import type { AutoIncrement, Defaults, GetCreateType, GetType, Int, PrimaryKey, VarChar } from './base/Shared';
+import {
+	makeKeyFunction,
+	type AutoIncrement,
+	type Defaults,
+	type GetCreateType,
+	type GetType,
+	type Int,
+	type PrimaryKey,
+	type VarChar
+} from './base/Shared';
 
 export interface Newsletter {
 	id: PrimaryKey<AutoIncrement<Int>>;
@@ -9,6 +18,7 @@ export interface Newsletter {
 
 export namespace Newsletter {
 	export const Name = 'newsletter';
+	export const Key = makeKeyFunction(Name);
 
 	export interface Value extends GetType<Newsletter> {}
 	export interface CreateData extends GetCreateType<Newsletter> {}

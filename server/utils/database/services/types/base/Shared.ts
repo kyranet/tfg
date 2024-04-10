@@ -1,3 +1,5 @@
+import { Knex } from 'knex';
+
 export type VarChar<_Characters extends number> = string;
 export type Int = number;
 export type Float = number;
@@ -9,6 +11,12 @@ export type ForeignKey<Table, Keys extends keyof Table> = ExtractTypeValue<Table
 	__REFERENCES_TABLE__: Table;
 	__REFERENCES_KEY__: Keys;
 };
+
+export function makeKeyFunction<Name extends Knex.TableNames>(name: Name) {
+	return function <Key extends Extract<keyof Knex.TableType<Name>, string>>(key: Key): `${Name}.${Key}` {
+		return `${name}.${key}` as const;
+	};
+}
 
 type ExtractTypeValue<Type> =
 	Type extends PrimaryKey<infer InnerType>

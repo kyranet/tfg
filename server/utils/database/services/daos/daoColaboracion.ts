@@ -9,6 +9,7 @@ import { OfertaServicio } from '../types/OfertaServicio';
 import { Partenariado } from '../types/Partenariado';
 import { Profesor_Colaboracion } from '../types/Profesor_Colaboracion';
 import { Proyecto } from '../types/Proyecto';
+import { sharedDeleteEntryTable } from './daoUtils';
 
 export type ColaboracionCreateData = Colaboracion.CreateData & { profesores?: readonly number[] };
 export const crearColaboracion = async (data: ColaboracionCreateData): Promise<Colaboracion.Value> => {
@@ -177,29 +178,24 @@ export async function contarOfertas(): Promise<number> {
 
 //ELIMINAR
 
-async function deleteEntryTable(table: string, id: number) {
-	const result = await knex(table).where({ id }).del();
-	return result > 0;
-}
-
 // Eliminar una colaboración
 export function eliminarColaboracion(id: number): Promise<boolean> {
-	return deleteEntryTable(Colaboracion.Name, id);
+	return sharedDeleteEntryTable(Colaboracion.Name, id);
 }
 
 // Eliminar un partenariado
 export function eliminarPartenariado(id: number): Promise<boolean> {
-	return deleteEntryTable(Partenariado.Name, id);
+	return sharedDeleteEntryTable(Partenariado.Name, id);
 }
 
 // Eliminar un proyecto
 export function eliminarProyecto(id: number): Promise<boolean> {
-	return deleteEntryTable(Proyecto.Name, id);
+	return sharedDeleteEntryTable(Proyecto.Name, id);
 }
 
 // Eliminar una nota
 export async function eliminarNota(id: number): Promise<boolean> {
-	return deleteEntryTable(Nota.Name, id);
+	return sharedDeleteEntryTable(Nota.Name, id);
 }
 
 //ACTUALIZAR---------------------------------------------------
