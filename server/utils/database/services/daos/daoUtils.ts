@@ -1,13 +1,7 @@
-import type { Knex } from 'knex';
 import knex from '../../config';
 
 // Define un tipo para el parámetro 'type'
 type ObjectType = 'oferta' | 'demanda';
-
-export async function sharedDeleteEntryTable(table: Knex.TableNames, id: number) {
-	const result = await knex(table).where({ id }).del();
-	return result > 0;
-}
 
 export async function createAndLinkedTags(tagName: string, objectId: number, type: ObjectType): Promise<void> {
 	try {

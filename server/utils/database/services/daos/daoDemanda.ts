@@ -219,7 +219,7 @@ async function crearAnuncio(data: AnuncioServicioCreateData): Promise<AnuncioSer
 }
 
 export type DemandaServicioCreateData = AnuncioServicioCreateData & Omit<DemandaServicio.CreateData, 'id'> & { titulacionesLocales?: readonly number[] };
-export async function crearDemanda(data: DemandaServicioCreateData): Promise<AnuncioServicio.Value & DemandaServicio.CreateData> {
+export async function crearDemanda(data: DemandaServicioCreateData): Promise<AnuncioServicio.Value & DemandaServicio.Value> {
 	// Crear el anuncio de servicio asociado a la demanda
 	const anuncio = await crearAnuncio(data);
 

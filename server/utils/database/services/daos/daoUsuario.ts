@@ -17,7 +17,7 @@ import type { TitulacionLocal } from '../types/TitulacionLocal';
 import { TitulacionLocal_Profesor } from '../types/TitulacionLocal_Profesor';
 import { Universidad } from '../types/Universidad';
 import { Usuario } from '../types/Usuario';
-import { sharedDeleteEntryTable } from './daoUtils';
+import { sharedDeleteEntryTable } from './shared';
 
 async function sharedInsertaDatosPersonalesInterno(data: DatosPersonalesInterno.CreateData) {
 	const [datos] = await knex(DatosPersonalesInterno.Name)

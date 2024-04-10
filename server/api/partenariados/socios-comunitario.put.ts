@@ -3,7 +3,8 @@ import {
 	actualizarPartenariado,
 	actualizarPrevioPartenariado,
 	crearPartenariado,
-	obtenerIdPartenariado
+	crearPrevioPartenariado,
+	maybeObtenerIdPartenariado
 } from '~/server/utils/database/services/daos/daoColaboracion';
 import { crearDemanda } from '~/server/utils/database/services/daos/daoDemanda';
 import { PartenariadoEstado } from '~/server/utils/database/services/types/Partenariado';
@@ -21,11 +22,12 @@ export default eventHandler(async (event) => {
 
 	let estado: PartenariadoEstado;
 	let demandaId: number;
-	if ('demanda' in body) {
-		estado = PartenariadoEstado.EnCreacion;
+	const definedDemanda = 'demanda' in body;
+	if (definedDemanda) {
+		estado = PartenariadoEstado.EnNegociacion;
 		demandaId = body.demanda;
 	} else {
-		estado = PartenariadoEstado.EnNegociacion;
+		estado = PartenariadoEstado.EnCreacion;
 		const demanda = await crearDemanda({
 			id: null!,
 			titulo: body.titulo,
@@ -44,12 +46,12 @@ export default eventHandler(async (event) => {
 			titulacionesLocales: body.titulacionesLocales,
 			areaServicio: body.areaServicio,
 			comunidad_beneficiaria: '',
-			dummy: true,
+			dummy: true
 		});
 		demandaId = demanda.id;
 	}
 
-	let partenariadoId = await obtenerIdPartenariado(demandaId, body.oferta);
+	let partenariadoId = await maybeObtenerIdPartenariado({ id_demanda: demandaId, id_oferta: body.oferta });
 	const partenariado =
 		partenariadoId === null
 			? await crearPartenariado({
@@ -74,9 +76,21 @@ export default eventHandler(async (event) => {
 					estado: estado
 				});
 
-	// Actualizar estado del partenariado previo, si necesario
-	// Revisar si es correcto los parametros que se pasan, en el cod original se envia 0,1 en vez de true/false
-	await actualizarPrevioPartenariado(demandaId, body.oferta, false, true);
+	if (definedDemanda) {
+		await actualizarPrevioPartenariado({
+			id_demanda: demandaId,
+			id_oferta: partenariado.ofertaId,
+			completado_profesor: true,
+			completado_socioComunitario: false
+		});
+	} else {
+		await crearPrevioPartenariado({
+			id_demanda: demandaId,
+			id_oferta: partenariado.ofertaId,
+			completado_profesor: true,
+			completado_socioComunitario: false
+		});
+	}
 
 	return partenariado;
 });

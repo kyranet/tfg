@@ -1,18 +1,15 @@
-const knex = require('../../config');
+import { isNullishOrEmpty } from '@sapphire/utilities';
 import { Partenariado } from '../types/Partenariado';
 
-export async function obtenerPartenariados(limit: number, offset: number, filters: string): Promise<Partenariado[]> {
-	const fil = JSON.parse(filters);
-
-	// Usamos knex para la query
-	let query = knex('partenariado as p')
+export async function obtenerPartenariados(limit: number, offset: number, creador: string | undefined): Promise<Partenariado[]> {
+	let query = qb('partenariado as p')
 		.join('oferta_servicio as of', 'p.id_oferta', '=', 'of.id')
 		.join('demanda_servicio as ds', 'p.id_demanda', '=', 'ds.id')
 		.join('colaboracion as c', 'p.id', '=', 'c.id')
 		.select('p.id as partenariado_id', 'p.*', 'of.*', 'ds.*', 'c.*');
 
-	if (fil.creador) {
-		query = query.where('of.creador', fil.creador).orWhere('ds.creador', fil.creador);
+	if (!isNullishOrEmpty(creador)) {
+		query = query.where('of.creador', creador).orWhere('ds.creador', creador);
 	}
 
 	try {
