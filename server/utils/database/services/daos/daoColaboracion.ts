@@ -36,7 +36,7 @@ async function crearColaboracion(data: ColaboracionCreateData, trx: Knex.Transac
 }
 
 export type PartenariadoCreateData = Omit<ColaboracionCreateData & Partenariado.CreateData, 'id'>;
-export function crearPartenariado(data: PartenariadoCreateData) {
+export function crearPartenariado(data: PartenariadoCreateData): Promise<FormattedPartenariado> {
 	return qb.transaction(async (trx) => {
 		const colaboracion = await crearColaboracion(data, trx);
 		const [partenariado] = await trx(Partenariado.Name)
@@ -53,7 +53,7 @@ export function crearPartenariado(data: PartenariadoCreateData) {
 }
 
 export type ProyectoCreateData = Omit<ColaboracionCreateData & Proyecto.CreateData, 'id'> & { estudiantes?: readonly number[] };
-export function crearProyecto(data: ProyectoCreateData) {
+export function crearProyecto(data: ProyectoCreateData): Promise<FormattedProyecto> {
 	return qb.transaction(async (trx) => {
 		const colaboracion = await crearColaboracion(data, trx);
 		const [proyecto] = await trx(Proyecto.Name)
@@ -92,7 +92,11 @@ async function obtenerProfesores(colaboracionId: number): Promise<readonly numbe
 	return profesores.map((profesor) => profesor.id_profesor);
 }
 
-export async function obtenerPartenariado(id: number) {
+export interface GetPartenariadoResult extends FormattedPartenariado {
+	profesores: readonly number[];
+	responsable: string;
+}
+export async function obtenerPartenariado(id: number): Promise<GetPartenariadoResult> {
 	const entry = ensureDatabaseEntry(
 		await qb(Colaboracion.Name) //
 			.where({ id })
@@ -108,7 +112,11 @@ export async function obtenerPartenariado(id: number) {
 	};
 }
 
-export async function obtenerProyecto(id: number) {
+export interface GetProyectoResult extends FormattedProyecto {
+	profesores: readonly number[];
+	estudiantes: readonly number[];
+}
+export async function obtenerProyecto(id: number): Promise<GetProyectoResult> {
 	const entry = ensureDatabaseEntry(
 		await qb(Colaboracion.Name) //
 			.where({ id })
@@ -126,7 +134,7 @@ export async function obtenerProyecto(id: number) {
 	};
 }
 
-export async function obtenerNota(id: number) {
+export async function obtenerNota(id: number): Promise<FormattedNota> {
 	return formatNota(ensureDatabaseEntry(await qb(Nota.Name).where({ id }).first()));
 }
 
@@ -199,7 +207,7 @@ async function actualizarColaboracion(data: ColaboracionUpdateData, trx: Knex.Tr
 }
 
 export type PartenariadoUpdateData = ColaboracionUpdateData & Partial<Partenariado.Value>;
-export function actualizarPartenariado(data: PartenariadoUpdateData) {
+export function actualizarPartenariado(data: PartenariadoUpdateData): Promise<FormattedPartenariado> {
 	return qb.transaction(async (trx) => {
 		const colaboracion = await actualizarColaboracion(data, trx);
 		const partenariado = getFirstDatabaseEntry(
@@ -215,7 +223,7 @@ export function actualizarPartenariado(data: PartenariadoUpdateData) {
 }
 
 export type ProyectoUpdateData = ColaboracionUpdateData & Partial<Proyecto.Value> & { estudiantes?: readonly number[] };
-export async function actualizarProyecto(data: ProyectoUpdateData) {
+export async function actualizarProyecto(data: ProyectoUpdateData): Promise<FormattedProyecto> {
 	return qb.transaction(async (trx) => {
 		const colaboracion = await actualizarColaboracion(data, trx);
 		const proyectos = await trx(Proyecto.Name)
@@ -239,7 +247,7 @@ export async function actualizarProyecto(data: ProyectoUpdateData) {
 }
 
 export type NotaUpdateData = Pick<Nota.Value, 'id' | 'nota'>;
-export async function actualizarNota(nota: NotaUpdateData) {
+export async function actualizarNota(nota: NotaUpdateData): Promise<FormattedNota> {
 	const entry = getFirstDatabaseEntry(
 		await qb(Nota.Name).where({ id: nota.id }).update({ nota: nota.nota }).returning('*'),
 		'No se ha encontrado una nota a actualizar con el ID proporcionado'
@@ -248,18 +256,24 @@ export async function actualizarNota(nota: NotaUpdateData) {
 	return formatNota(entry);
 }
 
-export async function obtenerTodosPartenariados() {
-	const entries = await qb(Colaboracion.Name) //
-		.join(Partenariado.Name, Colaboracion.Key('id'), '=', Partenariado.Key('id'));
-
-	const profesores = await qb(Profesor_Colaboracion.Name);
-	const map = new Map(entries.map((entry) => [entry.id, { ...formatPartenariado(entry), profesores: [] as number[] }]));
-	for (const profesor of profesores) {
-		const entry = map.get(profesor.id_colaboracion);
-		entry?.profesores.push(profesor.id_profesor);
-	}
-
-	return [...map.values()];
+export interface GetAllPartenariadoResult extends FormattedPartenariado {
+	profesores: readonly number[];
+}
+export function obtenerTodosPartenariados(): Promise<GetAllPartenariadoResult[]> {
+	return qb('colaboracion AS c')
+		.select(
+			'c.id',
+			'c.titulo',
+			'c.descripcion',
+			'c.imagen',
+			'c.admite_externos as admiteExternos',
+			'c.responsable as responsableId',
+			'p.id_demanda as demandaId',
+			'p.id_oferta as ofertaId',
+			'p.estado',
+			qb.raw('(SELECT JSON_ARRAYAGG(id_profesor) FROM profesor_colaboracion WHERE profesor_colaboracion.id_colaboracion = c.id) AS profesores')
+		)
+		.leftJoin('partenariado AS p', 'c.id', 'p.id');
 }
 
 export async function crearPrevioPartenariado(data: PrevioPartenariado.CreateData) {
@@ -283,6 +297,7 @@ export async function maybeObtenerIdPartenariado(data: Pick<Partenariado.Value, 
 	return entry?.id ?? null;
 }
 
+export interface FormattedPartenariado extends ReturnType<typeof formatPartenariado> {}
 function formatPartenariado(entry: Colaboracion.Value & Partenariado.Value) {
 	return {
 		id: entry.id,
@@ -290,12 +305,14 @@ function formatPartenariado(entry: Colaboracion.Value & Partenariado.Value) {
 		descripcion: entry.descripcion,
 		imagen: entry.imagen,
 		admiteExternos: entry.admite_externos,
+		responsableId: entry.responsable,
 		demandaId: entry.id_demanda,
 		ofertaId: entry.id_oferta,
 		estado: entry.estado
 	};
 }
 
+export interface FormattedProyecto extends ReturnType<typeof formatProyecto> {}
 function formatProyecto(entry: Colaboracion.Value & Proyecto.Value) {
 	return {
 		id: entry.id,
@@ -310,6 +327,7 @@ function formatProyecto(entry: Colaboracion.Value & Proyecto.Value) {
 	};
 }
 
+export interface FormattedNota extends ReturnType<typeof formatNota> {}
 function formatNota(entry: Nota.Value) {
 	return {
 		id: entry.id,
