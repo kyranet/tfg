@@ -3,7 +3,6 @@ import { Knex } from 'knex';
 import { Admin } from '../types/Admin';
 import { AreaConocimiento } from '../types/AreaConocimiento';
 import { AreaConocimiento_Profesor } from '../types/AreaConocimiento_Profesor';
-import type { AreaServicio } from '../types/AreaServicio';
 import { DatosPersonalesExterno } from '../types/DatosPersonalesExterno';
 import { DatosPersonalesInterno } from '../types/DatosPersonalesInterno';
 import { Estudiante } from '../types/Estudiante';
@@ -478,22 +477,15 @@ export async function obtenerUniversidades(): Promise<Universidad.Value[]> {
 	return await qb(Universidad.Name);
 }
 
-export async function obtenerAreasConocimientoUsuario(id: number): Promise<any[]> {
-	try {
-		const id_areas = await knex('areaconocimiento_profesor').where({ id_profesor: id }).select('id_area');
-
-		const id_areas_array = id_areas.map((id_area) => id_area['id_area']);
-
-		if (id_areas_array.length === 0) return [];
-
-		const areas_conocim = await knex.select('nombre', 'id').from('area_conocimiento').whereIn('id', id_areas_array);
-
-		const areas = areas_conocim.map((area) => ({ id: area['id'], nombre: area['nombre'] }));
-		return areas; // Retorna las áreas de conocimiento asociadas
-	} catch (err) {
-		console.error('Se ha producido un error al intentar obtener las áreas de conocimiento del usuario', id, err);
-		return []; // Retorno de array vacio o null?
-	}
+export interface GetAllUserKnowledgeAreasResult {
+	id: AreaConocimiento.Value['id'];
+	name: AreaConocimiento.Value['nombre'];
+}
+export async function obtenerAreasConocimientoUsuario(id: number): Promise<GetAllUserKnowledgeAreasResult[]> {
+	return await qb(AreaConocimiento.Name)
+		.join(AreaConocimiento_Profesor.Name, AreaConocimiento.Key('id'), '=', AreaConocimiento_Profesor.Key('id_area'))
+		.where(AreaConocimiento_Profesor.Key('id_profesor'), '=', id)
+		.select(AreaConocimiento.Key('id'), qb.ref(AreaConocimiento.Key('nombre')).as('name'));
 }
 
 export async function obtenerAreasConocimiento(): Promise<AreaConocimiento.Value[]> {
@@ -541,28 +533,34 @@ export async function obtenerSocioComunitario(id: number): Promise<GetCommunityP
 	};
 }
 
-export async function obtenerSociosComunitarios(): Promise<SocioComunitario[]> {
-	try {
-		const socios = await knex('socio_comunitario')
-			.join('datos_personales_externo', 'socio_comunitario.datos_personales_Id', '=', 'datos_personales_externo.id')
-			.select('socio_comunitario.id', 'datos_personales_externo.nombre', 'datos_personales_externo.apellidos');
-		return socios;
-	} catch (err) {
-		console.error('Se ha producido un error al obtener todos los socios comunitarios:', err);
-		return [];
-	}
+export interface GetAllCommunityPartnersResult {
+	id: SocioComunitario.Value['id'];
+	firstName: DatosPersonalesExterno.Value['nombre'];
+	lastName: DatosPersonalesExterno.Value['apellidos'];
+}
+export async function obtenerSociosComunitarios(): Promise<GetAllCommunityPartnersResult[]> {
+	return await qb(SocioComunitario.Name)
+		.join(DatosPersonalesExterno.Name, SocioComunitario.Key('datos_personales_Id'), '=', DatosPersonalesExterno.Key('id'))
+		.select(
+			SocioComunitario.Key('id'),
+			qb.ref(DatosPersonalesExterno.Key('nombre')).as('firstName'),
+			qb.ref(DatosPersonalesExterno.Key('apellidos')).as('lastName')
+		);
 }
 
-export async function obtenerProfesores(): Promise<Profesor[]> {
-	try {
-		const profesores = await knex('profesor_interno')
-			.join('datos_personales_interno', 'profesor_interno.datos_personales_Id', '=', 'datos_personales_interno.id')
-			.select('profesor_interno.id', 'datos_personales_interno.nombre', 'datos_personales_interno.apellidos');
-		return profesores; // Retorna todos los profesores internos con sus nombres y apellidos
-	} catch (err) {
-		console.error('Se ha producido un error al obtener todos los profesores:', err);
-		return []; // Retorno array vacio o null?
-	}
+export interface GetAllInternalProfessorsResult {
+	id: ProfesorInterno.Value['id'];
+	firstName: DatosPersonalesInterno.Value['nombre'];
+	lastName: DatosPersonalesInterno.Value['apellidos'];
+}
+export async function obtenerProfesores(): Promise<GetAllInternalProfessorsResult[]> {
+	return await qb(ProfesorInterno.Name)
+		.join(DatosPersonalesExterno.Name, ProfesorInterno.Key('datos_personales_Id'), '=', DatosPersonalesExterno.Key('id'))
+		.select(
+			ProfesorInterno.Key('id'),
+			qb.ref(DatosPersonalesExterno.Key('nombre')).as('firstName'),
+			qb.ref(DatosPersonalesExterno.Key('apellidos')).as('lastName')
+		);
 }
 
 export async function obtenerProfesorInterno(id: number): Promise<GetInternalProfessorResult | null> {
