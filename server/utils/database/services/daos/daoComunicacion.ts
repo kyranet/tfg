@@ -1,221 +1,48 @@
 import knex from '../../config';
 import type { Mail } from '../types/Mail';
 import { Mensaje } from '../types/Mensaje';
+import { MensajeAnuncioServicio } from '../types/MensajeAnuncioServicio';
 import { MensajeColaboracion } from '../types/MensajeColaboracion';
-import type { Newsletter } from '../types/Newsletter';
-import type { Upload } from '../types/Upload';
+import { Newsletter } from '../types/Newsletter';
+import { Upload } from '../types/Upload';
+import { Upload_AnuncioServicio } from '../types/Upload_AnuncioServicio';
+import { Upload_Colaboracion } from '../types/Upload_Colaboracion';
+
 // Devuelve el upload correspondiente
-
-export async function obtenerUploads(idUploads: number): Promise<Upload | null> {
-	const uploadData: Upload | undefined = await knex<Upload>('upload').where({ id: idUploads }).select('*').first();
-
-	if (!uploadData) {
-		console.error('No se encontró ningún upload con el ID', idUploads);
-		return null;
-	}
-
-	const upload: Upload = {
-		id: uploadData.id,
-		almacenamiento: uploadData.almacenamiento,
-		campo: uploadData.campo,
-		tipo: uploadData.tipo,
-		tipo_id: uploadData.tipo_id,
-		path: uploadData.path,
-		client_name: uploadData.client_name,
-		nombre: uploadData.nombre,
-		creador: uploadData.creador,
-		createdAt: uploadData.createdAt,
-		updatedAt: uploadData.updatedAt
-	};
-
-	return upload;
+export async function obtenerUpload(id: number): Promise<FormattedUpload> {
+	return formatUpload(ensureDatabaseEntry(await qb(Upload.Name).where({ id }).first()));
 }
 
 //Devolver mensaje correspondiente
-
-export async function obtenerMensajes(idMensajes: number): Promise<Mensaje | null> {
-	try {
-		const mensajeData: Mensaje | undefined = await knex<Mensaje>('mensaje')
-			.where({
-				id: idMensajes
-			})
-			.select('*')
-			.first();
-
-		if (!mensajeData) {
-			console.error('No se encontró ningún mensaje con el ID', idMensajes);
-			return null;
-		}
-
-		const usuarioData = await knex<Mensaje['user']>('usuario').where({ id: mensajeData.user }).select('origin_login').first();
-
-		if (!usuarioData) {
-			console.error('No se encontró ningún usuario con el ID', mensajeData.user);
-			return null;
-		}
-
-		// Asignar el campo faltante a `mensajeData` utilizando la aserción de tipo
-		mensajeData.user = usuarioData.origin_login as Mensaje['user'];
-
-		return mensajeData;
-	} catch (error) {
-		console.error(error);
-		console.error(`Se ha producido un error al intentar obtener el mensaje con ID ${idMensajes}`);
-		return null;
-	}
+export async function obtenerMensaje(id: number): Promise<Mensaje> {
+	return ensureDatabaseEntry(await qb(Mensaje.Name).where({ id }).first());
 }
 
 //Devuelve todos los mensajes de un anuncio
-//REVISAR
-export async function obtenerMensajesAnuncio(idAnuncio: number): Promise<Mensaje[] | null> {
-	try {
-		const mensajes: Mensaje[] = await knex('mensaje_anuncioservicio')
-			.where({
-				id_anuncio: idAnuncio
-			})
-			.join('mensaje', 'id_mensaje', '=', 'id')
-			.join('usuario', 'usuario.id', '=', 'usuario')
-			.select('mensaje.id', 'mensaje.texto', 'mensaje.fecha', 'mensaje.usuario', 'usuario.origin_login')
-			.catch((err) => {
-				console.error(err);
-				console.error('Se ha producido un error al intentar obtener los mensajes del anuncio ', idAnuncio);
-				// Proporciona un valor por defecto o lanza el error nuevamente según la lógica
-				return [] as Mensaje[];
-			});
-
-		if (!mensajes || mensajes.length === 0) {
-			console.error('No se encontraron mensajes para el anuncio con ID', idAnuncio);
-			return null;
-		}
-
-		const mensajesTransformados: Mensaje[] = mensajes.map((mensaje) => ({
-			id: mensaje.id,
-			text: mensaje.text,
-			datetime: mensaje.datetime,
-			user: mensaje.user,
-			username: mensaje.username
-		}));
-
-		return mensajesTransformados;
-	} catch (error) {
-		console.error(error);
-		return null;
-	}
+export async function obtenerMensajesAnuncio(id: number): Promise<readonly number[]> {
+	const mensajes = await qb(MensajeAnuncioServicio.Name).where({ id_anuncio: id }).select('id_mensaje');
+	return mensajes.map((mensaje) => mensaje.id_mensaje);
 }
 
 //Devuelve todos los mensajes de una colaboración
-export async function obtenerMensajesColab(idColab: number): Promise<Mensaje[] | null> {
-	try {
-		const mensajes = await knex('mensaje_colaboracion')
-			.where({
-				id_colaboracion: idColab
-			})
-			.join('mensaje', 'id_mensaje', '=', 'id')
-			.join('usuario', 'usuario.id', '=', 'usuario')
-			.select('mensaje.id', 'mensaje.texto', 'mensaje.fecha', 'mensaje.usuario', 'usuario.origin_login')
-			.then((mensajes) => {
-				const mensajesTransformados: Mensaje[] = mensajes.map((mensaje: any) => {
-					return {
-						id: mensaje.id,
-						text: mensaje.texto,
-						datetime: mensaje.fecha,
-						user: mensaje.usuario,
-						username: mensaje.origin_login
-					};
-				});
-				return mensajesTransformados;
-			})
-			.catch((err) => {
-				console.error(err);
-				console.error('Se ha producido un error al intentar obtener los mensajes de la colaboración con id ', idColab);
-				return null;
-			});
-
-		return mensajes;
-	} catch (error) {
-		console.error(error);
-		return null;
-	}
+export async function obtenerMensajesColab(id: number): Promise<readonly number[]> {
+	const mensajes = await qb(MensajeColaboracion.Name).where({ id_colaboracion: id }).select('id_mensaje');
+	return mensajes.map((mensaje) => mensaje.id_mensaje);
 }
 
 //Devuelve todos los uploads de un anuncio
-export async function obtenerUploadsAnuncio(idAnuncio: number): Promise<Upload[] | null> {
-	try {
-		const uploadsData = (await knex<Upload>('upload_anuncioservicio')
-			.where({
-				id: idAnuncio
-			})
-			.join('upload', 'id_upload', '=', 'id')
-			.select(
-				'upload.id',
-				'upload.almacenamiento',
-				'upload.campo',
-				'upload.tipo',
-				'upload.tipo_id',
-				'upload.path',
-				'upload.client_name',
-				'upload.nombre',
-				'upload.creador',
-				'upload.createdAt',
-				'upload.updatedAt'
-			)
-			.catch((err) => {
-				console.error(err);
-				console.error('Se ha producido un error al intentar obtener los uploads del anuncio con ID', idAnuncio);
-				throw err;
-			})) as Upload[];
-
-		if (!uploadsData || uploadsData.length === 0) {
-			console.error('No se encontraron uploads para el anuncio con el ID', idAnuncio);
-			return null;
-		}
-
-		return uploadsData;
-	} catch (error) {
-		console.error(error);
-		console.error(`Se ha producido un error al intentar obtener los uploads del anuncio con ID ${idAnuncio}`);
-		return null;
-	}
+export async function obtenerUploadsAnuncio(id: number): Promise<readonly number[]> {
+	const uploads = await qb(Upload_AnuncioServicio.Name).where({ id_anuncio: id }).select('id_upload');
+	return uploads.map((upload) => upload.id_upload);
 }
 
 //Devuelve todos los uploads de una colaboración
-
-export async function obtenerUploadsColab(idColab: number): Promise<Upload[] | null> {
-	try {
-		const uploadsData = (await knex('uploads_colaboracion')
-			.where({
-				id_colaboracion: idColab
-			})
-			.join('upload', 'id_upload', '=', 'id')
-			.select(
-				'upload.id',
-				'upload.almacenamiento',
-				'upload.campo',
-				'upload.tipo',
-				'upload.tipo_id',
-				'upload.path',
-				'upload.client_name',
-				'upload.nombre',
-				'upload.creador',
-				'upload.createdAt',
-				'upload.updatedAt'
-			)) as Upload[];
-
-		if (!uploadsData || uploadsData.length === 0) {
-			console.error('No se encontraron uploads para la colaboración con el ID', idColab);
-			return null;
-		}
-
-		return uploadsData;
-	} catch (error) {
-		console.error(error);
-		console.error(`Se ha producido un error al intentar obtener los uploads para la colaboración con ID ${idColab}`);
-		return null;
-	}
+export async function obtenerUploadsColab(id: number): Promise<readonly number[]> {
+	const uploads = await qb(Upload_Colaboracion.Name).where({ id_colaboracion: id }).select('id_upload');
+	return uploads.map((upload) => upload.id_upload);
 }
 
 //Crear nuevo mensaje
-
 export async function crearMensajeAnuncio(mensaje: Mensaje, anuncio: number): Promise<number | null> {
 	try {
 		const idMensaje = await knex('mensaje')
@@ -640,4 +467,19 @@ export async function eliminarNewsletter(id: number): Promise<void> {
 		console.error(error);
 		return Promise.resolve();
 	}
+}
+
+export interface FormattedUpload extends ReturnType<typeof formatUpload> {}
+function formatUpload(entry: Upload.Value) {
+	return {
+		id: entry.id,
+		almacenamiento: entry.almacenamiento,
+		tipo: entry.tipo,
+		campo: entry.campo,
+		tipoId: entry.tipo_id,
+		path: entry.path,
+		clientName: entry.client_name,
+		nombre: entry.nombre,
+		creador: entry.creador
+	};
 }
