@@ -27,7 +27,7 @@ export default eventHandler(async (event) => {
 		fecha_limite: body.fecha_limite,
 		observaciones_temporales: body.observaciones,
 		creador: user.data.id,
-		area_servicio: body.areasServicio,
+		areasServicio: body.areasServicio,
 		profesores: [],
 		tags: []
 	});

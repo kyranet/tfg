@@ -1,152 +1,129 @@
-import knex from '../../config';
-import { readByOferta } from '../daos/daoTags';
-import { obtenerProfesorInterno, obtenerProfesoresInternos } from '../daos/daoUsuario';
+import { isNullishOrEmpty } from '@sapphire/utilities';
+import type { Knex } from 'knex';
 import { AnuncioServicio } from '../types/AnuncioServicio';
+import { AreaServicio } from '../types/AreaServicio';
+import { AreaServicio_AnuncioServicio } from '../types/AreaServicio_AnuncioServicio';
+import { Asignatura } from '../types/Asignatura';
+import { DatosPersonalesInterno } from '../types/DatosPersonalesInterno';
+import { OfertaDemanda_Tags } from '../types/OfertaDemanda_Tags';
 import { OfertaServicio } from '../types/OfertaServicio';
-import { Profesor } from '../types/Profesor';
+import { ProfesorInterno } from '../types/ProfesorInterno';
+import { ProfesorInterno_Oferta } from '../types/ProfesorInterno_Oferta';
+import { Tag } from '../types/Tag';
+import { sharedCountTable } from './shared';
 
-export type AnuncioServicioCreateData = Pick<AnuncioServicio, 'titulo' | 'descripcion' | 'imagen'> & { area_servicio: readonly number[] };
-async function crearAnuncio(anuncio: AnuncioServicioCreateData): Promise<number> {
-	try {
-		const [entry] = await knex<AnuncioServicio>('anuncio_servicio')
-			.insert({
-				titulo: anuncio.titulo,
-				descripcion: anuncio.descripcion,
-				imagen: anuncio.imagen
-			})
-			.returning('id');
-
-		// Insertar áreas de servicio si existen
-		if (anuncio.area_servicio && anuncio.area_servicio.length > 0) {
-			const areasParaInsertar = anuncio.area_servicio.map((area) => ({
-				id_area: area,
-				id_anuncio: entry.id
-			}));
-			await knex('areaservicio_anuncioservicio').insert(areasParaInsertar);
-		}
-
-		return entry.id; // Retorna el ID del anuncio creado
-	} catch (error) {
-		console.error('Error al crear anuncio', error);
-		throw error;
-	}
-}
-
-type OfertaServicioCreateDataKeys = 'cuatrimestre' | 'anio_academico' | 'fecha_limite' | 'observaciones_temporales' | 'creador';
-export type OfertaServicioCreateData = AnuncioServicioCreateData & Pick<OfertaServicio.CreateData, OfertaServicioCreateDataKeys>;
-export async function crearOferta(oferta: OfertaServicioCreateData): Promise<OfertaServicio> {
-	const idAnuncio = await crearAnuncio(oferta); // Reutiliza la función de crearAnuncio
-	const [entry] = await knex('oferta_servicio')
-		.insert({
-			id: idAnuncio,
-			cuatrimestre: oferta.cuatrimestre,
-			anio_academico: oferta.anio_academico,
-			fecha_limite: oferta.fecha_limite,
-			observaciones_temporales: oferta.observaciones_temporales,
-			creador: oferta.creador
-			//Revisar esta logica de insercion de profesores/tags
-		})
+export type AnuncioServicioCreateData = Pick<AnuncioServicio, 'titulo' | 'descripcion' | 'imagen'> & { areasServicio: readonly number[] };
+async function crearAnuncio(anuncio: AnuncioServicioCreateData, trx: Knex.Transaction): Promise<AnuncioServicio.Value> {
+	const [entry] = await trx(AnuncioServicio.Name)
+		.insert({ titulo: anuncio.titulo, descripcion: anuncio.descripcion, imagen: anuncio.imagen })
 		.returning('*');
 
-	await knex('profesor_colaboracion').whereIn('id', oferta.profesores).update({ oferta_servicio: entry.id });
+	// Insertar áreas de servicio si existen
+	if (!isNullishOrEmpty(anuncio.areasServicio)) {
+		await trx(AreaServicio_AnuncioServicio.Name).insert(
+			anuncio.areasServicio.map((area) => ({
+				id_area: area,
+				id_anuncio: entry.id
+			}))
+		);
+	}
 
 	return entry;
 }
 
-export async function obtenerOfertaServicio(id_oferta: number): Promise<OfertaServicio | null> {
-	try {
-		const anuncio = await obtenerAnuncioServicio(id_oferta);
+type OfertaServicioCreateDataKeys = 'cuatrimestre' | 'anio_academico' | 'fecha_limite' | 'observaciones_temporales' | 'creador';
+export type OfertaServicioCreateData = AnuncioServicioCreateData &
+	Pick<OfertaServicio.CreateData, OfertaServicioCreateDataKeys> & { asignaturas: readonly string[]; profesores: readonly number[] };
+export async function crearOferta(data: OfertaServicioCreateData): Promise<FormattedOferta> {
+	return await qb.transaction(async (trx) => {
+		const anuncio = await crearAnuncio(data, trx);
+		const [oferta] = await trx(OfertaServicio.Name)
+			.insert({
+				id: anuncio.id,
+				cuatrimestre: data.cuatrimestre,
+				anio_academico: data.anio_academico,
+				fecha_limite: data.fecha_limite,
+				observaciones_temporales: data.observaciones_temporales,
+				creador: data.creador
+				//Revisar esta logica de insercion de profesores/tags
+			})
+			.returning('*');
 
-		const oferta = await knex('oferta_servicio').where({ id: id_oferta }).select('*');
-		if (!oferta || oferta.length === 0) {
-			return null; // Retorna null si no se encuentra la oferta
+		if (!isNullishOrEmpty(data.asignaturas)) {
+			await trx(Asignatura.Name).insert(
+				data.asignaturas.map((asignatura) => ({
+					id_oferta: oferta.id,
+					nombre: asignatura
+				}))
+			);
 		}
 
-		const datos_profesores = await knex('profesorinterno_oferta').where({ id_oferta: id_oferta }).select('id_profesor');
-		const arrayProfesores = datos_profesores.map((profesor) => profesor.id_profesor);
+		if (!isNullishOrEmpty(data.profesores)) {
+			await trx(ProfesorInterno_Oferta.Name).insert(
+				data.profesores.map((profesor) => ({
+					id_profesor: profesor,
+					id_oferta: oferta.id
+				}))
+			);
+		}
 
-		const responsable = await obtenerProfesorInterno(oferta[0].creador);
-		const profesores = await obtenerProfesoresInternos(arrayProfesores);
-		const asignaturas = await obtenerAsignaturaObjetivo(id_oferta);
-		const tags = await readByOferta(id_oferta);
-
-		const asignaturas_ref = await obtenerAsignaturaObjetivo(id_oferta);
-		const tags_ref = tags.map((tag) => tag.nombre);
-
-		const tOfertaServicio: OfertaServicio = {
-			id: oferta[0].id,
-			titulo: anuncio.titulo,
-			descripcion: anuncio.descripcion,
-			imagen: anuncio.imagen,
-			created_at: anuncio.created_at,
-			updated_at: anuncio.updated_at,
-			asignatura_objetivo: asignaturas_ref,
-			cuatrimestre: oferta[0].cuatrimestre,
-			anio_academico: oferta[0].anio_academico,
-			fecha_limite: oferta[0].fecha_limite,
-			observaciones_temporales: oferta[0].observaciones_temporales,
-			//Revisar parametros del creador
-			creador: responsable.nombre,
-			area_servicio: anuncio.area_servicio,
-			profesores: profesores,
-			tags: tags_ref,
-			dummy: null
-		};
-	} catch (error) {
-		console.error('Error al obtener oferta de servicio:', error);
-		throw error;
-	}
+		return formatOferta(anuncio, oferta);
+	});
 }
 
-export async function contarTodasOfertasServicio(): Promise<number> {
-	try {
-		const total = await knex('anuncio_servicio').count('id as COUNT');
-		return Number(total[0].COUNT);
-	} catch (err) {
-		console.error('Error al contar todas las ofertas de servicio:', err);
-		throw err;
-	}
+export async function obtenerOfertaServicio(id: number): Promise<OfertaServicio | null> {
+	// NOTE: I have no idea whether or not this works, verify once the program works.
+	return await qb(OfertaServicio.Name)
+		.where({ id })
+		.join(AnuncioServicio.Name, AnuncioServicio.Key('id'), '=', OfertaServicio.Key('id'))
+		.join(ProfesorInterno.Name, ProfesorInterno.Key('id'), '=', OfertaServicio.Key('creador'))
+		.join(DatosPersonalesInterno.Name, DatosPersonalesInterno.Key('id'), '=', ProfesorInterno.Key('datos_personales_Id'))
+		.select(
+			qb.ref(AnuncioServicio.Key('*')),
+			qb.ref(OfertaServicio.Key('*')),
+			qb.ref(ProfesorInterno.Key('id')).as('creatorId'),
+			qb.ref(DatosPersonalesInterno.Key('nombre')).as('creatorFirstName'),
+			qb.ref(DatosPersonalesInterno.Key('apellidos')).as('creatorLastName'),
+			// Get the service areas:
+			qb(AreaServicio_AnuncioServicio.Name)
+				.select(qb.raw(`JSON_ARRAYAGG(${AreaServicio.Key('nombre')})`))
+				.where(AreaServicio_AnuncioServicio.Key('id_anuncio'), '=', OfertaServicio.Key('id'))
+				.join(AreaServicio.Name, AreaServicio.Key('id'), '=', AreaServicio_AnuncioServicio.Key('id_area'))
+				.as('areas'),
+			// Get the professors
+			qb(ProfesorInterno_Oferta.Name)
+				.select(
+					qb.raw(`JSON_ARRAY(JSON(
+						'id', ${DatosPersonalesInterno.Key('id')},
+						'firstName', ${DatosPersonalesInterno.Key('nombre')},
+						'lastName', ${DatosPersonalesInterno.Key('apellidos')},
+						'email', ${DatosPersonalesInterno.Key('correo')},
+						'telephone', ${DatosPersonalesInterno.Key('telefono')},
+						'facultad', ${ProfesorInterno.Key('facultad')},
+						'universidad', ${ProfesorInterno.Key('universidad')}
+					))`)
+				)
+				.where(ProfesorInterno_Oferta.Key('id_oferta'), '=', OfertaServicio.Key('id'))
+				.join(ProfesorInterno.Name, ProfesorInterno.Key('id'), '=', ProfesorInterno_Oferta.Key('id_profesor'))
+				.join(DatosPersonalesInterno.Name, DatosPersonalesInterno.Key('id'), '=', ProfesorInterno.Key('datos_personales_Id'))
+				.as('profesores'),
+			// Get the tags
+			qb(OfertaDemanda_Tags.Name)
+				.select(qb.raw(`JSON_ARRAYAGG(${Tag.Key('nombre')})`))
+				.where(OfertaDemanda_Tags.Key('object_id'), '=', OfertaServicio.Key('id'))
+				.join(Tag.Name, Tag.Key('id'), '=', OfertaDemanda_Tags.Key('tag_id'))
+				.as('tags'),
+			// Get the subjects
+			qb(Asignatura.Name)
+				.select(qb.raw(`JSON_ARRAYAGG(${Asignatura.Key('nombre')})`))
+				.where(Asignatura.Key('id_oferta'), '=', OfertaServicio.Key('id'))
+				.as('asignaturas')
+		);
 }
 
-/*async function obtenerTodasOfertasServicio(limit: number, offset: number, filters: string): Promise<any[]> {
-    try {
-        const fil = JSON.parse(filters);
-        const creator_id = fil.creador || true;
-        const tag_filter = fil.tags.length ? fil.tags : [];
-
-        console.log(fil);
-
-        let query = knex("anuncio_servicio")
-            .join("oferta_servicio", "anuncio_servicio.id", "=", "oferta_servicio.id")
-            .join("profesor_interno", "oferta_servicio.creador", "=", "profesor_interno.id")
-            .join("datos_personales_interno", "profesor_interno.datos_personales_id", "=", "datos_personales_interno.id")
-            .select("anuncio_servicio.id", "anuncio_servicio.titulo", "anuncio_servicio.descripcion", "anuncio_servicio.imagen", "anuncio_servicio.created_at", "anuncio_servicio.updated_at", "oferta_servicio.cuatrimestre", "oferta_servicio.anio_academico", "oferta_servicio.fecha_limite", "oferta_servicio.observaciones_temporales", "datos_personales_interno.nombre", "datos_personales_interno.apellidos")
-            .whereIn("cuatrimestre", fil.cuatrimestre)
-            .where("titulo", "like", `%${fil.terminoBusqueda}%`)
-            .modify(function(queryBuilder) {
-                if (fil.creador) {
-                    queryBuilder.where('creador', fil.creador);
-                }
-                if (fil.profesores && fil.profesores.length > 0) {
-                    queryBuilder.where('creador', fil.profesores[0].id);
-                }
-            })
-            .where(tag_filter.length, "=", 0)
-            .orWhere(0, '<', function() {
-                this.count('*').from('oferta_demanda_tags').join('tags', 'tags.id', '=', 'oferta_demanda_tags.tag_id').whereRaw(`oferta_demanda_tags.object_id = oferta_servicio.id`).whereIn('tags.nombre', tag_filter);
-            })
-            .limit(limit)
-            .offset(offset);
-
-        let datos_ofertas = await query;
-
-        return datos_ofertas; // Esta línea se modificará según la implementación completa.
-    } catch (err) {
-        console.error("Error al obtener todas las ofertas de servicio:", err);
-        throw err;
-    }
+export function contarTodasOfertasServicio(): Promise<number> {
+	return sharedCountTable(AnuncioServicio.Name);
 }
-*/
 
 interface OfertasServicioFilter {
 	cuatrimestre: string[];
@@ -317,13 +294,8 @@ async function obtenerAreasServicio(id_anuncio: number): Promise<string[]> {
 	}
 }
 
-export async function obtenerListaAreasServicio(): Promise<{ id: number; nombre: string }[]> {
-	try {
-		return await knex('area_servicio').select('id', 'nombre');
-	} catch (err) {
-		console.error('Se ha producido un error al intentar obtener todas las áreas de servicio', err);
-		throw err;
-	}
+export async function obtenerListaAreasServicio(): Promise<AreaServicio.Value[]> {
+	return await qb(AreaServicio.Name);
 }
 
 async function obtenerCreadorOferta(id: number): Promise<number> {
@@ -352,4 +324,22 @@ async function obtenerAreaServicioTitulacionPorArea(servicios: string[]): Promis
 		console.error('Se ha producido un error al intentar obtener datos de la tabla matching_areaservicio_titulacion', err);
 		throw err;
 	}
+}
+
+export interface FormattedOferta extends ReturnType<typeof formatOferta> {}
+function formatOferta(anuncio: AnuncioServicio.Value, oferta: OfertaServicio.Value) {
+	return {
+		id: anuncio.id,
+		title: anuncio.titulo,
+		description: anuncio.descripcion,
+		image: anuncio.imagen,
+		createdAt: anuncio.created_at,
+		updatedAt: anuncio.updated_at,
+		dummy: anuncio.dummy,
+		quarter: oferta.cuatrimestre,
+		academicYear: oferta.anio_academico,
+		deadline: oferta.fecha_limite,
+		temporaryRemarks: oferta.observaciones_temporales,
+		creator: oferta.creador
+	};
 }

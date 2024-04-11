@@ -8,9 +8,10 @@ import { AreaServicio_AnuncioServicio } from '../types/AreaServicio_AnuncioServi
 import { AreaServicio_Iniciativa } from '../types/AreaServicio_Iniciativa';
 import { DemandaServicio } from '../types/DemandaServicio';
 import { Iniciativa } from '../types/Iniciativa';
+import { NecesidadSocial } from '../types/NecesidadSocial';
 import { TitulacionLocal } from '../types/TitulacionLocal';
 import { TitulacionLocal_Demanda } from '../types/TitulacionLocal_Demanda';
-import { sharedCountTable, sharedDeleteEntryTable } from './shared';
+import { sharedCountTable, sharedDeleteEntryTable, type SearchParameters } from './shared';
 
 async function obtenerAreaServicio(id: number): Promise<AreaServicio.Value[]> {
 	return await qb(AreaServicio_AnuncioServicio.Name)
@@ -208,7 +209,7 @@ export function contarTodasDemandasServicio(): Promise<number> {
 	return sharedCountTable(DemandaServicio.Name);
 }
 
-interface DemandasFiltro {
+interface DemandasFiltro extends SearchParameters {
 	terminoBusqueda: string;
 	necesidadSocial?: string[];
 	creador?: string;
@@ -216,7 +217,7 @@ interface DemandasFiltro {
 	areaServicio?: string[];
 }
 
-export async function obtenerTodasDemandasServicio(limit: number, offset: number, filters: DemandasFiltro): Promise<DemandaServicio[]> {
+export async function obtenerTodasDemandasServicio(options: DemandasFiltro): Promise<DemandaServicio[]> {
 	try {
 		const demandasQuery = knex('anuncio_servicio')
 			.join('demanda_servicio', 'anuncio_servicio.id', '=', 'demanda_servicio.id')
@@ -235,23 +236,23 @@ export async function obtenerTodasDemandasServicio(limit: number, offset: number
 				'datos_personales_externo.nombre as nombre_creador',
 				'datos_personales_externo.apellidos as apellidos_creador'
 			])
-			.where('titulo', 'like', `%${filters.terminoBusqueda}%`)
+			.where('titulo', 'like', `%${options.terminoBusqueda}%`)
 			.modify((queryBuilder) => {
-				if (filters.necesidadSocial) {
-					queryBuilder.whereIn('necesidad_social.nombre', filters.necesidadSocial);
+				if (options.necesidadSocial) {
+					queryBuilder.whereIn('necesidad_social.nombre', options.necesidadSocial);
 				}
-				if (filters.creador) {
-					queryBuilder.where('demanda_servicio.creador', filters.creador);
+				if (options.creador) {
+					queryBuilder.where('demanda_servicio.creador', options.creador);
 				}
-				if (filters.entidadDemandante) {
-					queryBuilder.where('socio_comunitario.id', filters.entidadDemandante);
+				if (options.entidadDemandante) {
+					queryBuilder.where('socio_comunitario.id', options.entidadDemandante);
 				}
-				if (filters.areaServicio) {
-					queryBuilder.whereIn('area_servicio.nombre', filters.areaServicio);
+				if (options.areaServicio) {
+					queryBuilder.whereIn('area_servicio.nombre', options.areaServicio);
 				}
 			})
-			.limit(limit)
-			.offset(offset);
+			.limit(options.limit ?? 100)
+			.offset(options.offset ?? 0);
 
 		const datosDemandas = await demandasQuery;
 
@@ -324,34 +325,13 @@ async function obtenerTitulacionLocal(id_demanda: number): Promise<TitulacionLoc
 		throw err;
 	}
 }
-async function obtenerAreaServicioDemanda(demanda: number): Promise<AreaServicioAnuncio[]> {
-	try {
-		const areasServicio = await knex<AreaServicioAnuncio>('areaservicio_anuncioservicio').where({ id_anuncio: demanda });
-		return areasServicio;
-	} catch (err) {
-		console.error('Error al obtener áreas de servicio para la demanda', demanda, err);
-		throw err;
-	}
-}
 
-export async function obtenerListaTitulacionLocal(): Promise<TitulacionLocal[]> {
-	try {
-		const titulaciones = await knex<TitulacionLocal>('titulacion_local').select('*');
-		return titulaciones;
-	} catch (err) {
-		console.error('Error al obtener todas las titulaciones locales', err);
-		throw err;
-	}
+export async function obtenerListaTitulacionLocal(): Promise<TitulacionLocal.Value[]> {
+	return await qb(TitulacionLocal.Name);
 }
 
 export async function obtenerListaNecesidadSocial(): Promise<any[]> {
-	try {
-		const necesidadesSociales = await knex('necesidad_social').select('*');
-		return necesidadesSociales;
-	} catch (err) {
-		console.error('Error al obtener todas las necesidades sociales', err);
-		throw err;
-	}
+	return await qb(NecesidadSocial.Name);
 }
 
 export interface FormattedDemanda extends ReturnType<typeof formatDemanda> {}
