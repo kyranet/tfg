@@ -1,6 +1,6 @@
 import { isNullishOrEmpty } from '@sapphire/utilities';
 import { Knex } from 'knex';
-import { obtenerUsuarioSinRolPorId } from '../daos/daoUsuario';
+import { GetUserResult, obtenerUsuarioSinRolPorId } from '../daos/daoUsuario';
 import { AnuncioServicio } from '../types/AnuncioServicio';
 import { Colaboracion } from '../types/Colaboracion';
 import { EstudianteProyecto } from '../types/EstudianteProyecto';
@@ -95,7 +95,7 @@ async function obtenerProfesores(colaboracionId: number): Promise<readonly numbe
 
 export interface GetPartenariadoResult extends FormattedPartenariado {
 	profesores: readonly number[];
-	responsable: string;
+	responsable: GetUserResult | null;
 }
 export async function obtenerPartenariado(id: number): Promise<GetPartenariadoResult> {
 	const entry = ensureDatabaseEntry(
@@ -105,11 +105,10 @@ export async function obtenerPartenariado(id: number): Promise<GetPartenariadoRe
 			.first()
 	);
 
-	const responsable = await obtenerUsuarioSinRolPorId(entry.id);
 	return {
 		...formatPartenariado(entry),
 		profesores: await obtenerProfesores(entry.id),
-		responsable: responsable.nombre
+		responsable: await obtenerUsuarioSinRolPorId(entry.responsable)
 	};
 }
 
