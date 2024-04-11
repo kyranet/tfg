@@ -21,7 +21,7 @@ export const crearDemandas = eventHandler(async (event) => {
 		observaciones_temporales: body.observaciones,
 		necesidad_social: body.necesidadSocial,
 		titulacionesLocales: body.titulacionesLocales,
-		areaServicio: body.areaServicio,
+		areasServicio: body.areaServicio,
 		comunidad_beneficiaria: body.comunidadBeneficiaria
 	});
 });

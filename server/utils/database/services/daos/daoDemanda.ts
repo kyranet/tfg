@@ -1,94 +1,46 @@
 import { isNullishOrEmpty } from '@sapphire/utilities';
+import { Knex } from 'knex';
 import knex from '../../config';
 import { obtenerSocioComunitario } from '../daos/daoUsuario';
 import { AnuncioServicio } from '../types/AnuncioServicio';
 import { AreaServicio } from '../types/AreaServicio';
-import { AreaServicioAnuncio } from '../types/AreaServicioAnuncio';
 import { AreaServicio_AnuncioServicio } from '../types/AreaServicio_AnuncioServicio';
+import { AreaServicio_Iniciativa } from '../types/AreaServicio_Iniciativa';
 import { DemandaServicio } from '../types/DemandaServicio';
+import { Iniciativa } from '../types/Iniciativa';
 import { TitulacionLocal } from '../types/TitulacionLocal';
 import { TitulacionLocal_Demanda } from '../types/TitulacionLocal_Demanda';
+import { sharedCountTable, sharedDeleteEntryTable } from './shared';
 
-//Obtener areas de servicio por un id de anuncio concreto
-async function obtenerAreaServicio(id_anuncio: number): Promise<AreaServicio[]> {
-	try {
-		// Consultamos en la tabla areaservicio_anuncioservicio donde el id_anuncio coincide
-		const id_areas = await knex('areaservicio_anuncioservicio').where({ id_anuncio: id_anuncio }).select('id_area');
-
-		// Consultamos en la tabla area_servicio donde el id está en la lista de ids obtenidos anteriormente
-		const areas: AreaServicio[] = await knex
-			.select('*')
-			.from('area_servicio')
-			.whereIn(
-				'id',
-				id_areas.map((area) => area.id_area)
-			);
-
-		// Devolvemos las áreas de servicio encontradas
-		return areas;
-	} catch (error) {
-		// En caso de error, manejamos y lanzamos la excepción
-		console.error(`Error al obtener el área de servicio para el anuncio de servicio con id ${id_anuncio}`);
-		throw error;
-	}
+async function obtenerAreaServicio(id: number): Promise<AreaServicio.Value[]> {
+	return await qb(AreaServicio_AnuncioServicio.Name)
+		.where({ id_anuncio: id })
+		.join(AreaServicio.Name, AreaServicio.Key('id'), '=', AreaServicio_AnuncioServicio.Key('id_area'))
+		.select(AreaServicio.Key('*'));
 }
 
-// Obtener todas las areas de servicio
-export async function obtenerListaAreasServicio(): Promise<AreaServicio[]> {
-	try {
-		// Usamos async/await para manejar de manera asincrónica las operaciones de base de datos
-		const areas: AreaServicio[] = await knex('area_servicio').select('*');
-
-		// Devolvemos las áreas de servicio encontradas
-		return areas;
-	} catch (error) {
-		// En caso de error, manejamos y lanzamos la excepción
-		console.error('Error al obtener la lista de áreas de servicio:', error);
-		throw error;
-	}
+export async function obtenerListaAreasServicio(): Promise<AreaServicio.Value[]> {
+	return await qb(AreaServicio.Name);
 }
 
 // Esta función obtiene demandas de servicio basadas en un área de servicio específica.
 // Recibe el ID del área de servicio como parámetro y devuelve una promesa que resuelve en un array de objetos DemandaServicio.
-export async function obtenerDemandaPorAreaServicio(id_areaServicio: number): Promise<DemandaServicio[]> {
-	try {
-		const id_demandas = await knex('areaservicio_iniciativa').where({ id_area: id_areaServicio }).select('id_iniciativa');
-
-		//Array de ids de demandas para recuperar su info despues.
-		const demandas: number[] = [];
-
-		// Itera sobre los resultados de las demandas y obtiene sus IDs.
-		for (const id_demanda of id_demandas) {
-			demandas.push(id_demanda['id_iniciativa']);
-		}
-
-		// Consulta la base de datos para obtener los detalles completos de las demandas basadas en los IDs obtenidos.
-		const demandasCompletas = await knex.select('*').from('demanda_servicio').whereIn('id', demandas);
-
-		return demandasCompletas;
-	} catch (err) {
-		console.error('Error al obtener las demandas con el área de servicio con id ', id_areaServicio);
-		throw err;
-	}
+export interface CompleteDemandaServicio extends DemandaServicio.Value, AnuncioServicio.Value {}
+export async function obtenerDemandaPorAreaServicio(id_areaServicio: number): Promise<CompleteDemandaServicio[]> {
+	return await qb(AreaServicio_Iniciativa.Name)
+		.where({ id_area: id_areaServicio })
+		.join(Iniciativa.Name, AreaServicio.Key('id'), '=', AreaServicio_Iniciativa.Key('id_iniciativa'))
+		.join(DemandaServicio.Name, DemandaServicio.Key('id'), '=', Iniciativa.Key('id_demanda'))
+		.join(AnuncioServicio.Name, AnuncioServicio.Key('id'), '=', DemandaServicio.Key('id'))
+		.select(DemandaServicio.Key('*'), AnuncioServicio.Key('*'));
 }
 
 //Obtiene las demandas de servicio asociadas a una necesidad social específica.
-export async function obtenerDemandaPorNecesidadSocial(id_necesidadSocial: number): Promise<DemandaServicio[]> {
-	try {
-		// Consulta las demandas de servicio que coinciden con la necesidad social proporcionada
-		const demandas: DemandaServicio[] = await knex
-			.select('*')
-			.from('demanda_servicio')
-			.where({ necesidad_social: id_necesidadSocial })
-			.innerJoin('anuncio_servicio', 'demanda_servicio.id', 'anuncio_servicio.id');
-
-		// Devuelve el resultado de la consulta
-		return demandas;
-	} catch (err) {
-		// En caso de error, imprime un mensaje detallado y relanza el error
-		console.error(`Error al obtener las demandas con la necesidad social con ID ${id_necesidadSocial}: ${err}`);
-		throw err;
-	}
+export async function obtenerDemandaPorNecesidadSocial(id: number): Promise<CompleteDemandaServicio[]> {
+	return await qb(DemandaServicio.Name)
+		.where({ necesidad_social: id })
+		.join(AnuncioServicio.Name, AnuncioServicio.Key('id'), '=', DemandaServicio.Key('id'))
+		.select(DemandaServicio.Key('*'), AnuncioServicio.Key('*'));
 }
 
 //Obtener demanda por su id
@@ -195,9 +147,9 @@ async function obtenerAnuncioServicio(id_anuncio: number): Promise<AnuncioServic
 		});
 }
 
-export type AnuncioServicioCreateData = AnuncioServicio.CreateData & { areaServicio?: readonly number[] };
-async function crearAnuncio(data: AnuncioServicioCreateData): Promise<AnuncioServicio.Value> {
-	const [entry] = await knex(AnuncioServicio.Name)
+export type AnuncioServicioCreateData = AnuncioServicio.CreateData & { areasServicio?: readonly number[] };
+async function crearAnuncio(data: AnuncioServicioCreateData, trx: Knex.Transaction): Promise<AnuncioServicio.Value> {
+	const [entry] = await trx(AnuncioServicio.Name)
 		.insert({
 			titulo: data.titulo,
 			descripcion: data.descripcion,
@@ -206,64 +158,54 @@ async function crearAnuncio(data: AnuncioServicioCreateData): Promise<AnuncioSer
 		})
 		.returning('*');
 
-	if (!isNullishOrEmpty(data.areaServicio)) {
-		await knex(AreaServicio_AnuncioServicio).insert(
-			data.areaServicio.map((area) => ({
-				id_area: area,
-				id_anuncio: entry.id
-			}))
-		);
+	if (!isNullishOrEmpty(data.areasServicio)) {
+		await trx(AreaServicio_AnuncioServicio.Name) //
+			.insert(data.areasServicio.map((area) => ({ id_area: area, id_anuncio: entry.id })));
 	}
 
 	return entry;
 }
 
-export type DemandaServicioCreateData = AnuncioServicioCreateData & Omit<DemandaServicio.CreateData, 'id'> & { titulacionesLocales?: readonly number[] };
-export async function crearDemanda(data: DemandaServicioCreateData): Promise<AnuncioServicio.Value & DemandaServicio.Value> {
-	// Crear el anuncio de servicio asociado a la demanda
-	const anuncio = await crearAnuncio(data);
+export type DemandaServicioCreateData = AnuncioServicioCreateData &
+	Omit<DemandaServicio.CreateData, 'id'> & { titulacionesLocales?: readonly number[] };
+export function crearDemanda(data: DemandaServicioCreateData): Promise<FormattedDemanda> {
+	return qb.transaction(async (trx) => {
+		// Crear el anuncio de servicio asociado a la demanda
+		const anuncio = await crearAnuncio(data, trx);
 
-	// Insertar la demanda de servicio asociada al anuncio
-	const [demanda] = await knex(DemandaServicio.Name)
-		.insert({
-			id: anuncio.id,
-			creador: data.creador,
-			ciudad: data.ciudad,
-			finalidad: data.finalidad,
-			periodo_definicion_ini: data.periodo_definicion_ini,
-			periodo_definicion_fin: data.periodo_definicion_fin,
-			periodo_ejecucion_ini: data.periodo_ejecucion_ini,
-			periodo_ejecucion_fin: data.periodo_ejecucion_fin,
-			fecha_fin: data.fecha_fin,
-			observaciones_temporales: data.observaciones_temporales,
-			necesidad_social: data.necesidad_social,
-			comunidad_beneficiaria: data.comunidad_beneficiaria
-		})
-		.returning('*');
+		// Insertar la demanda de servicio asociada al anuncio
+		const [demanda] = await trx(DemandaServicio.Name)
+			.insert({
+				id: anuncio.id,
+				creador: data.creador,
+				ciudad: data.ciudad,
+				finalidad: data.finalidad,
+				periodo_definicion_ini: data.periodo_definicion_ini,
+				periodo_definicion_fin: data.periodo_definicion_fin,
+				periodo_ejecucion_ini: data.periodo_ejecucion_ini,
+				periodo_ejecucion_fin: data.periodo_ejecucion_fin,
+				fecha_fin: data.fecha_fin,
+				observaciones_temporales: data.observaciones_temporales,
+				necesidad_social: data.necesidad_social,
+				comunidad_beneficiaria: data.comunidad_beneficiaria
+			})
+			.returning('*');
 
-	if (!isNullishOrEmpty(data.titulacionesLocales)) {
-		await knex(TitulacionLocal_Demanda.Name).insert(
-			data.titulacionesLocales.map((titulacion) => ({
-				id_titulacion: titulacion,
-				id_demanda: anuncio.id
-			}))
-		);
-	}
+		if (!isNullishOrEmpty(data.titulacionesLocales)) {
+			await trx(TitulacionLocal_Demanda.Name).insert(
+				data.titulacionesLocales.map((titulacion) => ({
+					id_titulacion: titulacion,
+					id_demanda: anuncio.id
+				}))
+			);
+		}
 
-	return { ...anuncio, ...demanda };
+		return formatDemanda(anuncio, demanda);
+	});
 }
 
-export async function contarTodasDemandasServicio(): Promise<number> {
-	try {
-		// Realiza el conteo y espera el resultado
-		const resultado = await knex('demanda_servicio').count({ count: '*' }).first();
-
-		const total = resultado.count;
-		return total;
-	} catch (err) {
-		console.error('Error al contar todas las demandas de servicio:', err);
-		throw err;
-	}
+export function contarTodasDemandasServicio(): Promise<number> {
+	return sharedCountTable(DemandaServicio.Name);
 }
 
 interface DemandasFiltro {
@@ -351,22 +293,12 @@ export async function obtenerTodasDemandasServicio(limit: number, offset: number
 	}
 }
 
-async function eliminarDemanda(id_demanda: number): Promise<void> {
-	try {
-		const resultado = await knex('demanda_servicio').where('id', id_demanda).del();
-
-		if (resultado > 0) {
-			console.log('Se ha eliminado de la base de datos la demanda con id ', id_demanda);
-
-			//En el codigo original no se elimina nada, es necesario?
-			// await eliminarAnuncio(id_demanda);
-		} else {
-			console.log('No existe la demanda de servicio con id ', id_demanda);
-		}
-	} catch (err) {
-		console.error('Se ha producido un error al intentar eliminar la demanda de servicio con id ', id_demanda, err);
-		throw err;
-	}
+export async function eliminarDemanda(id_demanda: number): Promise<boolean> {
+	return qb.transaction(
+		async (trx) =>
+			(await sharedDeleteEntryTable(DemandaServicio.Name, id_demanda, trx)) &&
+			(await sharedDeleteEntryTable(AnuncioServicio.Name, id_demanda, trx))
+	);
 }
 
 async function obtenerTitulacionLocal(id_demanda: number): Promise<TitulacionLocal[]> {
@@ -420,4 +352,28 @@ export async function obtenerListaNecesidadSocial(): Promise<any[]> {
 		console.error('Error al obtener todas las necesidades sociales', err);
 		throw err;
 	}
+}
+
+export interface FormattedDemanda extends ReturnType<typeof formatDemanda> {}
+function formatDemanda(anuncio: AnuncioServicio.Value, demanda: DemandaServicio.Value) {
+	return {
+		id: anuncio.id,
+		titulo: anuncio.titulo,
+		descripcion: anuncio.descripcion,
+		imagen: anuncio.imagen,
+		createdAt: anuncio.created_at,
+		updatedAt: anuncio.updated_at,
+		dummy: anuncio.dummy,
+		creador: demanda.creador,
+		ciudad: demanda.ciudad,
+		finalidad: demanda.finalidad,
+		periodos: {
+			definicion: { inicio: demanda.periodo_definicion_ini, fin: demanda.periodo_definicion_fin },
+			ejecucion: { inicio: demanda.periodo_ejecucion_ini, fin: demanda.periodo_ejecucion_fin },
+			fin: demanda.fecha_fin
+		},
+		observacionesTemporales: demanda.observaciones_temporales,
+		necesidadSocial: demanda.necesidad_social,
+		comunidadBeneficiaria: demanda.comunidad_beneficiaria
+	};
 }

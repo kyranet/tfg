@@ -10,7 +10,8 @@ import { Partenariado } from '../types/Partenariado';
 import { PrevioPartenariado } from '../types/PrevioPartenariado';
 import { Profesor_Colaboracion } from '../types/Profesor_Colaboracion';
 import { Proyecto } from '../types/Proyecto';
-import { sharedCountTable, sharedDeleteEntryTable } from './shared';
+import { SearchParameters, sharedCountTable, sharedDeleteEntryTable } from './shared';
+import { DemandaServicio } from '../types/DemandaServicio';
 
 export type ColaboracionCreateData = Colaboracion.CreateData & { profesores?: readonly number[] };
 async function crearColaboracion(data: ColaboracionCreateData, trx: Knex.Transaction): Promise<Colaboracion.Value> {
@@ -259,21 +260,42 @@ export async function actualizarNota(nota: NotaUpdateData): Promise<FormattedNot
 export interface GetAllPartenariadoResult extends FormattedPartenariado {
 	profesores: readonly number[];
 }
-export function obtenerTodosPartenariados(): Promise<GetAllPartenariadoResult[]> {
-	return qb('colaboracion AS c')
+export interface GetAllPartenariadoSearchParams extends SearchParameters {
+	creador?: string | undefined;
+}
+export async function obtenerTodosPartenariados(options: GetAllPartenariadoSearchParams): Promise<GetAllPartenariadoResult[]> {
+	let query = qb(qb.ref(Colaboracion.Name))
 		.select(
-			'c.id',
-			'c.titulo',
-			'c.descripcion',
-			'c.imagen',
-			'c.admite_externos as admiteExternos',
-			'c.responsable as responsableId',
-			'p.id_demanda as demandaId',
-			'p.id_oferta as ofertaId',
-			'p.estado',
-			qb.raw('(SELECT JSON_ARRAYAGG(id_profesor) FROM profesor_colaboracion WHERE profesor_colaboracion.id_colaboracion = c.id) AS profesores')
+			qb.ref(Colaboracion.Key('id')),
+			qb.ref(Colaboracion.Key('titulo')),
+			qb.ref(Colaboracion.Key('descripcion')),
+			qb.ref(Colaboracion.Key('imagen')),
+			qb.ref(Colaboracion.Key('admite_externos')).as('admiteExternos'),
+			qb.ref(Colaboracion.Key('responsable')).as('responsableId'),
+			qb.ref(Partenariado.Key('id_demanda')).as('demandaId'),
+			qb.ref(Partenariado.Key('id_oferta')).as('ofertaId'),
+			qb.ref(Partenariado.Key('estado')),
+			qb.raw(
+				`(
+					SELECT JSON_ARRAYAGG(id_profesor)
+					FROM ${Profesor_Colaboracion.Name}
+					WHERE ${Profesor_Colaboracion.Key('id_colaboracion')} = ${Colaboracion.Key('id')}
+				 ) AS profesores`
+			)
 		)
-		.leftJoin('partenariado AS p', 'c.id', 'p.id');
+		.leftJoin(qb.ref(Partenariado.Name), Colaboracion.Key('id'), '=', Partenariado.Key('id'))
+		.limit(options.limit ?? 100)
+		.offset(options.offset ?? 0);
+
+	if (!isNullishOrEmpty(options.creador)) {
+		query = query
+			.join(qb.ref(OfertaServicio.Name), Partenariado.Key('id_oferta'), '=', OfertaServicio.Key('id'))
+			.join(qb.ref(DemandaServicio.Name), Partenariado.Key('id_demanda'), '=', DemandaServicio.Key('id'))
+			.where(OfertaServicio.Key('creador'), options.creador)
+			.orWhere(DemandaServicio.Key('creador'), options.creador);
+	}
+
+	return await query;
 }
 
 export async function crearPrevioPartenariado(data: PrevioPartenariado.CreateData) {

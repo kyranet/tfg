@@ -114,7 +114,7 @@ export function makeKeyFunction<Name extends Knex.TableNames>(name: Name) {
 	 * @param key - The column name to append to the table name.
 	 * @returns A formatted string in the format `${tableName}.${columnName}`.
 	 */
-	return function <Key extends Extract<keyof Knex.TableType<Name>, string>>(key: Key): `${Name}.${Key}` {
+	return function <Key extends Extract<keyof Knex.TableType<Name> | '*', string>>(key: Key): `${Name}.${Key}` {
 		return `${name}.${key}` as const;
 	};
 }
