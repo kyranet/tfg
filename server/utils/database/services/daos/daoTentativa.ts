@@ -1,211 +1,178 @@
-import knex from '../../config';
-import type { Iniciativa } from '../types/Iniciativa';
+import { isNullishOrEmpty } from '@sapphire/utilities';
+import { AreaServicio } from '../types/AreaServicio';
+import { AreaServicio_Iniciativa } from '../types/AreaServicio_Iniciativa';
+import { DatosPersonalesExterno } from '../types/DatosPersonalesExterno';
+import { DatosPersonalesInterno } from '../types/DatosPersonalesInterno';
+import { EstudianteExterno } from '../types/EstudianteExterno';
+import { EstudianteInterno } from '../types/EstudianteInterno';
+import { Iniciativa } from '../types/Iniciativa';
+import { Matching } from '../types/Matching';
+import { MatchingArea } from '../types/MatchingArea';
+import { MatchingAreaServicioTitulacion } from '../types/MatchingAreaServicioTitulacion';
+import { NecesidadSocial } from '../types/NecesidadSocial';
+import { sharedDeleteEntryTable } from './shared';
 
-async function crearIniciativa(iniciativa: Iniciativa): Promise<void> {
-	try {
-		const [id_iniciativa] = await knex('iniciativa')
-			.insert({
-				titulo: iniciativa.titulo,
-				descripcion: iniciativa.descripcion,
-				necesidad_social: iniciativa.necesidad_social,
-				id_estudiante: iniciativa.estudiante,
-				id_demanda: iniciativa.demanda
-			})
-			.returning('id');
-
-		let fieldsToInsert = Array.isArray(iniciativa.area_servicio)
-			? iniciativa.area_servicio.map((area) => ({
-					id_area: area,
-					id_iniciativa
-				}))
-			: [{ id_area: iniciativa.area_servicio, id_iniciativa }];
-
-		await knex('areaservicio_iniciativa').insert(fieldsToInsert);
-
-		console.log('Se ha introducido en la base de datos una iniciativa con id', id_iniciativa);
-	} catch (err) {
-		console.error('Se ha producido un error al crear la iniciativa', err);
-		throw err;
-	}
+export interface CreateIniciativaOptions extends Iniciativa.CreateData {
+	areas?: readonly AreaServicio_Iniciativa.Value['id_area'][];
 }
 
-async function crearMatch(idOferta: number, idDemanda: number, porcentaje: number): Promise<void> {
-	try {
-		await knex('matching')
-			.insert({
-				id_oferta: idOferta,
-				id_demanda: idDemanda,
-				procesado: 1,
-				emparejamiento: porcentaje
-			})
-			.returning('id');
+export async function crearIniciativa(data: CreateIniciativaOptions): Promise<FormattedIniciativa> {
+	return await qb.transaction(async (trx) => {
+		const [entry] = await trx(Iniciativa.Name).insert(data).returning('*');
 
-		console.log('El match se ha creado con éxito');
-	} catch (err) {
-		console.error('Se ha producido un error al intentar crear el match', err);
-		throw err;
-	}
-}
-
-async function obtenerIniciativa(id: number): Promise<Iniciativa | null> {
-	try {
-		// Obtener los datos de la iniciativa directamente
-		const datos = await knex('iniciativa').where({ id }).first();
-		if (!datos) {
-			console.log(`No se encontró la iniciativa con id ${id}`);
-			return null;
+		if (!isNullishOrEmpty(data.areas)) {
+			await trx(AreaServicio_Iniciativa.Name).insert(data.areas.map((area) => ({ id_area: area, id_iniciativa: entry.id })));
 		}
 
-		// Obtener los IDs de las áreas de servicio relacionadas con la iniciativa
-		const id_areas = await knex('areaservicio_iniciativa').where({ id_iniciativa: id }).select('id_area');
-		const id_areas_array = id_areas.map((area) => area.id_area);
-
-		// No es necesario obtener los nombres de las áreas de servicio ni de la demanda
-		// Devolver directamente la iniciativa con los IDs de áreas de servicio
-		return {
-			id: datos.id,
-			titulo: datos.titulo,
-			descripcion: datos.descripcion,
-			necesidad_social: datos.necesidad_social,
-			demanda: datos.id_demanda,
-			area_servicio: id_areas_array,
-			estudiante: datos.id_estudiante
-		};
-	} catch (err) {
-		console.error(`Se ha producido un error al intentar obtener la iniciativa con id ${id}`, err);
-		throw err;
-	}
+		return formatIniciativa(entry);
+	});
 }
 
-//Unificar estas dos en una unica funcion y modificar dinamicamente la consulta mediante un parametro???
-async function obtenerIniciativasInternos(): Promise<Iniciativa[]> {
-	return knex('iniciativa')
-		.join('necesidad_social', 'iniciativa.necesidad_social', '=', 'necesidad_social.id')
-		.join('estudiante_interno', 'iniciativa.id_estudiante', '=', 'estudiante_interno.id')
-		.join('datos_personales_interno', 'estudiante_interno.datos_personales_Id', '=', 'datos_personales_interno.id')
+export async function crearMatch(data: Matching.CreateData): Promise<FormattedMatch> {
+	const [entry] = await qb(Matching.Name).insert(data).returning('*');
+	return formatMatch(entry);
+}
+
+export interface GetIniciativaResult extends FormattedIniciativa {
+	areas: readonly AreaServicio_Iniciativa.Value['id_area'][];
+}
+export async function obtenerIniciativa(id: number): Promise<GetIniciativaResult> {
+	const entry = ensureDatabaseEntry(
+		await qb(Iniciativa.Name)
+			.where({ id })
+			.select(
+				Iniciativa.Key('*'),
+				qb(AreaServicio_Iniciativa.Name)
+					.select(qb.raw(`JSON_ARRAY(${AreaServicio_Iniciativa.Key('id_area')})`))
+					.where(AreaServicio_Iniciativa.Key('id_iniciativa'), '=', Iniciativa.Key('id'))
+					.as('areas')
+			)
+			.first()
+	);
+
+	return { ...formatIniciativa(entry), areas: entry.areas };
+}
+
+export interface GetIniciativasEstudiantesResult {
+	id: Iniciativa.Value['id'];
+	title: Iniciativa.Value['titulo'];
+	description: Iniciativa.Value['descripcion'];
+	demandId: Iniciativa.Value['id_demanda'];
+	socialNeed: NecesidadSocial.Value['nombre'];
+	studentName: DatosPersonalesInterno.Value['nombre'];
+	areas: AreaServicio.Value['nombre'][];
+}
+async function obtenerIniciativasEstudiantesInternos(): Promise<GetIniciativasEstudiantesResult[]> {
+	return qb(Iniciativa.Name)
+		.join(NecesidadSocial.Name, NecesidadSocial.Key('id'), '=', Iniciativa.Key('necesidad_social'))
+		.join(EstudianteInterno.Name, EstudianteInterno.Key('id'), '=', Iniciativa.Key('id_estudiante'))
+		.join(DatosPersonalesInterno.Name, DatosPersonalesInterno.Key('id'), '=', EstudianteInterno.Key('datos_personales_Id'))
 		.select({
-			id: 'iniciativa.id',
-			titulo: 'iniciativa.titulo',
-			descripcion: 'iniciativa.descripcion',
-			necesidad: 'necesidad_social.nombre',
-			demanda: 'iniciativa.id_demanda',
-			estudiante: 'datos_personales_interno.nombre'
-		});
+			id: Iniciativa.Key('id'),
+			title: Iniciativa.Key('titulo'),
+			description: Iniciativa.Key('descripcion'),
+			demandId: Iniciativa.Key('id_demanda'),
+			socialNeed: NecesidadSocial.Key('nombre'),
+			studentName: DatosPersonalesInterno.Key('nombre'),
+			areas: qb(AreaServicio_Iniciativa.Name)
+				.join(AreaServicio.Name, AreaServicio.Key('id'), '=', AreaServicio_Iniciativa.Key('id_area'))
+				.where(AreaServicio_Iniciativa.Key('id_iniciativa'), qb.ref(Iniciativa.Key('id')))
+				.select(`JSON_ARRAYAGG(${AreaServicio.Key('nombre')})`)
+		} as const);
 }
 
-async function obtenerIniciativasExternos(): Promise<Iniciativa[]> {
-	return knex('iniciativa')
-		.join('necesidad_social', 'iniciativa.necesidad_social', '=', 'necesidad_social.id')
-		.join('estudiante_externo', 'iniciativa.id_estudiante', '=', 'estudiante_externo.id')
-		.join('datos_personales_externo', 'estudiante_externo.datos_personales_Id', '=', 'datos_personales_externo.id')
+async function obtenerIniciativasEstudiantesExternos(): Promise<GetIniciativasEstudiantesResult[]> {
+	return qb(Iniciativa.Name)
+		.join(NecesidadSocial.Name, NecesidadSocial.Key('id'), '=', Iniciativa.Key('necesidad_social'))
+		.join(EstudianteExterno.Name, EstudianteExterno.Key('id'), '=', Iniciativa.Key('id_estudiante'))
+		.join(DatosPersonalesExterno.Name, DatosPersonalesExterno.Key('id'), '=', EstudianteExterno.Key('datos_personales_Id'))
 		.select({
-			id: 'iniciativa.id',
-			titulo: 'iniciativa.titulo',
-			descripcion: 'iniciativa.descripcion',
-			necesidad: 'necesidad_social.nombre',
-			demanda: 'iniciativa.id_demanda',
-			estudiante: 'datos_personales_externo.nombre'
-		});
+			id: Iniciativa.Key('id'),
+			title: Iniciativa.Key('titulo'),
+			description: Iniciativa.Key('descripcion'),
+			demandId: Iniciativa.Key('id_demanda'),
+			socialNeed: NecesidadSocial.Key('nombre'),
+			studentName: DatosPersonalesExterno.Key('nombre'),
+			areas: qb(AreaServicio_Iniciativa.Name)
+				.join(AreaServicio.Name, AreaServicio.Key('id'), '=', AreaServicio_Iniciativa.Key('id_area'))
+				.where(AreaServicio_Iniciativa.Key('id_iniciativa'), qb.ref(Iniciativa.Key('id')))
+				.select(`JSON_ARRAYAGG(${AreaServicio.Key('nombre')})`)
+		} as const);
 }
 
-async function obtenerTodasIniciativas(): Promise<Iniciativa[]> {
-	try {
-		const internos = await obtenerIniciativasInternos();
-		const externos = await obtenerIniciativasExternos();
-		const areas = await knex('areaservicio_iniciativa').join('area_servicio', 'areaservicio_iniciativa.id_area', '=', 'area_servicio.id').select({
-			idIniciativa: 'areaservicio_iniciativa.id_iniciativa',
-			area: 'area_servicio.nombre'
-		});
-
-		const todasIniciativas = [...internos, ...externos];
-		const transfersIniciativas = todasIniciativas.map((iniciativa) => {
-			const areasServicio = areas.filter((area) => area.idIniciativa === iniciativa.id).map((area) => area.area);
-
-			return { ...iniciativa, areasServicio };
-		});
-
-		return transfersIniciativas;
-	} catch (err) {
-		console.error('Error al obtener todas las iniciativas:', err);
-		throw err;
-	}
+export async function obtenerTodasIniciativas(): Promise<GetIniciativasEstudiantesResult[]> {
+	const internos = await obtenerIniciativasEstudiantesInternos();
+	const externos = await obtenerIniciativasEstudiantesExternos();
+	return [...internos, ...externos];
 }
 
-async function actualizarIniciativa(iniciativa: Iniciativa): Promise<number> {
-	try {
-		await knex('iniciativa').where({ id: iniciativa.id }).update({
-			titulo: iniciativa.titulo,
-			descripcion: iniciativa.descripcion,
-			id_demanda: iniciativa.demanda,
-			necesidad_social: iniciativa.necesidad_social
-		});
+export async function actualizarIniciativa(id: number, data: CreateIniciativaOptions): Promise<FormattedIniciativa> {
+	return await qb.transaction(async (trx) => {
+		const entry = getFirstDatabaseEntry(
+			await trx(Iniciativa.Name) //
+				.where({ id })
+				.update(data)
+				.returning('*')
+		);
 
-		await knex('areaservicio_iniciativa').where({ id_iniciativa: iniciativa.id }).del();
-
-		const fieldsToInsert = {
-			id_area: iniciativa.area_servicio,
-			id_iniciativa: iniciativa.id
-		};
-
-		await knex('areaservicio_iniciativa').insert(fieldsToInsert);
-
-		return iniciativa.id; // Retorna el ID de la iniciativa actualizada
-	} catch (err) {
-		console.error(`Error al actualizar la iniciativa con id ${iniciativa.id}:`, err);
-		throw err;
-	}
-}
-
-async function eliminarIniciativa(id: number): Promise<void> {
-	try {
-		const result = await knex('iniciativa').where('id', id).del();
-		if (result > 0) {
-			console.log(`Se ha eliminado de la base de datos la iniciativa con id ${id}.`);
-		} else {
-			console.log(`No existe la iniciativa con id ${id}.`);
+		await trx(AreaServicio_Iniciativa.Name).where({ id_iniciativa: entry.id }).del();
+		if (!isNullishOrEmpty(data.areas)) {
+			await trx(AreaServicio_Iniciativa.Name).insert(data.areas.map((area) => ({ id_area: area, id_iniciativa: entry.id })));
 		}
-	} catch (err) {
-		console.error(`Error al intentar eliminar de la base de datos la iniciativa con id ${id}:`, err);
-	}
-}
-//Que se supone que retorna: AreasServicio?
-async function obtenerListaNecesidadSocial(): Promise<any[]> {
-	try {
-		const areas = await knex('necesidad_social').select('*');
-		return areas;
-	} catch (err) {
-		console.error('Error al intentar obtener todas las necesidades sociales:', err);
-		throw err;
-	}
+
+		return formatIniciativa(entry);
+	});
 }
 
-//Que se supone que retorna?
-async function obtenerAreaServicioTitulacionPorArea(servicios: number[]): Promise<any[]> {
-	try {
-		const titulaciones = await knex.select('titulacion').from('matching_areaservicio_titulacion').whereIn('area_servicio', servicios);
-		return titulaciones;
-	} catch (err) {
-		console.error('Error al intentar obtener datos de la tabla matching_areaservicio_titulacion:', err);
-		throw err;
-	}
+export function eliminarIniciativa(id: number): Promise<boolean> {
+	return sharedDeleteEntryTable(Iniciativa.Name, id);
 }
 
-async function obtenerAreaServicioConocimientoPorArea(servicios: number[]): Promise<any[]> {
-	try {
-		const areasConocimiento = await knex.select('area_conocimiento').from('matching_areas').whereIn('area_servicio', servicios);
-		return areasConocimiento;
-	} catch (err) {
-		console.error('Error al intentar obtener datos de la tabla matching_areas:', err);
-		throw err;
-	}
+export async function obtenerListaNecesidadSocial(): Promise<FormattedNecesidadSocial[]> {
+	const areas = await qb(NecesidadSocial.Name);
+	return areas.map((area) => formatNecesidadSocial(area));
 }
 
-async function existe(id_oferta: number, id_demanda: number): Promise<boolean> {
-	try {
-		const resultado = await knex.from('matching').where({ id_oferta, id_demanda });
-		return resultado.length > 0;
-	} catch (err) {
-		console.error('Error al intentar verificar existencia en la tabla matching:', err);
-		throw err;
-	}
+export interface GetAreaServicioTitulacionByAreaResult {
+	degree: MatchingAreaServicioTitulacion.Value['titulacion'];
+}
+export async function obtenerAreaServicioTitulacionPorArea(services: readonly number[]): Promise<GetAreaServicioTitulacionByAreaResult[]> {
+	return await qb(MatchingAreaServicioTitulacion.Name).whereIn('area_servicio', services).select({ degree: 'titulacion' });
+}
+
+export async function obtenerAreaServicioConocimientoPorArea(services: readonly number[]) {
+	return await qb(MatchingArea.Name)
+		.whereIn('area_servicio', services)
+		.select({ knowledgeArea: 'area_conocimiento' } as const);
+}
+
+export async function existe(id_oferta: number, id_demanda: number): Promise<boolean> {
+	return (await qb(Matching.Name).where({ id_oferta, id_demanda })).length > 0;
+}
+
+export interface FormattedIniciativa extends ReturnType<typeof formatIniciativa> {}
+function formatIniciativa(data: Iniciativa.Value) {
+	return {
+		id: data.id,
+		title: data.titulo,
+		description: data.descripcion,
+		demandId: data.id_demanda,
+		studentId: data.id_estudiante,
+		socialNeed: data.necesidad_social
+	};
+}
+
+export interface FormattedMatch extends ReturnType<typeof formatMatch> {}
+function formatMatch(data: Matching.Value) {
+	return {
+		offerId: data.id_oferta,
+		demandId: data.id_demanda,
+		processed: data.procesado,
+		matching: data.emparejamiento
+	};
+}
+
+export interface FormattedNecesidadSocial extends ReturnType<typeof formatNecesidadSocial> {}
+function formatNecesidadSocial(area: NecesidadSocial.Value) {
+	return { id: area.id, name: area.nombre };
 }

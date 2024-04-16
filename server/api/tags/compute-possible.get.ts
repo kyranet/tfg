@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { readByStartWithWord } from '~/server/utils/database/services/daos/daoTags';
+import { getTagsStartingWith } from '~/server/utils/database/services/daos/daoOferta';
 
 const schema = z.object({ text: z.string() });
 export default eventHandler(async (event) => {
 	const { text } = await getValidatedQuery(event, schema.parse);
-	return readByStartWithWord(text);
+	return getTagsStartingWith(text);
 });

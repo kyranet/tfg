@@ -1,24 +1,17 @@
 import { isNullishOrEmpty } from '@sapphire/utilities';
 import { Knex } from 'knex';
-import knex from '../../config';
-import { obtenerSocioComunitario } from '../daos/daoUsuario';
 import { AnuncioServicio } from '../types/AnuncioServicio';
 import { AreaServicio } from '../types/AreaServicio';
 import { AreaServicio_AnuncioServicio } from '../types/AreaServicio_AnuncioServicio';
 import { AreaServicio_Iniciativa } from '../types/AreaServicio_Iniciativa';
+import { DatosPersonalesExterno } from '../types/DatosPersonalesExterno';
 import { DemandaServicio } from '../types/DemandaServicio';
 import { Iniciativa } from '../types/Iniciativa';
 import { NecesidadSocial } from '../types/NecesidadSocial';
+import { SocioComunitario } from '../types/SocioComunitario';
 import { TitulacionLocal } from '../types/TitulacionLocal';
 import { TitulacionLocal_Demanda } from '../types/TitulacionLocal_Demanda';
 import { sharedCountTable, sharedDeleteEntryTable, type SearchParameters } from './shared';
-
-async function obtenerAreaServicio(id: number): Promise<AreaServicio.Value[]> {
-	return await qb(AreaServicio_AnuncioServicio.Name)
-		.where({ id_anuncio: id })
-		.join(AreaServicio.Name, AreaServicio.Key('id'), '=', AreaServicio_AnuncioServicio.Key('id_area'))
-		.select(AreaServicio.Key('*'));
-}
 
 export async function obtenerListaAreasServicio(): Promise<AreaServicio.Value[]> {
 	return await qb(AreaServicio.Name);
@@ -26,126 +19,61 @@ export async function obtenerListaAreasServicio(): Promise<AreaServicio.Value[]>
 
 // Esta función obtiene demandas de servicio basadas en un área de servicio específica.
 // Recibe el ID del área de servicio como parámetro y devuelve una promesa que resuelve en un array de objetos DemandaServicio.
-export interface CompleteDemandaServicio extends DemandaServicio.Value, AnuncioServicio.Value {}
-export async function obtenerDemandaPorAreaServicio(id_areaServicio: number): Promise<CompleteDemandaServicio[]> {
-	return await qb(AreaServicio_Iniciativa.Name)
-		.where({ id_area: id_areaServicio })
+export async function obtenerDemandaPorAreaServicio(id: number): Promise<FormattedDemanda[]> {
+	const entries = await qb(AreaServicio_Iniciativa.Name)
+		.where({ id_area: id })
 		.join(Iniciativa.Name, AreaServicio.Key('id'), '=', AreaServicio_Iniciativa.Key('id_iniciativa'))
 		.join(DemandaServicio.Name, DemandaServicio.Key('id'), '=', Iniciativa.Key('id_demanda'))
 		.join(AnuncioServicio.Name, AnuncioServicio.Key('id'), '=', DemandaServicio.Key('id'))
 		.select(DemandaServicio.Key('*'), AnuncioServicio.Key('*'));
+
+	return entries.map((entry) => formatDemanda(entry));
 }
 
 //Obtiene las demandas de servicio asociadas a una necesidad social específica.
-export async function obtenerDemandaPorNecesidadSocial(id: number): Promise<CompleteDemandaServicio[]> {
-	return await qb(DemandaServicio.Name)
+export async function obtenerDemandaPorNecesidadSocial(id: number): Promise<FormattedDemanda[]> {
+	const entries = await qb(DemandaServicio.Name)
 		.where({ necesidad_social: id })
 		.join(AnuncioServicio.Name, AnuncioServicio.Key('id'), '=', DemandaServicio.Key('id'))
 		.select(DemandaServicio.Key('*'), AnuncioServicio.Key('*'));
+
+	return entries.map((entry) => formatDemanda(entry));
 }
 
 //Obtener demanda por su id
-export async function obtenerDemandaServicio(id_demanda: number): Promise<DemandaServicio> {
-	try {
-		// Usamos async/await para manejar de manera asincrónica las operaciones de base de datos
-		const anuncio = await obtenerAnuncioServicio(id_demanda);
-
-		const demanda = await knex('demanda_servicio').where({ id: id_demanda }).select('*');
-
-		const necesidad_social = await knex('necesidad_social').where({ id: demanda[0].necesidad_social }).select('nombre');
-
-		const socio = await obtenerSocioComunitario(demanda[0].creador);
-
-		const titulaciones = await obtenerTitulacionLocal(id_demanda);
-		// Mapear cada id de titulación a un objeto que también incluya el id de la demanda
-		const titulaciones_ref = titulaciones.map((titulacion) => ({
-			id_titulacion: titulacion.id,
-			id_demanda: id_demanda
-		}));
-
-		//Obtenemos areas de servicio de la demanda
-		const areasServicio = await obtenerAreaServicio(id_demanda);
-
-		let relaciones: AreaServicioAnuncio[] = [];
-
-		// Por cada área de servicio, encuentra los anuncios relacionados.
-		for (const areaServicio of areasServicio) {
-			const anunciosRelacionados = await knex('areaservicio_anuncioservicio')
-				.where({ id_area: areaServicio.id }) // Usamos el ID del área de servicio
-				.select('id_anuncio');
-
-			// Mapea cada anuncio relacionado al formato esperado y agrega al array de intermedias
-			anunciosRelacionados.forEach((anuncio) => {
-				relaciones.push({
-					id_area: areaServicio.id,
-					id_anuncio: anuncio.id_anuncio
-				});
-			});
-		}
-
-		// Devolvemos la interfaz DemandaServicio
-		const demandaServicio: DemandaServicio = {
-			id: demanda[0].id,
-			titulo: anuncio[0]['titulo'],
-			descripcion: anuncio[0]['descripcion'],
-			imagen: anuncio[0]['imagen'],
-			created_at: anuncio[0]['created_at'],
-			updated_at: anuncio[0]['updated_at'],
-			creador: demanda[0].creador,
-			ciudad: demanda[0].ciudad,
-			finalidad: demanda[0].finalidad,
-			periodo_definicion_ini: demanda[0].periodo_definicion_ini,
-			periodo_definicion_fin: demanda[0].periodo_definicion_fin,
-			periodo_ejecucion_ini: demanda[0].periodo_ejecucion_ini,
-			periodo_ejecucion_fin: demanda[0].periodo_ejecucion_fin,
-			fecha_fin: demanda[0].fecha_fin,
-			observaciones_temporales: demanda[0].observaciones_temporales,
-			necesidad_social: demanda[0].necesidad_social,
-			titulacionlocal: titulaciones_ref,
-			area_servicio: relaciones,
-			comunidad_beneficiaria: demanda[0].comunidad_beneficiaria,
-			dummy: anuncio[0]['dummy']
-		};
-
-		return demandaServicio;
-	} catch (error) {
-		console.error('Error al obtener la demanda de servicio:', error);
-		throw error;
-	}
+export interface GetDemandaServicioResult extends FormattedDemanda {
+	degrees: TitulacionLocal_Demanda.Value['id_titulacion'][];
+	areas: { id: AreaServicio.Value['id']; name: AreaServicio.Value['nombre']; announcementId: AreaServicio_AnuncioServicio.Value['id_anuncio'] }[];
 }
+export async function obtenerDemandaServicio(id: number): Promise<GetDemandaServicioResult> {
+	const entry = ensureDatabaseEntry(
+		await qb(AnuncioServicio.Name)
+			.where({ id: id })
+			.join(DemandaServicio.Name, DemandaServicio.Key('id'), '=', AnuncioServicio.Key('id'))
+			.join(AreaServicio_AnuncioServicio.Name, AreaServicio_AnuncioServicio.Key('id_anuncio'), '=', AnuncioServicio.Key('id'))
+			.select(
+				AnuncioServicio.Key('*'),
+				DemandaServicio.Key('*'),
+				qb(TitulacionLocal_Demanda.Name)
+					.where(TitulacionLocal_Demanda.Key('id_demanda'), '=', DemandaServicio.Key('id'))
+					.select(qb.raw(`JSON_ARRAY((${TitulacionLocal_Demanda.Key('id_titulacion')}))`))
+					.as('degrees'),
+				qb(AreaServicio.Name)
+					.where(AreaServicio.Key('id'), '=', AreaServicio_AnuncioServicio.Key('id_area'))
+					.join(AreaServicio_AnuncioServicio.Name, AreaServicio_AnuncioServicio.Key('id_area'), '=', AreaServicio.Key('id'))
+					.select(
+						qb.raw(`JSON_ARRAY(JSON_OBJECTAGG(
+							'id', ${AreaServicio.Key('id')},
+							'name', ${AreaServicio.Key('nombre')},
+							'announcementId', ${AreaServicio_AnuncioServicio.Key('id_anuncio')}
+						))`)
+					)
+					.as('areas')
+			)
+			.first()
+	);
 
-// Definimos el tipo de retorno de la función utilizando Promise con un array de AreaServicio
-async function obtenerAnuncioServicio(id_anuncio: number): Promise<AnuncioServicio> {
-	// Consultamos la tabla 'anuncio_servicio' para obtener el anuncio correspondiente al ID
-	return knex('anuncio_servicio')
-		.where({ id: id_anuncio })
-		.select('*')
-		.then((anuncio) => {
-			// Llamamos a la función obtenerAreaServicio para obtener las áreas de servicio
-			return obtenerAreaServicio(id_anuncio).then((areas_servicio) => {
-				// Mapeamos las áreas de servicio al array de objetos que representan la tabla intermedia anuncio_area
-				const areas: AreaServicioAnuncio[] = areas_servicio.map((area: AreaServicio) => ({
-					id_area: area.id,
-					id_anuncio: id_anuncio
-				}));
-				// Devolvemos la interfaz anuncio_servicio
-				const anuncioServicio: AnuncioServicio = {
-					id: id_anuncio,
-					titulo: anuncio[0]['titulo'],
-					descripcion: anuncio[0]['descripcion'],
-					imagen: anuncio[0]['imagen'],
-					created_at: anuncio[0]['created_at'],
-					updated_at: anuncio[0]['updated_at'],
-					area_servicio: areas,
-					dummy: anuncio[0]['dummy']
-				};
-				return anuncioServicio;
-			});
-		})
-		.catch((err) => {
-			console.log('Error al obtener el anuncio de servicio con ID: ', id_anuncio);
-			throw err;
-		});
+	return { ...formatDemanda(entry), degrees: entry.degrees, areas: entry.areas };
 }
 
 export type AnuncioServicioCreateData = AnuncioServicio.CreateData & { areasServicio?: readonly number[] };
@@ -201,7 +129,7 @@ export function crearDemanda(data: DemandaServicioCreateData): Promise<Formatted
 			);
 		}
 
-		return formatDemanda(anuncio, demanda);
+		return formatDemanda({ ...anuncio, ...demanda });
 	});
 }
 
@@ -217,113 +145,60 @@ interface DemandasFiltro extends SearchParameters {
 	areaServicio?: string[];
 }
 
-export async function obtenerTodasDemandasServicio(options: DemandasFiltro): Promise<DemandaServicio[]> {
-	try {
-		const demandasQuery = knex('anuncio_servicio')
-			.join('demanda_servicio', 'anuncio_servicio.id', '=', 'demanda_servicio.id')
-			.join('necesidad_social', 'demanda_servicio.necesidad_social', '=', 'necesidad_social.id')
-			.join('socio_comunitario', 'demanda_servicio.creador', '=', 'socio_comunitario.id')
-			.join('datos_personales_externo', 'socio_comunitario.datos_personales_Id', '=', 'datos_personales_externo.id')
-			.select([
-				'anuncio_servicio.id',
-				'anuncio_servicio.titulo',
-				'anuncio_servicio.descripcion',
-				'anuncio_servicio.imagen',
-				'anuncio_servicio.created_at',
-				'anuncio_servicio.updated_at',
-				'demanda_servicio.*',
-				'necesidad_social.nombre as necesidad_social',
-				'datos_personales_externo.nombre as nombre_creador',
-				'datos_personales_externo.apellidos as apellidos_creador'
-			])
-			.where('titulo', 'like', `%${options.terminoBusqueda}%`)
-			.modify((queryBuilder) => {
-				if (options.necesidadSocial) {
-					queryBuilder.whereIn('necesidad_social.nombre', options.necesidadSocial);
-				}
-				if (options.creador) {
-					queryBuilder.where('demanda_servicio.creador', options.creador);
-				}
-				if (options.entidadDemandante) {
-					queryBuilder.where('socio_comunitario.id', options.entidadDemandante);
-				}
-				if (options.areaServicio) {
-					queryBuilder.whereIn('area_servicio.nombre', options.areaServicio);
-				}
-			})
-			.limit(options.limit ?? 100)
-			.offset(options.offset ?? 0);
+interface RawGetAllDemandasServicioResult extends AnuncioServicio.Value, DemandaServicio.Value {
+	socialNeed: NecesidadSocial.Value['nombre'];
+	creatorFirstName: DatosPersonalesExterno.Value['nombre'];
+	creatorLastName: DatosPersonalesExterno.Value['apellidos'];
+}
+export interface GetAllDemandasServicioResult extends Omit<FormattedDemanda, 'creator' | 'socialNeed'> {
+	socialNeed: NecesidadSocial.Value['nombre'];
+	creator: { firstName: DatosPersonalesExterno.Value['nombre']; lastName: DatosPersonalesExterno.Value['apellidos'] };
+}
+export async function obtenerTodasDemandasServicio(options: DemandasFiltro): Promise<GetAllDemandasServicioResult[]> {
+	const entries: RawGetAllDemandasServicioResult[] = await qb(AnuncioServicio.Key('id'))
+		.join(DemandaServicio.Name, DemandaServicio.Key('id'), '=', AnuncioServicio.Key('id'))
+		.join(NecesidadSocial.Name, NecesidadSocial.Key('id'), '=', DemandaServicio.Key('necesidad_social'))
+		.join(SocioComunitario.Name, SocioComunitario.Key('id'), '=', DemandaServicio.Key('creador'))
+		.join(DatosPersonalesExterno.Name, DatosPersonalesExterno.Key('id'), '=', SocioComunitario.Key('datos_personales_Id'))
+		.select(
+			AnuncioServicio.Key('*'),
+			DemandaServicio.Key('*'),
+			qb.ref(NecesidadSocial.Key('nombre')).as('socialNeed'),
+			qb.ref(DatosPersonalesExterno.Key('nombre')).as('creatorFirstName'),
+			qb.ref(DatosPersonalesExterno.Key('apellidos')).as('creatorLastName')
+		)
+		.whereLike({ titulo: `%${options.terminoBusqueda}%` })
+		.modify((queryBuilder) => {
+			if (options.necesidadSocial) {
+				queryBuilder.whereIn(NecesidadSocial.Key('nombre'), options.necesidadSocial);
+			}
+			if (options.creador) {
+				queryBuilder.where(DemandaServicio.Key('creador'), options.creador);
+			}
+			if (options.entidadDemandante) {
+				queryBuilder.where(SocioComunitario.Key('id'), options.entidadDemandante);
+			}
+			if (options.areaServicio) {
+				queryBuilder
+					.join(AreaServicio_AnuncioServicio.Name, AreaServicio_AnuncioServicio.Key('id_anuncio'), '=', AnuncioServicio.Key('id'))
+					.join(AreaServicio.Name, AreaServicio.Key('id'), '=', AreaServicio_AnuncioServicio.Key('id_area'))
+					.whereIn(AreaServicio.Key('nombre'), options.areaServicio);
+			}
+		})
+		.limit(options.limit ?? 100)
+		.offset(options.offset ?? 0);
 
-		const datosDemandas = await demandasQuery;
-
-		// Construcción de objetos TransferDemandaServicio
-		return datosDemandas.map((datoDemanda) => {
-			const anuncio: AnuncioServicio = {
-				id: datoDemanda.id,
-				titulo: datoDemanda.titulo,
-				descripcion: datoDemanda.descripcion,
-				imagen: datoDemanda.imagen,
-				created_at: new Date(datoDemanda.created_at),
-				updated_at: new Date(datoDemanda.updated_at),
-				area_servicio: [], // Es necesario???
-				dummy: datoDemanda.dummy
-			};
-
-			const transferDemanda: DemandaServicio = {
-				...anuncio,
-				creador: { nombre: datoDemanda.nombre_creador, apellidos: datoDemanda.apellidos_creador },
-				ciudad: datoDemanda.ciudad,
-				finalidad: datoDemanda.finalidad,
-				periodo_definicion_ini: new Date(datoDemanda.periodo_definicion_ini),
-				periodo_definicion_fin: new Date(datoDemanda.periodo_definicion_fin),
-				periodo_ejecucion_ini: new Date(datoDemanda.periodo_ejecucion_ini),
-				periodo_ejecucion_fin: new Date(datoDemanda.periodo_ejecucion_fin),
-				fecha_fin: new Date(datoDemanda.fecha_fin),
-				observaciones_temporales: datoDemanda.observaciones_temporales,
-				necesidad_social: datoDemanda.necesidad_social,
-				titulacionlocal: [], // Es necesario???
-				comunidad_beneficiaria: datoDemanda.comunidad_beneficiaria,
-				dummy: datoDemanda.dummy
-			};
-
-			return transferDemanda;
-		});
-	} catch (err) {
-		console.error('Error al obtener todas las demandas de servicio:', err);
-		throw err;
-	}
+	return entries.map((entry) => ({
+		...formatDemanda(entry),
+		socialNeed: entry.socialNeed,
+		creator: { firstName: entry.creatorFirstName, lastName: entry.creatorLastName }
+	}));
 }
 
-export async function eliminarDemanda(id_demanda: number): Promise<boolean> {
+export async function eliminarDemanda(id: number): Promise<boolean> {
 	return qb.transaction(
-		async (trx) =>
-			(await sharedDeleteEntryTable(DemandaServicio.Name, id_demanda, trx)) &&
-			(await sharedDeleteEntryTable(AnuncioServicio.Name, id_demanda, trx))
+		async (trx) => (await sharedDeleteEntryTable(DemandaServicio.Name, id, trx)) && (await sharedDeleteEntryTable(AnuncioServicio.Name, id, trx))
 	);
-}
-
-async function obtenerTitulacionLocal(id_demanda: number): Promise<TitulacionLocal[]> {
-	try {
-		// Obtener los IDs de las titulaciones asociadas a la demanda.
-		const id_titulaciones = await knex('titulacionlocal_demanda').where({ id_demanda }).select('id_titulacion');
-
-		// Si no hay titulaciones asociadas, devuelve un array vacío.
-		if (!id_titulaciones.length) {
-			console.log('No hay titulaciones asociadas a la demanda con id ', id_demanda);
-			return [];
-		}
-
-		// Extraer solo los IDs de las titulaciones.
-		const titulacionesIds = id_titulaciones.map((t) => t.id_titulacion);
-
-		// Obtener los detalles de las titulaciones a partir de los IDs.
-		const titulaciones = await knex('titulacion_local').select('id', 'nombre').whereIn('id', titulacionesIds);
-
-		return titulaciones;
-	} catch (err) {
-		console.error('Error al obtener las titulaciones de la demanda con id ', id_demanda, err);
-		throw err;
-	}
 }
 
 export async function obtenerListaTitulacionLocal(): Promise<TitulacionLocal.Value[]> {
@@ -335,25 +210,25 @@ export async function obtenerListaNecesidadSocial(): Promise<any[]> {
 }
 
 export interface FormattedDemanda extends ReturnType<typeof formatDemanda> {}
-function formatDemanda(anuncio: AnuncioServicio.Value, demanda: DemandaServicio.Value) {
+function formatDemanda(entry: AnuncioServicio.Value & DemandaServicio.Value) {
 	return {
-		id: anuncio.id,
-		titulo: anuncio.titulo,
-		descripcion: anuncio.descripcion,
-		imagen: anuncio.imagen,
-		createdAt: anuncio.created_at,
-		updatedAt: anuncio.updated_at,
-		dummy: anuncio.dummy,
-		creador: demanda.creador,
-		ciudad: demanda.ciudad,
-		finalidad: demanda.finalidad,
-		periodos: {
-			definicion: { inicio: demanda.periodo_definicion_ini, fin: demanda.periodo_definicion_fin },
-			ejecucion: { inicio: demanda.periodo_ejecucion_ini, fin: demanda.periodo_ejecucion_fin },
-			fin: demanda.fecha_fin
+		id: entry.id,
+		title: entry.titulo,
+		description: entry.descripcion,
+		image: entry.imagen,
+		createdAt: entry.created_at,
+		updatedAt: entry.updated_at,
+		dummy: entry.dummy,
+		creator: entry.creador,
+		city: entry.ciudad,
+		purpose: entry.finalidad,
+		periods: {
+			definicion: { start: entry.periodo_definicion_ini, end: entry.periodo_definicion_fin },
+			ejecucion: { start: entry.periodo_ejecucion_ini, end: entry.periodo_ejecucion_fin },
+			end: entry.fecha_fin
 		},
-		observacionesTemporales: demanda.observaciones_temporales,
-		necesidadSocial: demanda.necesidad_social,
-		comunidadBeneficiaria: demanda.comunidad_beneficiaria
+		temporaryObservations: entry.observaciones_temporales,
+		socialNeed: entry.necesidad_social,
+		beneficiaryCommunity: entry.comunidad_beneficiaria
 	};
 }

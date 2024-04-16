@@ -67,7 +67,7 @@ export async function crearOferta(data: OfertaServicioCreateData): Promise<Forma
 			);
 		}
 
-		return formatOferta(anuncio, oferta);
+		return formatOferta({ ...anuncio, ...oferta });
 	});
 }
 
@@ -192,20 +192,63 @@ export async function obtenerTodasOfertasServicio(options: OfertasServicioFilter
 		.offset(options.offset ?? 0);
 }
 
+export async function getTagsStartingWith(text: string): Promise<FormattedTag[]> {
+	return await qb(Tag.Name)
+		.whereLike({ nombre: `${text}%` })
+		.select({ id: Tag.Key('id'), name: Tag.Key('nombre') });
+}
+
+export async function getTagsByOfferId(ofertaId: number): Promise<FormattedTag[]> {
+	return await qb(OfertaDemanda_Tags.Name)
+		.join(Tag.Name, OfertaDemanda_Tags.Key('tag_id'), '=', Tag.Key('id'))
+		.where({ object_id: ofertaId })
+		.andWhereLike({ tipo: qb.ref('oferta') })
+		.select({ id: Tag.Key('id'), name: Tag.Key('nombre') });
+}
+
+export async function getTagsByOfferIds(ofertasIds: number[]): Promise<FormattedOfferTagId[]> {
+	return await qb(OfertaDemanda_Tags.Name)
+		.join(Tag.Name, OfertaDemanda_Tags.Key('tag_id'), '=', Tag.Key('id'))
+		.whereIn('object_id', ofertasIds)
+		.andWhereLike({ tipo: qb.ref('oferta') })
+		.select({ objectId: OfertaDemanda_Tags.Key('object_id'), name: Tag.Key('nombre') });
+}
+
+export async function getOffersByTagNames(tagsNames: string[]): Promise<FormattedOferta[]> {
+	const entries = await qb(OfertaDemanda_Tags.Name)
+		.distinct(OfertaDemanda_Tags.Key('object_id'))
+		.join(Tag.Name, Tag.Key('id'), '=', OfertaDemanda_Tags.Key('tag_id'))
+		.join(OfertaServicio.Name, OfertaServicio.Key('id'), '=', OfertaDemanda_Tags.Key('object_id'))
+		.join(AnuncioServicio.Name, AnuncioServicio.Key('id'), '=', OfertaServicio.Key('id'))
+		.whereIn(Tag.Key('nombre'), tagsNames)
+		.select(AnuncioServicio.Key('*'), OfertaServicio.Key('*'));
+	return entries.map((entry) => formatOferta(entry));
+}
+
+export interface FormattedTag {
+	id: Tag.Value['id'];
+	name: Tag.Value['nombre'];
+}
+
+export interface FormattedOfferTagId {
+	objectId: OfertaDemanda_Tags.Value['object_id'];
+	name: Tag.Value['nombre'];
+}
+
 export interface FormattedOferta extends ReturnType<typeof formatOferta> {}
-function formatOferta(anuncio: AnuncioServicio.Value, oferta: OfertaServicio.Value) {
+function formatOferta(data: AnuncioServicio.Value & OfertaServicio.Value) {
 	return {
-		id: anuncio.id,
-		title: anuncio.titulo,
-		description: anuncio.descripcion,
-		image: anuncio.imagen,
-		createdAt: anuncio.created_at,
-		updatedAt: anuncio.updated_at,
-		dummy: anuncio.dummy,
-		quarter: oferta.cuatrimestre,
-		academicYear: oferta.anio_academico,
-		deadline: oferta.fecha_limite,
-		temporaryRemarks: oferta.observaciones_temporales,
-		creator: oferta.creador
+		id: data.id,
+		title: data.titulo,
+		description: data.descripcion,
+		image: data.imagen,
+		createdAt: data.created_at,
+		updatedAt: data.updated_at,
+		dummy: data.dummy,
+		quarter: data.cuatrimestre,
+		academicYear: data.anio_academico,
+		deadline: data.fecha_limite,
+		temporaryRemarks: data.observaciones_temporales,
+		creator: data.creador
 	};
 }
