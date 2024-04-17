@@ -206,7 +206,7 @@ export function eliminarMail(id_mail: number): Promise<boolean> {
 //Newsletter
 
 export async function crearNewsletter(data: Newsletter.CreateData): Promise<Newsletter.Value> {
-	const [news] = await qb(Mail.Name) //
+	const [news] = await qb(Newsletter.Name) //
 		.insert(data)
 		.returning('*');
 	return news;

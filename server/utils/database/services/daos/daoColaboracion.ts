@@ -1,6 +1,6 @@
 import { isNullishOrEmpty } from '@sapphire/utilities';
 import { Knex } from 'knex';
-import { GetUserResult, obtenerUsuarioSinRolPorId } from '../daos/daoUsuario';
+import { obtenerUsuarioSinRolPorId } from '../daos/daoUsuario';
 import { AnuncioServicio } from '../types/AnuncioServicio';
 import { Colaboracion } from '../types/Colaboracion';
 import { EstudianteProyecto } from '../types/EstudianteProyecto';
@@ -12,6 +12,7 @@ import { Profesor_Colaboracion } from '../types/Profesor_Colaboracion';
 import { Proyecto } from '../types/Proyecto';
 import { SearchParameters, sharedCountTable, sharedDeleteEntryTable } from './shared';
 import { DemandaServicio } from '../types/DemandaServicio';
+import { ViewUser } from '../types/views/User';
 
 export type ColaboracionCreateData = Colaboracion.CreateData & { profesores?: readonly number[] };
 async function crearColaboracion(data: ColaboracionCreateData, trx: Knex.Transaction): Promise<Colaboracion.Value> {
@@ -95,7 +96,7 @@ async function obtenerProfesores(colaboracionId: number): Promise<readonly numbe
 
 export interface GetPartenariadoResult extends FormattedPartenariado {
 	profesores: readonly number[];
-	responsable: GetUserResult | null;
+	responsable: ViewUser.Value | null;
 }
 export async function obtenerPartenariado(id: number): Promise<GetPartenariadoResult> {
 	const entry = ensureDatabaseEntry(

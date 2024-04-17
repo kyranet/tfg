@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { actualizarPartenariado, obtenerPartenariado } from '~/server/utils/database/services/daos/daoColaboracion';
+import { actualizarPartenariado } from '~/server/utils/database/services/daos/daoColaboracion';
 import { PartenariadoEstado } from '~/server/utils/database/services/types/Partenariado';
 import { CoercedIntegerId } from '~/server/utils/validators/shared';
 
