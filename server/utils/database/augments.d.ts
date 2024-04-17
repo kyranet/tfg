@@ -53,12 +53,26 @@ import { Upload } from './services/types/Upload';
 import { Upload_AnuncioServicio } from './services/types/Upload_AnuncioServicio';
 import { Upload_Colaboracion } from './services/types/Upload_Colaboracion';
 import { Usuario } from './services/types/Usuario';
-import { UserAny } from './services/types/views/UserAny';
+import { ViewUser } from './services/types/views/User';
+import { ViewUserAdmin } from './services/types/views/UserAdmin';
+import { ViewUserApSOffice } from './services/types/views/UserApSOffice';
+import { ViewUserCommunityPartner } from './services/types/views/UserCommunityPartner';
+import { ViewUserExternalProfessor } from './services/types/views/UserExternalProfessor';
+import { ViewUserExternalStudent } from './services/types/views/UserExternalStudent';
+import { ViewUserInternalProfessor } from './services/types/views/UserInternalProfessor';
+import { ViewUserInternalStudent } from './services/types/views/UserInternalStudent';
 
 declare module 'knex/types/tables' {
 	interface Tables {
 		// Views
-		[UserAny.Name]: UserAny.Value;
+		[ViewUser.Name]: ViewUser.Value;
+		[ViewUserAdmin.Name]: ViewUserAdmin.Value;
+		[ViewUserExternalStudent.Name]: ViewUserExternalStudent.Value;
+		[ViewUserExternalProfessor.Name]: ViewUserExternalProfessor.Value;
+		[ViewUserInternalStudent.Name]: ViewUserInternalStudent.Value;
+		[ViewUserInternalProfessor.Name]: ViewUserInternalProfessor.Value;
+		[ViewUserApSOffice.Name]: ViewUserApSOffice.Value;
+		[ViewUserCommunityPartner.Name]: ViewUserCommunityPartner.Value;
 
 		// Tables
 		[AceptacionAceptada.Name]: AceptacionAceptada.Value;

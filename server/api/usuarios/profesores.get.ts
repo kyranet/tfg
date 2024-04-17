@@ -1,5 +1,5 @@
-import { obtenerProfesores } from '~/server/utils/database/services/daos/daoUsuario';
+import { obtenerProfesoresInternos } from '~/server/utils/database/services/daos/daoUsuario';
 
 export default eventHandler(() => {
-	return obtenerProfesores();
+	return obtenerProfesoresInternos();
 });

@@ -13,11 +13,17 @@ import { Profesor } from '../types/Profesor';
 import { ProfesorExterno } from '../types/ProfesorExterno';
 import { ProfesorInterno } from '../types/ProfesorInterno';
 import { SocioComunitario } from '../types/SocioComunitario';
-import { TitulacionLocal } from '../types/TitulacionLocal';
 import { TitulacionLocal_Profesor } from '../types/TitulacionLocal_Profesor';
 import { Universidad } from '../types/Universidad';
 import { Usuario } from '../types/Usuario';
-import { UserAny } from '../types/views/UserAny';
+import { ViewUser } from '../types/views/User';
+import { ViewUserAdmin } from '../types/views/UserAdmin';
+import { ViewUserApSOffice } from '../types/views/UserApSOffice';
+import { ViewUserCommunityPartner } from '../types/views/UserCommunityPartner';
+import { ViewUserExternalProfessor } from '../types/views/UserExternalProfessor';
+import { ViewUserExternalStudent } from '../types/views/UserExternalStudent';
+import { ViewUserInternalProfessor } from '../types/views/UserInternalProfessor';
+import { ViewUserInternalStudent } from '../types/views/UserInternalStudent';
 import { sharedDeleteEntryTable, sharedHasTableEntry } from './shared';
 
 async function sharedInsertaDatosPersonalesInterno(data: DatosPersonalesInterno.CreateData, trx: Knex.Transaction) {
@@ -44,8 +50,7 @@ async function sharedEnsureUniversidadId(data: UniversidadExterna, trx: Knex | K
 }
 
 export type UsuarioCreateData = Usuario.CreateData;
-export type UsuarioCreateResult = Usuario.Value;
-async function sharedInsertUsuario(data: UsuarioCreateData, trx: Knex.Transaction): Promise<UsuarioCreateResult> {
+async function sharedInsertUsuario(data: UsuarioCreateData, trx: Knex.Transaction): Promise<Usuario.Value> {
 	const [entry] = await trx(Usuario.Name)
 		.insert({
 			origin_login: data.origin_login,
@@ -60,32 +65,30 @@ async function sharedInsertUsuario(data: UsuarioCreateData, trx: Knex.Transactio
 }
 
 export type AdminCreateData = UsuarioCreateData & DatosPersonalesInterno.CreateData & Admin.CreateData;
-export async function insertarAdmin(data: AdminCreateData): Promise<FormattedUser> {
+export async function insertarAdmin(data: AdminCreateData): Promise<ViewUserAdmin.Value> {
 	return await qb.transaction(async (trx) => {
 		const usuario = await sharedInsertUsuario(data, trx);
 		const datos = await sharedInsertaDatosPersonalesInterno(data, trx);
 		await trx(Admin.Name) //
 			.insert({ id: usuario.id, datos_personales_Id: datos.id });
 
-		return formatUser({ ...usuario, ...datos });
+		return formatUser({ ...usuario, ...datos }, { type: 'Admin' });
 	});
 }
 
 export type OficinaApsCreateData = UsuarioCreateData & DatosPersonalesInterno.CreateData & OficinaAps.CreateData;
-export type OficinaApsCreateResult = FormattedUser;
-export async function insertarOficinaAps(data: OficinaApsCreateData): Promise<OficinaApsCreateResult> {
+export async function insertarOficinaAps(data: OficinaApsCreateData): Promise<ViewUserApSOffice.Value> {
 	return await qb.transaction(async (trx) => {
 		const usuario = await sharedInsertUsuario(data, trx);
 		const datos = await sharedInsertaDatosPersonalesInterno(data, trx);
 		await trx(OficinaAps.Name).insert({ id: usuario.id, datos_personales_Id: datos.id });
 
-		return formatUser({ ...usuario, ...datos });
+		return formatUser({ ...usuario, ...datos }, { type: 'ApSOffice' });
 	});
 }
 
 export type EstudianteCreateData = UsuarioCreateData;
-export type EstudianteCreateResult = Usuario.Value & Estudiante.Value;
-async function insertarEstudiante(data: EstudianteCreateData, trx: Knex.Transaction): Promise<EstudianteCreateResult> {
+async function insertarEstudiante(data: EstudianteCreateData, trx: Knex.Transaction): Promise<Usuario.Value & Estudiante.Value> {
 	const usuario = await sharedInsertUsuario(data, trx);
 	await trx(Estudiante.Name).insert({ id: usuario.id });
 
@@ -93,10 +96,7 @@ async function insertarEstudiante(data: EstudianteCreateData, trx: Knex.Transact
 }
 
 export type EstudianteInternoCreateData = EstudianteCreateData & DatosPersonalesInterno.CreateData & EstudianteInterno.CreateData;
-export interface EstudianteInternoCreateResult extends FormattedUser {
-	localDegree: number;
-}
-export async function insertarEstudianteInterno(data: EstudianteInternoCreateData): Promise<EstudianteInternoCreateResult> {
+export async function insertarEstudianteInterno(data: EstudianteInternoCreateData): Promise<ViewUserInternalStudent.Value> {
 	return await qb.transaction(async (trx) => {
 		const estudiante = await insertarEstudiante(data, trx);
 		const datos = await sharedInsertaDatosPersonalesInterno(data, trx);
@@ -106,7 +106,7 @@ export async function insertarEstudianteInterno(data: EstudianteInternoCreateDat
 			datos_personales_Id: datos.id
 		});
 
-		return { ...formatUser({ ...estudiante, ...datos }), localDegree: data.titulacion_local };
+		return formatUser({ ...estudiante, ...datos }, { type: 'InternalStudent', degree: data.titulacion_local });
 	});
 }
 
@@ -114,11 +114,7 @@ export type EstudianteExternoCreateData = EstudianteCreateData &
 	DatosPersonalesExterno.CreateData &
 	Omit<EstudianteExterno.CreateData, 'id' | 'datos_personales_Id' | 'universidad'> &
 	UniversidadExterna;
-export interface EstudianteExternoCreateResult extends FormattedUser {
-	universityId: number;
-	degree: string;
-}
-export async function insertarEstudianteExterno(data: EstudianteExternoCreateData): Promise<EstudianteExternoCreateResult> {
+export async function insertarEstudianteExterno(data: EstudianteExternoCreateData): Promise<ViewUserExternalStudent.Value> {
 	return await qb.transaction(async (trx) => {
 		const universityId = await sharedEnsureUniversidadId(data, trx);
 		const student = await insertarEstudiante(data, trx);
@@ -130,7 +126,7 @@ export async function insertarEstudianteExterno(data: EstudianteExternoCreateDat
 			datos_personales_Id: userData.id
 		});
 
-		return { ...formatUser({ ...student, ...userData }), universityId: universityId, degree: data.titulacion };
+		return formatUser({ ...student, ...userData }, { type: 'ExternalStudent', degree: data.titulacion, university: universityId });
 	});
 }
 
@@ -146,8 +142,7 @@ async function insertarProfesor(data: ProfesorCreateData, trx: Knex.Transaction)
 export type ProfesorInternoCreateData = ProfesorCreateData &
 	DatosPersonalesInterno.CreateData &
 	ProfesorInterno.CreateData & { titulacionesLocales?: readonly number[]; areasConocimiento?: readonly number[] };
-export type ProfesorInternoCreateResult = FormattedUser;
-export async function insertarProfesorInterno(data: ProfesorInternoCreateData): Promise<ProfesorInternoCreateResult> {
+export async function insertarProfesorInterno(data: ProfesorInternoCreateData): Promise<ViewUserInternalProfessor.Value> {
 	return await qb.transaction(async (trx) => {
 		const professor = await insertarProfesor(data, trx);
 		const userData = await sharedInsertaDatosPersonalesInterno(data, trx);
@@ -171,7 +166,7 @@ export async function insertarProfesorInterno(data: ProfesorInternoCreateData): 
 			);
 		}
 
-		return formatUser({ ...professor, ...userData });
+		return formatUser({ ...professor, ...userData }, { type: 'InternalProfessor' });
 	});
 }
 
@@ -179,11 +174,7 @@ export type ProfesorExternoCreateData = ProfesorCreateData &
 	DatosPersonalesExterno.CreateData &
 	Omit<ProfesorExterno.CreateData, 'id' | 'datos_personales_Id' | 'universidad'> &
 	UniversidadExterna & { areasConocimiento?: readonly number[] };
-export interface ProfesorExternoCreateResult extends FormattedUser {
-	universityId: number;
-	faculty: string;
-}
-export async function insertarProfesorExterno(data: ProfesorExternoCreateData): Promise<ProfesorExternoCreateResult> {
+export async function insertarProfesorExterno(data: ProfesorExternoCreateData): Promise<ViewUserExternalProfessor.Value> {
 	return await qb.transaction(async (trx) => {
 		const universityId = await sharedEnsureUniversidadId(data, trx);
 		const professor = await insertarProfesor(data, trx);
@@ -205,20 +196,14 @@ export async function insertarProfesorExterno(data: ProfesorExternoCreateData): 
 			);
 		}
 
-		return { ...formatUser({ ...professor, ...userData }), universityId, faculty: data.facultad };
+		return formatUser({ ...professor, ...userData }, { type: 'ExternalProfessor', university: universityId, faculty: data.facultad });
 	});
 }
 
 export type SocioComunitarioCreateData = UsuarioCreateData &
 	DatosPersonalesExterno.CreateData &
 	Omit<SocioComunitario.CreateData, 'id' | 'datos_personales_Id'>;
-export interface SocioComunitarioCreateResult extends FormattedUser {
-	sector: string;
-	communityPartnerName: string;
-	url: string;
-	mission: string;
-}
-export async function insertarSocioComunitario(data: SocioComunitarioCreateData): Promise<SocioComunitarioCreateResult> {
+export async function insertarSocioComunitario(data: SocioComunitarioCreateData): Promise<ViewUserCommunityPartner.Value> {
 	return await qb.transaction(async (trx) => {
 		const user = await sharedInsertUsuario(data, trx);
 		const userData = await sharedInsertaDatosPersonalesExterno(data, trx);
@@ -231,13 +216,10 @@ export async function insertarSocioComunitario(data: SocioComunitarioCreateData)
 			datos_personales_Id: userData.id
 		});
 
-		return {
-			...formatUser({ ...user, ...userData }),
-			sector: data.sector,
-			communityPartnerName: data.nombre_socioComunitario,
-			url: data.url,
-			mission: data.mision
-		};
+		return formatUser(
+			{ ...user, ...userData },
+			{ type: 'CommunityPartner', mission: data.mision, name: data.nombre_socioComunitario, sector: data.sector, url: data.url }
+		);
 	});
 }
 
@@ -308,12 +290,12 @@ export async function borrarSocioComunitario(id: number): Promise<boolean> {
 	);
 }
 
-export async function obtenerUsuarioSinRolPorEmail(email: string): Promise<UserAny.Value | null> {
-	return (await qb(UserAny.Name).where({ email }).first()) ?? null;
+export async function obtenerUsuarioSinRolPorEmail(email: string): Promise<ViewUser.Value | null> {
+	return (await qb(ViewUser.Name).where({ email }).first()) ?? null;
 }
 
-export async function obtenerUsuarioSinRolPorId(id: number): Promise<UserAny.Value | null> {
-	return (await qb(UserAny.Name).where({ id }).first()) ?? null;
+export async function obtenerUsuarioSinRolPorId(id: number): Promise<ViewUser.Value | null> {
+	return (await qb(ViewUser.Name).where({ id }).first()) ?? null;
 }
 
 export async function obtenerUniversidades(): Promise<Universidad.Value[]> {
@@ -335,170 +317,40 @@ export async function obtenerAreasConocimiento(): Promise<AreaConocimiento.Value
 	return await qb(AreaConocimiento.Name);
 }
 
-export async function obtenerAdmin(id: number): Promise<GetAdminResult | null> {
-	const entry = await qb(Admin.Name)
-		.join(Usuario.Name, Admin.Key('id'), '=', Usuario.Key('id'))
-		.join(DatosPersonalesInterno.Name, Admin.Key('datos_personales_Id'), '=', DatosPersonalesInterno.Key('id'))
-		.where({ id })
-		.select('*')
-		.first();
-	if (isNullish(entry)) return null;
-
-	return { ...formatUser(entry), rol: 'Admin' };
+export async function obtenerAdmin(id: number): Promise<ViewUserAdmin.Value | null> {
+	return (await qb(ViewUserAdmin.Name).where({ id }).first()) ?? null;
 }
 
-export async function obtenerOficinaAps(id: number): Promise<GetApSOfficeResult | null> {
-	const entry = await qb(OficinaAps.Name)
-		.join(DatosPersonalesInterno.Name, OficinaAps.Key('datos_personales_Id'), '=', DatosPersonalesInterno.Key('id'))
-		.join(Usuario.Name, OficinaAps.Key('id'), '=', Usuario.Key('id'))
-		.where({ id })
-		.first();
-	if (isNullish(entry)) return null;
-
-	return { ...formatUser(entry), rol: 'OficinaAps' };
+export async function obtenerOficinaAps(id: number): Promise<ViewUserApSOffice.Value | null> {
+	return (await qb(ViewUserApSOffice.Name).where({ id }).first()) ?? null;
 }
 
-export async function obtenerSocioComunitario(id: number): Promise<GetCommunityPartnerResult | null> {
-	const entry = await qb(SocioComunitario.Name)
-		.join(DatosPersonalesExterno.Name, SocioComunitario.Key('datos_personales_Id'), '=', DatosPersonalesExterno.Key('id'))
-		.join(Usuario.Name, SocioComunitario.Key('id'), '=', Usuario.Key('id'))
-		.where({ id })
-		.first();
-	if (isNullish(entry)) return null;
-
-	return {
-		...formatUser(entry),
-		communityPartnerName: entry.nombre_socioComunitario,
-		mission: entry.mision,
-		sector: entry.sector,
-		url: entry.url,
-		rol: 'SocioComunitario'
-	};
+export async function obtenerSocioComunitario(id: number): Promise<ViewUserCommunityPartner.Value | null> {
+	return (await qb(ViewUserCommunityPartner.Name).where({ id }).first()) ?? null;
 }
 
-export interface GetAllCommunityPartnersResult {
-	id: SocioComunitario.Value['id'];
-	firstName: DatosPersonalesExterno.Value['nombre'];
-	lastName: DatosPersonalesExterno.Value['apellidos'];
-}
-export async function obtenerSociosComunitarios(): Promise<GetAllCommunityPartnersResult[]> {
-	return await qb(SocioComunitario.Name)
-		.join(DatosPersonalesExterno.Name, SocioComunitario.Key('datos_personales_Id'), '=', DatosPersonalesExterno.Key('id'))
-		.select(
-			SocioComunitario.Key('id'),
-			qb.ref(DatosPersonalesExterno.Key('nombre')).as('firstName'),
-			qb.ref(DatosPersonalesExterno.Key('apellidos')).as('lastName')
-		);
+export async function obtenerSociosComunitarios(): Promise<ViewUserCommunityPartner.Value[]> {
+	return await qb(ViewUserCommunityPartner.Name);
 }
 
-export interface GetAllInternalProfessorsResult {
-	id: ProfesorInterno.Value['id'];
-	firstName: DatosPersonalesInterno.Value['nombre'];
-	lastName: DatosPersonalesInterno.Value['apellidos'];
-}
-export async function obtenerProfesores(): Promise<GetAllInternalProfessorsResult[]> {
-	return await qb(ProfesorInterno.Name)
-		.join(DatosPersonalesExterno.Name, ProfesorInterno.Key('datos_personales_Id'), '=', DatosPersonalesExterno.Key('id'))
-		.select(
-			ProfesorInterno.Key('id'),
-			qb.ref(DatosPersonalesExterno.Key('nombre')).as('firstName'),
-			qb.ref(DatosPersonalesExterno.Key('apellidos')).as('lastName')
-		);
+export async function obtenerProfesoresInternos(): Promise<ViewUserExternalProfessor.Value[]> {
+	return await qb(ViewUserExternalProfessor.Name);
 }
 
-export async function obtenerProfesorInterno(id: number): Promise<GetInternalProfessorResult | null> {
-	const entry = await qb(ProfesorInterno.Name)
-		.select(
-			Usuario.Key('*'),
-			DatosPersonalesInterno.Key('*'),
-			qb.ref(ProfesorInterno.Key('facultad')).as('facultyId'),
-			qb.ref(ProfesorInterno.Key('universidad')).as('universityId'),
-			sharedGetKnowledgeAreasSubquery(ProfesorInterno.Key('id')),
-			sharedGetLocalDegreesSubquery()
-		)
-		.join(DatosPersonalesInterno.Name, ProfesorInterno.Key('datos_personales_Id'), '=', DatosPersonalesInterno.Key('id'))
-		.join(Usuario.Name, ProfesorInterno.Key('id'), '=', Usuario.Key('id'))
-		.where({ id })
-		.first();
-	if (isNullish(entry)) return null;
-
-	return {
-		...formatUser(entry),
-		facultyId: entry.facultyId,
-		universityId: entry.universityId,
-		knowledgeAreas: entry.knowledgeAreas,
-		localDegrees: entry.localDegrees,
-		rol: 'ProfesorInterno'
-	};
+export async function obtenerProfesorInterno(id: number): Promise<ViewUserExternalProfessor.Value | null> {
+	return (await qb(ViewUserExternalProfessor.Name).where({ id }).first()) ?? null;
 }
 
-export async function obtenerProfesorExterno(id: number): Promise<GetExternalProfessorResult | null> {
-	const entry = await qb(ProfesorExterno.Name)
-		.select(
-			Usuario.Key('*'),
-			DatosPersonalesExterno.Key('*'),
-			qb.ref(ProfesorExterno.Key('facultad')).as('facultyId'),
-			qb.ref(Universidad.Key('id')).as('universityId'),
-			qb.ref(Universidad.Key('nombre')).as('universityName'),
-			qb.ref(Universidad.Key('provincia')).as('universityProvince'),
-			sharedGetKnowledgeAreasSubquery(ProfesorExterno.Key('id')),
-			sharedGetLocalDegreesSubquery()
-		)
-		.join(DatosPersonalesExterno.Name, ProfesorExterno.Key('datos_personales_Id'), '=', DatosPersonalesExterno.Key('id'))
-		.join(Usuario.Name, ProfesorExterno.Key('id'), '=', Usuario.Key('id'))
-		.join(Universidad.Name, ProfesorExterno.Key('universidad'), '=', Universidad.Key('id'))
-		.where({ id })
-		.first();
-	if (isNullish(entry)) return null;
-
-	return {
-		...formatUser(entry),
-		facultyId: entry.facultyId,
-		universityId: entry.universityId,
-		universityName: entry.universityName,
-		universityProvince: entry.universityProvince,
-		knowledgeAreas: entry.knowledgeAreas,
-		rol: 'ProfesorExterno'
-	};
+export async function obtenerProfesorExterno(id: number): Promise<ViewUserExternalProfessor.Value | null> {
+	return (await qb(ViewUserExternalProfessor.Name).where({ id }).first()) ?? null;
 }
 
-export async function obtenerEstudianteInterno(id: number): Promise<GetInternalStudentResult | null> {
-	const entry = await qb(EstudianteInterno.Name)
-		.join(DatosPersonalesInterno.Name, EstudianteInterno.Key('datos_personales_Id'), '=', DatosPersonalesInterno.Key('id'))
-		.join(Usuario.Name, EstudianteInterno.Key('id'), '=', Usuario.Key('id'))
-		.join(TitulacionLocal.Name, EstudianteInterno.Key('titulacion_local'), '=', TitulacionLocal.Key('id'))
-		.where({ id })
-		.first();
-	if (isNullish(entry)) return null;
-
-	return { ...formatUser(entry), localDegree: entry.nombre, rol: 'EstudianteInterno' };
+export async function obtenerEstudianteInterno(id: number): Promise<ViewUserInternalStudent.Value | null> {
+	return (await qb(ViewUserInternalStudent.Name).where({ id }).first()) ?? null;
 }
 
-export async function obtenerEstudianteExterno(id: number): Promise<GetExternalStudentResult | null> {
-	const entry = await qb(EstudianteExterno.Name)
-		.select(
-			Usuario.Key('*'),
-			DatosPersonalesExterno.Key('*'),
-			qb.ref(EstudianteExterno.Key('titulacion')).as('degree'),
-			qb.ref(Universidad.Key('id')).as('universityId'),
-			qb.ref(Universidad.Key('nombre')).as('universityName'),
-			qb.ref(Universidad.Key('provincia')).as('universityProvince')
-		)
-		.join(DatosPersonalesInterno.Name, EstudianteExterno.Key('datos_personales_Id'), '=', DatosPersonalesInterno.Key('id'))
-		.join(Usuario.Name, EstudianteExterno.Key('id'), '=', Usuario.Key('id'))
-		.join(Universidad.Name, EstudianteExterno.Key('universidad'), '=', Universidad.Key('id'))
-		.where({ id })
-		.first();
-	if (isNullish(entry)) return null;
-
-	return {
-		...formatUser(entry),
-		degree: entry.degree,
-		universityId: entry.universityId,
-		universityName: entry.universityName,
-		universityProvince: entry.universityProvince,
-		rol: 'EstudianteExterno'
-	};
+export async function obtenerEstudianteExterno(id: number): Promise<ViewUserExternalStudent.Value | null> {
+	return (await qb(ViewUserExternalStudent.Name).where({ id }).first()) ?? null;
 }
 
 //UPDATES
@@ -520,7 +372,7 @@ async function sharedUpdateUser(id: number, data: Partial<Omit<Usuario.Value, 'i
 }
 
 export interface UpdateUserData extends Partial<Omit<Usuario.Value & DatosPersonalesInterno.Value, 'id'>> {}
-async function sharedUpdateUserData(userId: number, userDataId: number, data: UpdateUserData, trx: Knex.Transaction): Promise<FormattedUser> {
+async function sharedUpdateUserData(userId: number, userDataId: number, data: UpdateUserData, trx: Knex.Transaction): Promise<BaseUserData> {
 	const user = await sharedUpdateUser(userId, data, trx);
 	const userData = getFirstDatabaseEntry(
 		await trx(DatosPersonalesInterno.Name)
@@ -535,41 +387,37 @@ async function sharedUpdateUserData(userId: number, userDataId: number, data: Up
 		'No se ha encontrado los datos personales internos con el ID proporcionado'
 	);
 
-	return formatUser({ ...user, ...userData });
+	return { ...user, ...userData };
 }
 
 export interface UpdateAdminData extends UpdateUserData {}
-export function actualizarAdmin(id: number, data: UpdateAdminData): Promise<FormattedUser> {
+export function actualizarAdmin(id: number, data: UpdateAdminData): Promise<ViewUserAdmin.Value> {
 	return qb.transaction(async (trx) => {
 		const entry = ensureDatabaseEntry(
 			await trx(Admin.Name).where({ id }).first(),
 			'No se ha encontrado un administrador con el ID proporcionado'
 		);
 
-		return await sharedUpdateUserData(id, entry.datos_personales_Id, data, trx);
+		const userData = await sharedUpdateUserData(id, entry.datos_personales_Id, data, trx);
+		return formatUser(userData, { type: 'Admin' });
 	});
 }
 
 export interface UpdateApSOfficeData extends UpdateUserData {}
-export async function actualizarOficinaAPS(id: number, data: UpdateApSOfficeData): Promise<FormattedUser> {
+export async function actualizarOficinaAPS(id: number, data: UpdateApSOfficeData): Promise<ViewUserApSOffice.Value> {
 	return qb.transaction(async (trx) => {
 		const entry = ensureDatabaseEntry(
 			await trx(OficinaAps.Name).where({ id }).first(),
 			'No se ha encontrado una oficina ApS con el ID proporcionado'
 		);
 
-		return await sharedUpdateUserData(id, entry.datos_personales_Id, data, trx);
+		const userData = await sharedUpdateUserData(id, entry.datos_personales_Id, data, trx);
+		return formatUser(userData, { type: 'ApSOffice' });
 	});
 }
 
 export interface UpdateCommunityPartnerData extends UpdateUserData, Partial<Omit<SocioComunitario.Value, 'id'>> {}
-export interface UpdateCommunityPartnerResult extends FormattedUser {
-	communityPartnerName: SocioComunitario.Value['nombre_socioComunitario'];
-	mission: SocioComunitario.Value['mision'];
-	sector: SocioComunitario.Value['sector'];
-	url: SocioComunitario.Value['url'];
-}
-export async function actualizarSocioComunitario(id: number, data: UpdateCommunityPartnerData): Promise<UpdateCommunityPartnerResult> {
+export async function actualizarSocioComunitario(id: number, data: UpdateCommunityPartnerData): Promise<ViewUserCommunityPartner.Value> {
 	return qb.transaction(async (trx) => {
 		const entry = getFirstDatabaseEntry(
 			await trx(SocioComunitario.Name)
@@ -583,13 +431,19 @@ export async function actualizarSocioComunitario(id: number, data: UpdateCommuni
 				.returning('*')
 		);
 
-		const user = await sharedUpdateUserData(id, entry.datos_personales_Id, data, trx);
-		return { ...user, communityPartnerName: entry.nombre_socioComunitario, mission: entry.mision, sector: entry.sector, url: entry.url };
+		const userData = await sharedUpdateUserData(id, entry.datos_personales_Id, data, trx);
+		return formatUser(userData, {
+			type: 'CommunityPartner',
+			mission: entry.mision,
+			name: entry.nombre_socioComunitario,
+			sector: entry.sector,
+			url: entry.url
+		});
 	});
 }
 
 export interface UpdateStudentData extends UpdateUserData {}
-async function sharedUpdateStudent(id: number, userDataId: number, data: UpdateStudentData, trx: Knex.Transaction): Promise<FormattedUser> {
+async function sharedUpdateStudent(id: number, userDataId: number, data: UpdateStudentData, trx: Knex.Transaction): Promise<BaseUserData> {
 	if (!(await sharedHasTableEntry(Estudiante.Name, id, trx))) {
 		throw createNotFoundError('No se ha encontrado un estudiante con el ID proporcionado');
 	}
@@ -598,10 +452,7 @@ async function sharedUpdateStudent(id: number, userDataId: number, data: UpdateS
 }
 
 export interface UpdateInternalStudentData extends UpdateStudentData, Partial<Omit<EstudianteInterno.Value, 'id'>> {}
-export interface UpdateInternalStudentResult extends FormattedUser {
-	localDegree: EstudianteInterno.Value['titulacion_local'];
-}
-export async function actualizarEstudianteInterno(id: number, data: UpdateInternalStudentData): Promise<UpdateInternalStudentResult> {
+export async function actualizarEstudianteInterno(id: number, data: UpdateInternalStudentData): Promise<ViewUserInternalStudent.Value> {
 	return qb.transaction(async (trx) => {
 		const entry = getFirstDatabaseEntry(
 			await trx(EstudianteInterno.Name) //
@@ -611,17 +462,13 @@ export async function actualizarEstudianteInterno(id: number, data: UpdateIntern
 			'No se ha encontrado un estudiante interno con el ID proporcionado'
 		);
 
-		const user = await sharedUpdateStudent(id, entry.datos_personales_Id, data, trx);
-		return { ...user, localDegree: entry.titulacion_local };
+		const userData = await sharedUpdateStudent(id, entry.datos_personales_Id, data, trx);
+		return formatUser(userData, { type: 'InternalStudent', degree: entry.titulacion_local });
 	});
 }
 
 export interface UpdateExternalStudentData extends UpdateStudentData, Partial<Omit<EstudianteExterno.Value, 'id'>> {}
-export interface UpdateExternalStudentResult extends FormattedUser {
-	degree: EstudianteExterno.Value['titulacion'];
-	universityId: EstudianteExterno.Value['universidad'];
-}
-export async function actualizarEstudianteExterno(id: number, data: UpdateExternalStudentData): Promise<UpdateExternalStudentResult> {
+export async function actualizarEstudianteExterno(id: number, data: UpdateExternalStudentData): Promise<ViewUserExternalStudent.Value> {
 	return qb.transaction(async (trx) => {
 		const entry = getFirstDatabaseEntry(
 			await trx(EstudianteExterno.Name) //
@@ -631,13 +478,13 @@ export async function actualizarEstudianteExterno(id: number, data: UpdateExtern
 			'No se ha encontrado un estudiante externo con el ID proporcionado'
 		);
 
-		const user = await sharedUpdateStudent(id, entry.datos_personales_Id, data, trx);
-		return { ...user, degree: entry.titulacion, universityId: entry.universidad };
+		const userData = await sharedUpdateStudent(id, entry.datos_personales_Id, data, trx);
+		return formatUser(userData, { type: 'ExternalStudent', degree: entry.titulacion, university: entry.universidad });
 	});
 }
 
 export interface UpdateProfessorData extends UpdateUserData {}
-async function sharedUpdateProfessor(id: number, userDataId: number, data: UpdateProfessorData, trx: Knex.Transaction): Promise<FormattedUser> {
+async function sharedUpdateProfessor(id: number, userDataId: number, data: UpdateProfessorData, trx: Knex.Transaction): Promise<BaseUserData> {
 	if (!(await sharedHasTableEntry(Estudiante.Name, id, trx))) {
 		throw createNotFoundError('No se ha encontrado un profesor con el ID proporcionado');
 	}
@@ -649,11 +496,7 @@ export interface UpdateInternalProfessorData extends UpdateProfessorData, Partia
 	knowledgeAreas?: readonly number[];
 	localDegrees?: readonly number[];
 }
-export interface UpdateInternalProfessorResult extends FormattedUser {
-	universityId: ProfesorInterno.Value['universidad'];
-	facultyId: ProfesorInterno.Value['facultad'];
-}
-export async function actualizarProfesorInterno(id: number, data: UpdateInternalProfessorData): Promise<UpdateInternalProfessorResult> {
+export async function actualizarProfesorInterno(id: number, data: UpdateInternalProfessorData): Promise<ViewUserInternalProfessor.Value> {
 	return qb.transaction(async (trx) => {
 		const entry = getFirstDatabaseEntry(
 			await trx(ProfesorInterno.Name) //
@@ -689,17 +532,13 @@ export async function actualizarProfesorInterno(id: number, data: UpdateInternal
 			}
 		}
 
-		const user = await sharedUpdateProfessor(id, entry.datos_personales_Id, data, trx);
-		return { ...user, universityId: entry.universidad, facultyId: entry.facultad };
+		const userData = await sharedUpdateProfessor(id, entry.datos_personales_Id, data, trx);
+		return formatUser(userData, { type: 'InternalProfessor' });
 	});
 }
 
 export interface UpdateExternalProfessorData extends UpdateProfessorData, Partial<Omit<ProfesorExterno.Value, 'id'>> {}
-export interface UpdateExternalProfessorResult extends FormattedUser {
-	universityId: ProfesorExterno.Value['universidad'];
-	facultyId: ProfesorExterno.Value['facultad'];
-}
-export async function actualizarProfesorExterno(id: number, data: UpdateExternalProfessorData): Promise<UpdateExternalProfessorResult> {
+export async function actualizarProfesorExterno(id: number, data: UpdateExternalProfessorData): Promise<ViewUserExternalProfessor.Value> {
 	return qb.transaction(async (trx) => {
 		const entry = getFirstDatabaseEntry(
 			await trx(ProfesorExterno.Name) //
@@ -709,106 +548,21 @@ export async function actualizarProfesorExterno(id: number, data: UpdateExternal
 			'No se ha encontrado un profesor externo con el ID proporcionado'
 		);
 
-		const user = await sharedUpdateProfessor(id, entry.datos_personales_Id, data, trx);
-		return { ...user, universityId: entry.universidad, facultyId: entry.facultad };
+		const userData = await sharedUpdateProfessor(id, entry.datos_personales_Id, data, trx);
+		return formatUser(userData, { type: 'ExternalProfessor', university: entry.universidad, faculty: entry.facultad });
 	});
 }
 
-function sharedGetKnowledgeAreasSubquery(
-	key: `${typeof ProfesorInterno.Name}.${keyof ProfesorInterno.Value}` | `${typeof ProfesorExterno.Name}.${keyof ProfesorExterno.Value}`
-) {
-	return qb(AreaConocimiento_Profesor.Name)
-		.select(qb.raw(`JSON_ARRAYAGG(${AreaConocimiento.Key('nombre')})`))
-		.join(AreaConocimiento.Name, AreaConocimiento_Profesor.Key('id_area'), '=', AreaConocimiento.Key('id'))
-		.where(AreaConocimiento_Profesor.Key('id_profesor'), '=', key)
-		.as('knowledgeAreas');
-}
-
-function sharedGetLocalDegreesSubquery() {
-	return qb(TitulacionLocal_Profesor.Name)
-		.select(qb.raw(`JSON_ARRAYAGG(${TitulacionLocal.Key('nombre')})`))
-		.join(TitulacionLocal.Name, TitulacionLocal.Key('id'), '=', TitulacionLocal_Profesor.Key('id_titulacion'))
-		.where(TitulacionLocal_Profesor.Key('id_profesor'), '=', ProfesorInterno.Key('id'))
-		.as('localDegrees');
-}
-
-export interface FormattedUser extends ReturnType<typeof formatUser> {}
-function formatUser(datos: Usuario.Value & (DatosPersonalesInterno.Value | DatosPersonalesExterno.Value)) {
+function formatUser<User extends ViewUser.ValueUserType>(datos: BaseUserData, user: ViewUser.ValueUserOfType<User>): ViewUser.Value<User> {
 	return {
 		id: datos.id,
-		origin: { login: datos.origin_login, image: datos.origin_img },
 		createdAt: datos.createdAt,
-		updatedAt: datos.updatedAt,
-		acceptedTerms: datos.terminos_aceptados,
 		firstName: datos.nombre,
 		lastName: datos.apellidos,
 		email: datos.correo,
-		phone: datos.telefono
+		phone: datos.telefono,
+		user
 	};
 }
 
-export interface GetPartialInternalProfessorResult {
-	id: ProfesorInterno.Value['id'];
-	facultyId: ProfesorInterno.Value['facultad'];
-	universityId: ProfesorInterno.Value['universidad'];
-	knowledgeAreas: readonly string[];
-	localDegrees: readonly string[];
-	rol: 'ProfesorInterno';
-}
-
-export interface GetPartialInternalStudentResult {
-	id: EstudianteInterno.Value['id'];
-	localDegree: TitulacionLocal.Value['nombre'];
-	rol: 'EstudianteInterno';
-}
-
-export interface GetPartialAdminResult {
-	id: Admin.Value['id'];
-	rol: 'Admin';
-}
-
-export interface GetPartialApSOfficeResult {
-	id: OficinaAps.Value['id'];
-	rol: 'OficinaAps';
-}
-
-export interface GetInternalProfessorResult extends GetPartialInternalProfessorResult, FormattedUser {}
-export interface GetInternalStudentResult extends GetPartialInternalStudentResult, FormattedUser {}
-export interface GetAdminResult extends GetPartialAdminResult, FormattedUser {}
-export interface GetApSOfficeResult extends GetPartialApSOfficeResult, FormattedUser {}
-
-export interface GetPartialExternalProfessorResult {
-	id: ProfesorExterno.Value['id'];
-	facultyId: ProfesorExterno.Value['facultad'];
-	universityId: Universidad.Value['id'];
-	universityName: Universidad.Value['nombre'];
-	universityProvince: Universidad.Value['provincia'];
-	knowledgeAreas: string[];
-	rol: 'ProfesorExterno';
-}
-
-export interface GetPartialExternalStudentResult {
-	id: EstudianteExterno.Value['id'];
-	degree: EstudianteExterno.Value['titulacion'];
-	universityId: Universidad.Value['id'];
-	universityName: Universidad.Value['nombre'];
-	universityProvince: Universidad.Value['provincia'];
-	rol: 'EstudianteExterno';
-}
-
-export interface GetPartialCommunityPartnerResult {
-	id: SocioComunitario.Value['id'];
-	communityPartnerName: SocioComunitario.Value['nombre_socioComunitario'];
-	mission: SocioComunitario.Value['mision'];
-	sector: SocioComunitario.Value['sector'];
-	url: SocioComunitario.Value['url'];
-	rol: 'SocioComunitario';
-}
-
-export interface GetExternalProfessorResult extends GetPartialExternalProfessorResult, FormattedUser {}
-export interface GetExternalStudentResult extends GetPartialExternalStudentResult, FormattedUser {}
-export interface GetCommunityPartnerResult extends GetPartialCommunityPartnerResult, FormattedUser {}
-
-export type GetUserResult = GetInternalUserResult | GetExternalUserResult;
-export type GetInternalUserResult = GetInternalProfessorResult | GetInternalStudentResult | GetAdminResult | GetApSOfficeResult;
-export type GetExternalUserResult = GetExternalProfessorResult | GetExternalStudentResult | GetCommunityPartnerResult;
+type BaseUserData = Usuario.Value & (DatosPersonalesInterno.Value | DatosPersonalesExterno.Value);
