@@ -53,9 +53,14 @@ import { Upload } from './services/types/Upload';
 import { Upload_AnuncioServicio } from './services/types/Upload_AnuncioServicio';
 import { Upload_Colaboracion } from './services/types/Upload_Colaboracion';
 import { Usuario } from './services/types/Usuario';
+import { UserAny } from './services/types/views/UserAny';
 
 declare module 'knex/types/tables' {
 	interface Tables {
+		// Views
+		[UserAny.Name]: UserAny.Value;
+
+		// Tables
 		[AceptacionAceptada.Name]: AceptacionAceptada.Value;
 		[AceptacionRechazada.Name]: AceptacionRechazada.Value;
 		[Admin.Name]: Admin.Value;

@@ -17,6 +17,7 @@ import { TitulacionLocal } from '../types/TitulacionLocal';
 import { TitulacionLocal_Profesor } from '../types/TitulacionLocal_Profesor';
 import { Universidad } from '../types/Universidad';
 import { Usuario } from '../types/Usuario';
+import { UserAny } from '../types/views/UserAny';
 import { sharedDeleteEntryTable, sharedHasTableEntry } from './shared';
 
 async function sharedInsertaDatosPersonalesInterno(data: DatosPersonalesInterno.CreateData, trx: Knex.Transaction) {
@@ -307,170 +308,12 @@ export async function borrarSocioComunitario(id: number): Promise<boolean> {
 	);
 }
 
-export async function obtenerUsuarioSinRolPorEmail(email: string): Promise<GetUserResult | null> {
-	return (
-		(await getInternalUserByEmail(email)) ?? //
-		(await getExternalUserByEmail(email))
-	);
+export async function obtenerUsuarioSinRolPorEmail(email: string): Promise<UserAny.Value | null> {
+	return (await qb(UserAny.Name).where({ email }).first()) ?? null;
 }
 
-async function getInternalUserByEmail(email: string): Promise<GetInternalUserResult | null> {
-	const entry = await qb(DatosPersonalesInterno.Name)
-		.join(Usuario.Name, DatosPersonalesInterno.Key('id'), '=', Usuario.Key('id'))
-		.where({ correo: email })
-		.first();
-
-	return isNullish(entry) ? null : getInternalUserByUserData(entry);
-}
-
-async function getInternalUserByUserData(data: DatosPersonalesInterno.Value & Usuario.Value): Promise<GetInternalUserResult | null> {
-	const user =
-		(await getInternalProfessorByPersonalUserDataId(data.id)) ??
-		(await getInternalStudentByPersonalUserDataId(data.id)) ??
-		(await getAdminByPersonalUserDataId(data.id)) ??
-		(await getApSOfficeByPersonalUserDataId(data.id));
-	if (isNullish(user)) return null;
-
-	return { ...formatUser(data), ...user };
-}
-
-async function getInternalProfessorByPersonalUserDataId(id: number): Promise<GetPartialInternalProfessorResult | undefined> {
-	return await qb(ProfesorInterno.Name)
-		.select(
-			ProfesorInterno.Key('id'),
-			qb.ref(ProfesorInterno.Key('facultad')).as('facultyId'),
-			qb.ref(Universidad.Key('id')).as('universityId'),
-			qb.ref(Universidad.Key('nombre')).as('universityName'),
-			qb.ref(Universidad.Key('provincia')).as('universityProvince'),
-			qb.raw("'ProfesorInterno' as rol"),
-			// Areas
-			sharedGetKnowledgeAreasSubquery(ProfesorInterno.Key('id')),
-			sharedGetLocalDegreesSubquery()
-		)
-		.join(Universidad.Name, ProfesorInterno.Key('universidad'), '=', Universidad.Key('id'))
-		.where({ datos_personales_Id: id })
-		.first();
-}
-
-async function getInternalStudentByPersonalUserDataId(id: number): Promise<GetPartialInternalStudentResult | undefined> {
-	return await qb(EstudianteInterno.Name)
-		.select(
-			EstudianteInterno.Key('id'), //
-			qb.ref(TitulacionLocal.Key('nombre')).as('localDegree'),
-			qb.raw("'EstudianteInterno' as rol")
-		)
-		.join(TitulacionLocal.Name, TitulacionLocal.Key('id'), '=', EstudianteInterno.Key('titulacion_local'))
-		.where({ datos_personales_Id: id })
-		.first();
-}
-
-async function getAdminByPersonalUserDataId(id: number): Promise<GetPartialAdminResult | undefined> {
-	return await qb(Admin.Name)
-		.select(
-			Admin.Key('id'), //
-			qb.raw("'Admin' as rol")
-		)
-		.where({ datos_personales_Id: id })
-		.first();
-}
-
-async function getApSOfficeByPersonalUserDataId(id: number): Promise<GetPartialApSOfficeResult | undefined> {
-	return await qb(OficinaAps.Name)
-		.select(
-			OficinaAps.Key('id'), //
-			qb.raw("'OficinaApS' as rol")
-		)
-		.where({ datos_personales_Id: id })
-		.first();
-}
-
-async function getExternalUserByEmail(email: string): Promise<GetExternalUserResult | null> {
-	const entry = await qb(DatosPersonalesExterno.Name)
-		.join(Usuario.Name, DatosPersonalesExterno.Key('id'), '=', Usuario.Key('id'))
-		.where({ correo: email })
-		.first();
-
-	return isNullish(entry) ? null : getExternalUserByUserData(entry);
-}
-
-async function getExternalUserByUserData(data: DatosPersonalesExterno.Value & Usuario.Value): Promise<GetExternalUserResult | null> {
-	const user =
-		(await getExternalProfessorByPersonalUserDataId(data.id)) ??
-		(await getExternalStudentByPersonalUserDataId(data.id)) ??
-		(await getCommunityPartnerByPersonalUserDataId(data.id));
-	if (isNullish(user)) return null;
-
-	return { ...formatUser(data), ...user };
-}
-
-async function getExternalProfessorByPersonalUserDataId(id: number): Promise<GetPartialExternalProfessorResult | undefined> {
-	return await qb(ProfesorExterno.Name)
-		.select(
-			ProfesorExterno.Key('id'),
-			qb.ref(ProfesorExterno.Key('facultad')).as('facultyId'),
-			qb.ref(Universidad.Key('id')).as('universityId'),
-			qb.ref(Universidad.Key('nombre')).as('universityName'),
-			qb.ref(Universidad.Key('provincia')).as('universityProvince'),
-			qb.raw("'ProfesorExterno' as rol"),
-			sharedGetKnowledgeAreasSubquery(ProfesorExterno.Key('id'))
-		)
-		.join(Universidad.Name, ProfesorExterno.Key('universidad'), '=', Universidad.Key('id'))
-		.where({ datos_personales_Id: id })
-		.first();
-}
-
-async function getExternalStudentByPersonalUserDataId(id: number): Promise<GetPartialExternalStudentResult | undefined> {
-	return await qb(EstudianteExterno.Name)
-		.select(
-			EstudianteExterno.Key('id'), //
-			qb.ref(EstudianteExterno.Key('titulacion')).as('degree'),
-			qb.ref(Universidad.Key('id')).as('universityId'),
-			qb.ref(Universidad.Key('nombre')).as('universityName'),
-			qb.ref(Universidad.Key('provincia')).as('universityProvince'),
-			qb.raw("'EstudianteExterno' as rol")
-		)
-		.join(Universidad.Name, Universidad.Key('id'), '=', EstudianteExterno.Key('universidad'))
-		.where({ datos_personales_Id: id })
-		.first();
-}
-
-async function getCommunityPartnerByPersonalUserDataId(id: number): Promise<GetPartialCommunityPartnerResult | undefined> {
-	return await qb(SocioComunitario.Name)
-		.select(
-			SocioComunitario.Key('id'), //
-			qb.ref(SocioComunitario.Key('nombre_socioComunitario')).as('communityPartnerName'),
-			qb.ref(SocioComunitario.Key('mision')).as('mission'),
-			SocioComunitario.Key('sector'),
-			SocioComunitario.Key('url'),
-			qb.raw("'SocioComunitario' as rol")
-		)
-		.where({ datos_personales_Id: id })
-		.first();
-}
-
-export async function obtenerUsuarioSinRolPorId(id: number): Promise<GetUserResult | null> {
-	return (
-		(await getInternalUserByUserDataId(id)) ?? //
-		(await getExternalUserByUserDataId(id))
-	);
-}
-
-async function getInternalUserByUserDataId(id: number): Promise<GetInternalUserResult | null> {
-	const entry = await qb(DatosPersonalesInterno.Name)
-		.join(Usuario.Name, DatosPersonalesInterno.Key('id'), '=', Usuario.Key('id'))
-		.where({ id })
-		.first();
-
-	return isNullish(entry) ? null : getInternalUserByUserData(entry);
-}
-
-async function getExternalUserByUserDataId(id: number) {
-	const entry = await qb(DatosPersonalesExterno.Name)
-		.join(Usuario.Name, DatosPersonalesExterno.Key('id'), '=', Usuario.Key('id'))
-		.where({ id })
-		.first();
-
-	return isNullish(entry) ? null : getExternalUserByUserData(entry);
+export async function obtenerUsuarioSinRolPorId(id: number): Promise<UserAny.Value | null> {
+	return (await qb(UserAny.Name).where({ id }).first()) ?? null;
 }
 
 export async function obtenerUniversidades(): Promise<Universidad.Value[]> {
