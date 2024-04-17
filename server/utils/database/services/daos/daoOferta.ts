@@ -12,7 +12,7 @@ import { ProfesorInterno_Oferta } from '../types/ProfesorInterno_Oferta';
 import { Tag } from '../types/Tag';
 import { SearchParameters, sharedCountTable } from './shared';
 
-export type AnuncioServicioCreateData = Pick<AnuncioServicio, 'titulo' | 'descripcion' | 'imagen'> & { areasServicio: readonly number[] };
+export type AnuncioServicioCreateData = Pick<AnuncioServicio.Value, 'titulo' | 'descripcion' | 'imagen'> & { areasServicio: readonly number[] };
 async function crearAnuncio(anuncio: AnuncioServicioCreateData, trx: Knex.Transaction): Promise<AnuncioServicio.Value> {
 	const [entry] = await trx(AnuncioServicio.Name)
 		.insert({ titulo: anuncio.titulo, descripcion: anuncio.descripcion, imagen: anuncio.imagen })

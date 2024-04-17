@@ -1,4 +1,4 @@
-import { Knex } from 'knex';
+import type { Knex } from 'knex';
 import { AceptacionAceptada } from '../types/AceptacionAceptada';
 import { AceptacionRechazada } from '../types/AceptacionRechazada';
 import { DemandaRespalda } from '../types/DemandaRespalda';
@@ -59,17 +59,18 @@ export async function getNotifications(userId: number): Promise<ViewNotification
 	return await qb(ViewNotification.Name).where({ userId });
 }
 
-export async function getNotification(id: number): Promise<ViewNotification.Value> {
+export async function getNotification(userId: number, id: number): Promise<ViewNotification.Value> {
 	return ensureDatabaseEntry(
-		await qb(ViewNotification.Name).where({ id }).first(),
+		await qb(ViewNotification.Name).where({ id, userId }).first(),
 		'No se pudo encontrar una notificación con el ID proporcionado'
 	);
 }
 
 export interface CreateNotificationOfferAcceptedOptions extends Omit<CreateNotificationOptions, 'userId'> {
 	offerId: OfertaServicio.Value['id'];
+	associateId: OfertaAceptada.Value['idSocio'];
 }
-export async function crearNotificacionOfertaAceptada(data: CreateNotificationOfferAcceptedOptions, associateId: number) {
+export async function crearNotificacionOfertaAceptada(data: CreateNotificationOfferAcceptedOptions) {
 	return await qb.transaction(async (trx) => {
 		const { userId } = ensureDatabaseEntry(
 			await trx(OfertaServicio.Name)
@@ -83,7 +84,7 @@ export async function crearNotificacionOfertaAceptada(data: CreateNotificationOf
 		await trx(OfertaAceptada.Name).insert({
 			idNotificacion: base.id,
 			idOferta: data.offerId,
-			idSocio: associateId
+			idSocio: data.associateId
 		});
 	});
 }

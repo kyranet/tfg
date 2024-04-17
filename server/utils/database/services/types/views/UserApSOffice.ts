@@ -1,6 +1,10 @@
-import { ViewUser } from './User';
+import type { ViewUser } from './User';
 
 export namespace ViewUserApSOffice {
 	export const Name = 'view_user_aps_office';
-	export interface Value extends ViewUser.Value<'ApSOffice'> {}
+	export interface Value extends ViewUser.BaseValue<UserData> {}
+
+	export interface UserData {
+		type: 'ApSOffice';
+	}
 }

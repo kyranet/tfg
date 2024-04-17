@@ -68,6 +68,7 @@ import { ViewUserExternalProfessor } from './services/types/views/UserExternalPr
 import { ViewUserExternalStudent } from './services/types/views/UserExternalStudent';
 import { ViewUserInternalProfessor } from './services/types/views/UserInternalProfessor';
 import { ViewUserInternalStudent } from './services/types/views/UserInternalStudent';
+import { ViewUserPrivileged } from './services/types/views/UserPrivileged';
 
 declare module 'knex/types/tables' {
 	interface Tables {
@@ -80,6 +81,7 @@ declare module 'knex/types/tables' {
 		[ViewUserInternalProfessor.Name]: ViewUserInternalProfessor.Value;
 		[ViewUserApSOffice.Name]: ViewUserApSOffice.Value;
 		[ViewUserCommunityPartner.Name]: ViewUserCommunityPartner.Value;
+		[ViewUserPrivileged.Name]: ViewUserPrivileged.Value;
 		[ViewNotification.Name]: ViewNotification.Value;
 		[ViewNotificationConfirmationAccepted.Name]: ViewNotificationConfirmationAccepted.Value;
 		[ViewNotificationConfirmationRejected.Name]: ViewNotificationConfirmationRejected.Value;

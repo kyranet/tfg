@@ -8,7 +8,7 @@ export function getFirstDatabaseEntry<Type>(values: readonly Type[], message = '
 	return values[0];
 }
 
-export function ensureDatabaseEntry<Type>(value: Type | undefined, message = 'No se ha podido encontrar una entrada válida en la base de datos'): Type {
+export function ensureDatabaseEntry<Type>(value: Type | null | undefined, message = 'No se ha podido encontrar una entrada válida en la base de datos'): Type {
 	if (isNullish(value)) {
 		throw createNotFoundError(message);
 	}

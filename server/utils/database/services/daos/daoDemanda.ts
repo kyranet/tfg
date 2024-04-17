@@ -1,5 +1,5 @@
 import { isNullishOrEmpty } from '@sapphire/utilities';
-import { Knex } from 'knex';
+import type { Knex } from 'knex';
 import { AnuncioServicio } from '../types/AnuncioServicio';
 import { AreaServicio } from '../types/AreaServicio';
 import { AreaServicio_AnuncioServicio } from '../types/AreaServicio_AnuncioServicio';
@@ -15,6 +15,13 @@ import { sharedCountTable, sharedDeleteEntryTable, type SearchParameters } from 
 
 export async function obtenerListaAreasServicio(): Promise<AreaServicio.Value[]> {
 	return await qb(AreaServicio.Name);
+}
+
+export async function getAnnouncementsFromServiceArea(areaId: number): Promise<AreaServicio.Value[]> {
+	return await qb(AnuncioServicio.Name)
+		.join(AreaServicio_AnuncioServicio.Name, AreaServicio_AnuncioServicio.Key('id_anuncio'), '=', AnuncioServicio.Key('id'))
+		.where(AreaServicio_AnuncioServicio.Key('id_area'), '=', areaId)
+		.select(AnuncioServicio.Key('*'));
 }
 
 // Esta función obtiene demandas de servicio basadas en un área de servicio específica.

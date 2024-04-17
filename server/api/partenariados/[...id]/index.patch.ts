@@ -5,7 +5,7 @@ import { CoercedIntegerId } from '~/server/utils/validators/shared';
 
 const schemaParams = z.object({ id: CoercedIntegerId });
 const schemaBody = z.object({
-	demanda: z.coerce.number().int(),
+	demanda: z.number().int(),
 	titulo: z.string(),
 	descripcion: z.string(),
 	externos: z.boolean(),

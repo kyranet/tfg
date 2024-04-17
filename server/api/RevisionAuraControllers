@@ -1,3 +1,0 @@
-Todo lo relacionado con Models en los controladores: Hay forma de mejorarlo?
-getQuery devuelve tipo QueryResult y toca castear, hay otra forma? Igual con event para retornar un id//ZOD
-Toda la gestión que realizan en el controller de upload hay forma de mejorarla?

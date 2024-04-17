@@ -1,8 +1,9 @@
 import { isNullishOrEmpty } from '@sapphire/utilities';
-import { Knex } from 'knex';
+import type { Knex } from 'knex';
 import { obtenerUsuarioSinRolPorId } from '../daos/daoUsuario';
 import { AnuncioServicio } from '../types/AnuncioServicio';
 import { Colaboracion } from '../types/Colaboracion';
+import { DemandaServicio } from '../types/DemandaServicio';
 import { EstudianteProyecto } from '../types/EstudianteProyecto';
 import { Nota } from '../types/Nota';
 import { OfertaServicio } from '../types/OfertaServicio';
@@ -10,9 +11,8 @@ import { Partenariado } from '../types/Partenariado';
 import { PrevioPartenariado } from '../types/PrevioPartenariado';
 import { Profesor_Colaboracion } from '../types/Profesor_Colaboracion';
 import { Proyecto } from '../types/Proyecto';
-import { SearchParameters, sharedCountTable, sharedDeleteEntryTable } from './shared';
-import { DemandaServicio } from '../types/DemandaServicio';
 import { ViewUser } from '../types/views/User';
+import { SearchParameters, sharedCountTable, sharedDeleteEntryTable } from './shared';
 
 export type ColaboracionCreateData = Colaboracion.CreateData & { profesores?: readonly number[] };
 async function crearColaboracion(data: ColaboracionCreateData, trx: Knex.Transaction): Promise<Colaboracion.Value> {

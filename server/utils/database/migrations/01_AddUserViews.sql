@@ -180,3 +180,44 @@ FROM
 	usuario
 	INNER JOIN socio_comunitario sc ON usuario.id = sc.id
 	INNER JOIN datos_personales_externo dpe ON sc.datos_personales_Id = dpe.id;
+
+-- Privileged view to get users with the password, please do **NOT** use this
+-- view in the application outside of the authentication process.
+CREATE OR REPLACE SQL SECURITY INVOKER VIEW view_user_privileged AS
+SELECT
+	usuario.id,
+	COALESCE(dpi.correo, dpe.correo) as email,
+	COALESCE(dpi.nombre, dpe.nombre) as firstName,
+	COALESCE(dpi.apellidos, dpe.apellidos) as lastName,
+	COALESCE(dpi.password, dpe.password) as password,
+	CASE
+		WHEN a.id IS NOT NULL THEN 'Admin'
+		WHEN pi.id IS NOT NULL THEN 'InternalProfessor'
+		WHEN pe.id IS NOT NULL THEN 'ExternalProfessor'
+		WHEN ei.id IS NOT NULL THEN 'InternalStudent'
+		WHEN ee.id IS NOT NULL THEN 'ExternalStudent'
+		WHEN oa.id IS NOT NULL THEN 'ApSOffice'
+		WHEN sc.id IS NOT NULL THEN 'CommunityPartner'
+	END as rol
+FROM
+	usuario
+	LEFT JOIN admin a ON usuario.id = a.id
+	LEFT JOIN profesor p ON usuario.id = p.id
+	LEFT JOIN profesor_interno pi ON p.id = pi.id
+	LEFT JOIN profesor_externo pe ON p.id = pe.id
+	LEFT JOIN estudiante e ON usuario.id = e.id
+	LEFT JOIN estudiante_interno ei ON e.id = ei.id
+	LEFT JOIN estudiante_externo ee ON e.id = ee.id
+	LEFT JOIN oficinaaps oa ON usuario.id = oa.id
+	LEFT JOIN socio_comunitario sc ON usuario.id = sc.id
+	LEFT JOIN datos_personales_interno dpi ON COALESCE(
+		a.datos_personales_Id,
+		pi.datos_personales_Id,
+		ei.datos_personales_Id,
+		oa.datos_personales_Id
+	) = dpi.id
+	LEFT JOIN datos_personales_externo dpe ON COALESCE(
+		pe.datos_personales_Id,
+		ee.datos_personales_Id,
+		sc.datos_personales_Id
+	) = dpe.id;

@@ -1,7 +1,8 @@
-import { knex } from 'knex';
+import knex from 'knex';
 
 export const qb = knex({
-	client: 'mysql',
+	client: 'mysql2',
+	version: '11.1.2',
 	connection: {
 		host: process.env.MYSQL_IP!,
 		port: Number(process.env.MYSQL_PORT!),

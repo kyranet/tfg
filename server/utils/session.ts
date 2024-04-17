@@ -1,13 +1,14 @@
 import type { H3Event, SessionConfig } from 'h3';
+import type { ViewUser } from './database/services/types/views/User';
 
 const sessionConfig = useRuntimeConfig().auth as SessionConfig;
 
 export interface AuthSession {
 	id: number;
 	email: string;
-	nombre: string;
-	apellidos: string;
-	rol: string;
+	firstName: string;
+	lastName: string;
+	role: ViewUser.ValueUserType;
 }
 
 export function useAuthSession(event: H3Event) {

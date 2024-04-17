@@ -7,8 +7,8 @@ const schemaBody = z.object({
 	descripcion: z.string(),
 	imagen: z.string(),
 	asignatura: z.string().array(),
-	cuatrimestre: z.string(),
-	academicYear: z.string(),
+	cuatrimestre: z.number().int(),
+	academicYear: z.number().int(),
 	fecha_limite: z.coerce.date(),
 	observaciones: z.string(),
 	areasServicio: z.number().int().array(),
@@ -21,15 +21,14 @@ export default eventHandler(async (event) => {
 		titulo: body.titulo,
 		descripcion: body.descripcion,
 		imagen: body.imagen,
-		asignatura_objetivo: body.asignatura,
+		asignaturas: body.asignatura,
 		cuatrimestre: body.cuatrimestre,
 		anio_academico: body.academicYear,
 		fecha_limite: body.fecha_limite,
 		observaciones_temporales: body.observaciones,
 		creador: user.data.id,
 		areasServicio: body.areasServicio,
-		profesores: [],
-		tags: []
+		profesores: []
 	});
 
 	for (const name of body.tags) {

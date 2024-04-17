@@ -1,5 +1,5 @@
 import { isNullish, isNullishOrEmpty } from '@sapphire/utilities';
-import { Knex } from 'knex';
+import type { Knex } from 'knex';
 import { Admin } from '../types/Admin';
 import { AreaConocimiento } from '../types/AreaConocimiento';
 import { AreaConocimiento_Profesor } from '../types/AreaConocimiento_Profesor';
@@ -24,7 +24,7 @@ import { ViewUserExternalProfessor } from '../types/views/UserExternalProfessor'
 import { ViewUserExternalStudent } from '../types/views/UserExternalStudent';
 import { ViewUserInternalProfessor } from '../types/views/UserInternalProfessor';
 import { ViewUserInternalStudent } from '../types/views/UserInternalStudent';
-import { sharedDeleteEntryTable, sharedHasTableEntry } from './shared';
+import { SearchParameters, sharedCountTable, sharedDeleteEntryTable, sharedHasTableEntry } from './shared';
 
 async function sharedInsertaDatosPersonalesInterno(data: DatosPersonalesInterno.CreateData, trx: Knex.Transaction) {
 	const [datos] = await trx(DatosPersonalesInterno.Name)
@@ -290,12 +290,20 @@ export async function borrarSocioComunitario(id: number): Promise<boolean> {
 	);
 }
 
-export async function obtenerUsuarioSinRolPorEmail(email: string): Promise<ViewUser.Value | null> {
+export async function maybeGetUsuarioSinRolPorEmail(email: string): Promise<ViewUser.Value | null> {
 	return (await qb(ViewUser.Name).where({ email }).first()) ?? null;
 }
 
-export async function obtenerUsuarioSinRolPorId(id: number): Promise<ViewUser.Value | null> {
+export async function obtenerUsuarioSinRolPorEmail(email: string): Promise<ViewUser.Value> {
+	return ensureDatabaseEntry(await maybeGetUsuarioSinRolPorEmail(email));
+}
+
+export async function maybeGetUsuarioSinRolPorId(id: number): Promise<ViewUser.Value | null> {
 	return (await qb(ViewUser.Name).where({ id }).first()) ?? null;
+}
+
+export async function obtenerUsuarioSinRolPorId(id: number): Promise<ViewUser.Value> {
+	return ensureDatabaseEntry(await maybeGetUsuarioSinRolPorId(id));
 }
 
 export async function obtenerUniversidades(): Promise<Universidad.Value[]> {
@@ -351,6 +359,25 @@ export async function obtenerEstudianteInterno(id: number): Promise<ViewUserInte
 
 export async function obtenerEstudianteExterno(id: number): Promise<ViewUserExternalStudent.Value | null> {
 	return (await qb(ViewUserExternalStudent.Name).where({ id }).first()) ?? null;
+}
+
+export interface SearchUsersOptions extends SearchParameters {
+	query?: string;
+}
+export async function searchUsers(options: SearchUsersOptions): Promise<ViewUser.Value[]> {
+	return await qb(ViewUser.Name)
+		.modify((query) => {
+			if (!isNullishOrEmpty(options.query)) {
+				query.whereLike({ firstName: options.query, lastName: options.query, email: options.query });
+			}
+		})
+		.limit(options.limit ?? 100)
+		.offset(options.offset ?? 0)
+		.orderBy('createdAt');
+}
+
+export function countUsers() {
+	return sharedCountTable(Usuario.Name);
 }
 
 //UPDATES
@@ -553,7 +580,7 @@ export async function actualizarProfesorExterno(id: number, data: UpdateExternal
 	});
 }
 
-function formatUser<User extends ViewUser.ValueUserType>(datos: BaseUserData, user: ViewUser.ValueUserOfType<User>): ViewUser.Value<User> {
+function formatUser<User extends ViewUser.ValueUserType>(datos: BaseUserData, user: ViewUser.ValueUserOfType<User>): ViewUser.ValueOfType<User> {
 	return {
 		id: datos.id,
 		createdAt: datos.createdAt,
@@ -562,7 +589,7 @@ function formatUser<User extends ViewUser.ValueUserType>(datos: BaseUserData, us
 		email: datos.correo,
 		phone: datos.telefono,
 		user
-	};
+	} as unknown as ViewUser.ValueOfType<User>;
 }
 
 type BaseUserData = Usuario.Value & (DatosPersonalesInterno.Value | DatosPersonalesExterno.Value);

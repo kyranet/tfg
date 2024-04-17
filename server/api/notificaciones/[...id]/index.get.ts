@@ -1,8 +1,9 @@
 import { z } from 'zod';
-import { obtenerDemandaServicio } from '~/server/utils/database/services/daos/daoDemanda';
+import { getNotification } from '~/server/utils/database/services/daos/daoNotificacion';
 
 const schemaParams = z.object({ id: CoercedIntegerId });
 export default eventHandler(async (event) => {
+	const session = await requireAuthSession(event);
 	const { id } = await getValidatedRouterParams(event, schemaParams.parse);
-	return obtenerDemandaServicio(id);
+	return getNotification(session.data.id, id);
 });
