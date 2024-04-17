@@ -1,9 +1,10 @@
-import obtenerNotificaciones from '../../utils/database/services/daos/daoNotificacion';
+import { getNotifications } from '../../utils/database/services/daos/daoNotificacion';
 
 export default eventHandler(async (event) => {
+	const user = await requireAuthSession(event);
 	try {
 		const query = getQuery(event);
-		let notificaciones = await obtenerNotificaciones(query.idUser);
+		let notificaciones = await getNotifications(user.data.id);
 		return {
 			ok: true,
 			notificaciones,

@@ -71,9 +71,9 @@ export async function crearOferta(data: OfertaServicioCreateData): Promise<Forma
 	});
 }
 
-export async function obtenerOfertaServicio(id: number): Promise<OfertaServicio | null> {
+export async function obtenerOfertaServicio(id: number): Promise<OfertaServicio.Value | null> {
 	// NOTE: I have no idea whether or not this works, verify once the program works.
-	return await qb(OfertaServicio.Name)
+	const entry = await qb(OfertaServicio.Name)
 		.where({ id })
 		.join(AnuncioServicio.Name, AnuncioServicio.Key('id'), '=', OfertaServicio.Key('id'))
 		.join(ProfesorInterno.Name, ProfesorInterno.Key('id'), '=', OfertaServicio.Key('creador'))
@@ -118,7 +118,10 @@ export async function obtenerOfertaServicio(id: number): Promise<OfertaServicio 
 				.select(qb.raw(`JSON_ARRAYAGG(${Asignatura.Key('nombre')})`))
 				.where(Asignatura.Key('id_oferta'), '=', OfertaServicio.Key('id'))
 				.as('asignaturas')
-		);
+		)
+		.first();
+
+	return (entry ?? null) as OfertaServicio.Value | null;
 }
 
 export function contarTodasOfertasServicio(): Promise<number> {

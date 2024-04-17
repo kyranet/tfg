@@ -1,4 +1,4 @@
-import { notificarPartenariadoRellenado } from '~/server/utils/database/services/daos/daoNotificacion';
+import { notifyPartnershipFilled } from '~/server/utils/database/services/daos/daoNotificacion';
 import { Notificacion } from '~/server/utils/database/services/types/Notificacion';
 
 export default eventHandler(async (event) => {
@@ -20,7 +20,7 @@ export default eventHandler(async (event) => {
 			pendiente: false,
 			idPartenariado: query.idPartenariado as number
 		};
-		await notificarPartenariadoRellenado(notificacion);
+		await notifyPartnershipFilled(notificacion);
 		return {
 			ok: true
 		};

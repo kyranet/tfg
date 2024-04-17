@@ -53,6 +53,13 @@ import { Upload } from './services/types/Upload';
 import { Upload_AnuncioServicio } from './services/types/Upload_AnuncioServicio';
 import { Upload_Colaboracion } from './services/types/Upload_Colaboracion';
 import { Usuario } from './services/types/Usuario';
+import { ViewNotification } from './services/types/views/Notification';
+import { ViewNotificationBackedDemand } from './services/types/views/NotificationBackedDemand';
+import { ViewNotificationConfirmationAccepted } from './services/types/views/NotificationConfirmationAccepted';
+import { ViewNotificationConfirmationRejected } from './services/types/views/NotificationConfirmationRejected';
+import { ViewNotificationMatchingNotification } from './services/types/views/NotificationMatchingNotification';
+import { ViewNotificationOfferAccepted } from './services/types/views/NotificationOfferAccepted';
+import { ViewNotificationPartnershipFilled } from './services/types/views/NotificationPartnershipFilled';
 import { ViewUser } from './services/types/views/User';
 import { ViewUserAdmin } from './services/types/views/UserAdmin';
 import { ViewUserApSOffice } from './services/types/views/UserApSOffice';
@@ -73,6 +80,13 @@ declare module 'knex/types/tables' {
 		[ViewUserInternalProfessor.Name]: ViewUserInternalProfessor.Value;
 		[ViewUserApSOffice.Name]: ViewUserApSOffice.Value;
 		[ViewUserCommunityPartner.Name]: ViewUserCommunityPartner.Value;
+		[ViewNotification.Name]: ViewNotification.Value;
+		[ViewNotificationConfirmationAccepted.Name]: ViewNotificationConfirmationAccepted.Value;
+		[ViewNotificationConfirmationRejected.Name]: ViewNotificationConfirmationRejected.Value;
+		[ViewNotificationBackedDemand.Name]: ViewNotificationBackedDemand.Value;
+		[ViewNotificationMatchingNotification.Name]: ViewNotificationMatchingNotification.Value;
+		[ViewNotificationOfferAccepted.Name]: ViewNotificationOfferAccepted.Value;
+		[ViewNotificationPartnershipFilled.Name]: ViewNotificationPartnershipFilled.Value;
 
 		// Tables
 		[AceptacionAceptada.Name]: AceptacionAceptada.Value;
