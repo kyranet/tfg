@@ -56,7 +56,7 @@
 		<hr class="mb-6 mt-1" />
 		<div class="grid md:grid-cols-3">
 			<div>
-				<span class="text-5xl font-extrabold">{{ stats?.proyectos ?? 0 }}</span>
+				<span class="text-5xl font-extrabold">{{ stats?.projects ?? 0 }}</span>
 				<h3 class="font-semibold uppercase">Proyectos</h3>
 				<p>registrados en el Portal ApS</p>
 				<NuxtLink href="/proyectos" class="mt-2 inline-block rounded-md bg-gray-500 px-4 py-1 uppercase text-white hover:bg-gray-600">
@@ -64,7 +64,7 @@
 				</NuxtLink>
 			</div>
 			<div>
-				<span class="text-5xl font-extrabold">{{ stats?.partenariados ?? 0 }}</span>
+				<span class="text-5xl font-extrabold">{{ stats?.partnerships ?? 0 }}</span>
 				<h3 class="font-semibold uppercase">Partenariados</h3>
 				<p>registrados en el Portal ApS</p>
 				<NuxtLink href="/partenariados" class="mt-2 inline-block rounded-md bg-gray-500 px-4 py-1 uppercase text-white hover:bg-gray-600">
@@ -72,7 +72,7 @@
 				</NuxtLink>
 			</div>
 			<div>
-				<span class="text-5xl font-extrabold">{{ stats?.ofertas ?? 0 }}</span>
+				<span class="text-5xl font-extrabold">{{ stats?.offers ?? 0 }}</span>
 				<h3 class="font-semibold uppercase">Ofertas</h3>
 				<p>registrados en el Portal ApS</p>
 				<NuxtLink href="/ofertas" class="mt-2 inline-block rounded-md bg-gray-500 px-4 py-1 uppercase text-white hover:bg-gray-600">
@@ -145,7 +145,7 @@ const news = [
 	}
 ];
 
-const { data: stats } = await useFetch('/api/summary');
+const { data: stats } = await useFetch('/api/home/datos');
 </script>
 
 <style scoped>

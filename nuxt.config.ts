@@ -1,5 +1,5 @@
 import type { SessionConfig } from 'h3';
-import type { ConnectionOptions } from 'mysql2';
+import type { Knex } from 'knex';
 
 export default defineNuxtConfig({
 	devtools: { enabled: true },
@@ -19,6 +19,6 @@ export default defineNuxtConfig({
 			database: process.env.NITRO_DB_DATABASE ?? 'aps',
 			port: process.env.NITRO_DB_PORT ? Number(process.env.NITRO_DB_PORT) : 3306,
 			multipleStatements: true
-		} as const satisfies ConnectionOptions
+		} as const satisfies Knex.MySql2ConnectionConfig
 	}
 });
