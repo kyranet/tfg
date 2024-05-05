@@ -31,6 +31,12 @@ SELECT
 			'sector', sc.sector,
 			'url', sc.url
 		)
+		WHEN t.id IS NOT NULL THEN JSON_OBJECT ('type', 'Tutor')
+		WHEN c.id IS NOT NULL THEN JSON_OBJECT (
+			'type', 'Partner',
+			'university', c.universidad,
+			'faculty', c.facultad
+		)
 	END as user
 FROM
 	usuario
@@ -43,16 +49,20 @@ FROM
 	LEFT JOIN estudiante_externo ee ON e.id = ee.id
 	LEFT JOIN oficinaaps oa ON usuario.id = oa.id
 	LEFT JOIN socio_comunitario sc ON usuario.id = sc.id
+	LEFT JOIN tutor t ON usuario.id = t.id
+	LEFT JOIN colaborador c ON usuario.id = c.id
 	LEFT JOIN datos_personales_interno dpi ON COALESCE(
 		a.datos_personales_Id,
 		pi.datos_personales_Id,
 		ei.datos_personales_Id,
-		oa.datos_personales_Id
+		oa.datos_personales_Id,
+		t.datos_personales_Id
 	) = dpi.id
 	LEFT JOIN datos_personales_externo dpe ON COALESCE(
 		pe.datos_personales_Id,
 		ee.datos_personales_Id,
-		sc.datos_personales_Id
+		sc.datos_personales_Id,
+		c.datos_personales_Id
 	) = dpe.id;
 
 -- Admin
@@ -181,6 +191,43 @@ FROM
 	INNER JOIN socio_comunitario sc ON usuario.id = sc.id
 	INNER JOIN datos_personales_externo dpe ON sc.datos_personales_Id = dpe.id;
 
+-- Internal Tutor
+CREATE OR REPLACE SQL SECURITY INVOKER VIEW view_user_tutor AS
+SELECT
+	user.id,
+	user.createdAt,
+	user_data.nombre as firstName,
+	user_data.apellidos as lastName,
+	user_data.telefono as phone,
+	user_data.correo as email,
+	JSON_OBJECT ('type', 'Tutor') as user
+FROM
+	tutor
+	INNER JOIN profesor professor ON tutor.id = professor.id
+	INNER JOIN usuario user ON professor.id = user.id
+	INNER JOIN datos_personales_interno user_data ON tutor.datos_personales_Id = user_data.id;
+
+-- Partner
+CREATE OR REPLACE SQL SECURITY INVOKER VIEW view_user_partner AS
+SELECT
+	user.id,
+	user.createdAt,
+	user_data.nombre as firstName,
+	user_data.apellidos as lastName,
+	user_data.telefono as phone,
+	user_data.correo as email,
+	JSON_OBJECT (
+		'type', 'Partner',
+		'university', partner.universidad,
+		'faculty', partner.facultad
+	) as user
+FROM
+	colaborador
+	INNER JOIN profesor professor ON colaborador.id = professor.id
+	INNER JOIN usuario user ON professor.id = user.id
+	INNER JOIN datos_personales_externo user_data ON partner.datos_personales_Id = user_data.id;
+
+
 -- Privileged view to get users with the password, please do **NOT** use this
 -- view in the application outside of the authentication process.
 CREATE OR REPLACE SQL SECURITY INVOKER VIEW view_user_privileged AS
@@ -198,6 +245,8 @@ SELECT
 		WHEN ee.id IS NOT NULL THEN 'ExternalStudent'
 		WHEN oa.id IS NOT NULL THEN 'ApSOffice'
 		WHEN sc.id IS NOT NULL THEN 'CommunityPartner'
+		WHEN t.id IS NOT NULL THEN 'Tutor'
+		WHEN p.id IS NOT NULL THEN 'Partner'
 	END as rol
 FROM
 	usuario
@@ -210,14 +259,18 @@ FROM
 	LEFT JOIN estudiante_externo ee ON e.id = ee.id
 	LEFT JOIN oficinaaps oa ON usuario.id = oa.id
 	LEFT JOIN socio_comunitario sc ON usuario.id = sc.id
+	LEFT JOIN tutor t ON usuario.id = t.id
+	LEFT JOIN colaborador c ON usuario.id = c.id
 	LEFT JOIN datos_personales_interno dpi ON COALESCE(
 		a.datos_personales_Id,
 		pi.datos_personales_Id,
 		ei.datos_personales_Id,
-		oa.datos_personales_Id
+		oa.datos_personales_Id,
+		t.datos_personales_Id
 	) = dpi.id
 	LEFT JOIN datos_personales_externo dpe ON COALESCE(
 		pe.datos_personales_Id,
 		ee.datos_personales_Id,
-		sc.datos_personales_Id
+		sc.datos_personales_Id,
+		c.datos_personales_Id
 	) = dpe.id;

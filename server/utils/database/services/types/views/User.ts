@@ -3,11 +3,13 @@ import { DatosPersonalesInterno } from '../DatosPersonalesInterno';
 import type { Usuario } from '../Usuario';
 import type { ViewUserAdmin } from './UserAdmin';
 import type { ViewUserApSOffice } from './UserApSOffice';
+import { ViewUserPartner } from './UserColaborador';
 import type { ViewUserCommunityPartner } from './UserCommunityPartner';
 import type { ViewUserExternalProfessor } from './UserExternalProfessor';
 import type { ViewUserExternalStudent } from './UserExternalStudent';
 import type { ViewUserInternalProfessor } from './UserInternalProfessor';
 import type { ViewUserInternalStudent } from './UserInternalStudent';
+import { ViewUserTutor } from './UserTutorCA';
 
 export namespace ViewUser {
 	export const Name = 'view_user';
@@ -28,7 +30,9 @@ export namespace ViewUser {
 		| ViewUserInternalStudent.Value
 		| ViewUserExternalStudent.Value
 		| ViewUserApSOffice.Value
-		| ViewUserCommunityPartner.Value;
+		| ViewUserCommunityPartner.Value
+		| ViewUserTutor.Value
+		| ViewUserPartner.Value;
 
 	export type ValueUser =
 		| ViewUserAdmin.UserData //
@@ -37,7 +41,9 @@ export namespace ViewUser {
 		| ViewUserInternalStudent.UserData
 		| ViewUserExternalStudent.UserData
 		| ViewUserApSOffice.UserData
-		| ViewUserCommunityPartner.UserData;
+		| ViewUserCommunityPartner.UserData
+		| ViewUserTutor.UserData
+		| ViewUserPartner.UserData;
 
 	export type ValueUserType = ValueUser['type'];
 	export type ValueUserOfType<Type extends ValueUserType> = Extract<ValueUser, { type: Type }>;

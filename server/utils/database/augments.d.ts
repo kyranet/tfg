@@ -9,6 +9,7 @@ import { AreaServicio_AnuncioServicio } from './services/types/AreaServicio_Anun
 import { AreaServicio_Iniciativa } from './services/types/AreaServicio_Iniciativa';
 import { Asignatura } from './services/types/Asignatura';
 import { Colaboracion } from './services/types/Colaboracion';
+import { Colaborador } from './services/types/Colaborador';
 import { DatosPersonalesExterno } from './services/types/DatosPersonalesExterno';
 import { DatosPersonalesInterno } from './services/types/DatosPersonalesInterno';
 import { DemandaRespalda } from './services/types/DemandaRespalda';
@@ -48,6 +49,7 @@ import { Tag } from './services/types/Tag';
 import { TitulacionLocal } from './services/types/TitulacionLocal';
 import { TitulacionLocal_Demanda } from './services/types/TitulacionLocal_Demanda';
 import { TitulacionLocal_Profesor } from './services/types/TitulacionLocal_Profesor';
+import { TutorCA } from './services/types/TutorCA';
 import { Universidad } from './services/types/Universidad';
 import { Upload } from './services/types/Upload';
 import { Upload_AnuncioServicio } from './services/types/Upload_AnuncioServicio';
@@ -146,5 +148,7 @@ declare module 'knex/types/tables' {
 		[Upload_Colaboracion.Name]: Upload_Colaboracion.Value;
 		[Upload.Name]: Upload.Value;
 		[Usuario.Name]: Usuario.Value;
+		[TutorCA.Name]: TutorCA.Value;
+		[Colaborador.Name]: Colaborador.Value;
 	}
 }
