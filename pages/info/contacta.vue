@@ -1,6 +1,6 @@
 <template>
 	<section class="prose max-w-none">
-		<h1>Sobre ApS UNED - Contacta</h1>
+		<h1>Sobre ApS - Contacta</h1>
 	</section>
 
 	<form class="mt-8 rounded-xl border bg-base-200 p-4 drop-shadow-sm" @submit.prevent="">

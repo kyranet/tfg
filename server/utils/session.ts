@@ -6,6 +6,7 @@ const sessionConfig = useRuntimeConfig().auth as SessionConfig;
 export interface AuthSession {
 	id: number;
 	email: string;
+	avatar: string;
 	firstName: string;
 	lastName: string;
 	role: ViewUser.ValueUserType;

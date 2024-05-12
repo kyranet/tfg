@@ -1,9 +1,7 @@
-import { isNullishOrEmpty } from '@sapphire/utilities';
+import { isNullish, isNullishOrEmpty } from '@sapphire/utilities';
 import type { Knex } from 'knex';
-import { obtenerUsuarioSinRolPorId } from '../daos/daoUsuario';
 import { AnuncioServicio } from '../types/AnuncioServicio';
 import { Colaboracion } from '../types/Colaboracion';
-import { DemandaServicio } from '../types/DemandaServicio';
 import { EstudianteProyecto } from '../types/EstudianteProyecto';
 import { Nota } from '../types/Nota';
 import { OfertaServicio } from '../types/OfertaServicio';
@@ -11,7 +9,7 @@ import { Partenariado } from '../types/Partenariado';
 import { PrevioPartenariado } from '../types/PrevioPartenariado';
 import { Profesor_Colaboracion } from '../types/Profesor_Colaboracion';
 import { Proyecto } from '../types/Proyecto';
-import { ViewUser } from '../types/views/User';
+import { ViewPartnership } from '../types/views/Partnership';
 import { SearchParameters, sharedCountTable, sharedDeleteEntryTable } from './shared';
 
 export type ColaboracionCreateData = Colaboracion.CreateData & { profesores?: readonly number[] };
@@ -87,59 +85,11 @@ export async function crearNota(nota: Nota.CreateData): Promise<number> {
 	return entry.id;
 }
 
-async function obtenerProfesores(colaboracionId: number): Promise<readonly number[]> {
-	const profesores = await qb(Profesor_Colaboracion.Name) //
-		.where({ id_colaboracion: colaboracionId })
-		.select('id_profesor');
-	return profesores.map((profesor) => profesor.id_profesor);
-}
-
-export interface GetPartenariadoResult extends FormattedPartenariado {
-	profesores: readonly number[];
-	responsable: ViewUser.Value | null;
-}
-export async function obtenerPartenariado(id: number): Promise<GetPartenariadoResult> {
-	const entry = ensureDatabaseEntry(
-		await qb(Colaboracion.Name) //
-			.where({ id })
-			.join(Partenariado.Name, Colaboracion.Key('id'), '=', Partenariado.Key('id'))
-			.first()
-	);
-
-	return {
-		...formatPartenariado(entry),
-		profesores: await obtenerProfesores(entry.id),
-		responsable: await obtenerUsuarioSinRolPorId(entry.responsable)
-	};
-}
-
-export interface GetProyectoResult extends FormattedProyecto {
-	profesores: readonly number[];
-	estudiantes: readonly number[];
-}
-export async function obtenerProyecto(id: number): Promise<GetProyectoResult> {
-	const entry = ensureDatabaseEntry(
-		await qb(Colaboracion.Name) //
-			.where({ id })
-			.join(Proyecto.Name, Colaboracion.Key('id'), '=', Proyecto.Key('id'))
-			.first()
-	);
-
-	const estudiantes = await qb(EstudianteProyecto.Name) //
-		.where({ id_proyecto: id })
-		.select('id_estudiante');
-	return {
-		...formatProyecto(entry),
-		profesores: await obtenerProfesores(entry.id),
-		estudiantes: estudiantes.map((est) => est.id_estudiante)
-	};
-}
-
 export async function obtenerNota(id: number): Promise<FormattedNota> {
 	return formatNota(ensureDatabaseEntry(await qb(Nota.Name).where({ id }).first()));
 }
 
-export function contarProyectos(): Promise<number> {
+export function countProjects(): Promise<number> {
 	return sharedCountTable(Proyecto.Name);
 }
 
@@ -257,45 +207,32 @@ export async function actualizarNota(nota: NotaUpdateData): Promise<FormattedNot
 	return formatNota(entry);
 }
 
-export interface GetAllPartenariadoResult extends FormattedPartenariado {
-	profesores: readonly number[];
+export async function getPartnership(id: number) {
+	return ensureDatabaseEntry(await qb(ViewPartnership.Name).where({ id }).first());
 }
-export interface GetAllPartenariadoSearchParams extends SearchParameters {
-	creador?: string | undefined;
+
+export interface GetAllPartnershipsFilter extends SearchParameters {
+	title?: string;
+	acceptsExternals?: ViewPartnership.Value['acceptsExternals'];
+	status?: ViewPartnership.Value['status'];
+	manager?: ViewPartnership.Value['managerId'];
+	cities?: ViewPartnership.Value['demandCity'][];
 }
-export async function obtenerTodosPartenariados(options: GetAllPartenariadoSearchParams): Promise<GetAllPartenariadoResult[]> {
-	let query = qb(qb.ref(Colaboracion.Name))
-		.select(
-			qb.ref(Colaboracion.Key('id')),
-			qb.ref(Colaboracion.Key('titulo')),
-			qb.ref(Colaboracion.Key('descripcion')),
-			qb.ref(Colaboracion.Key('imagen')),
-			qb.ref(Colaboracion.Key('admite_externos')).as('admiteExternos'),
-			qb.ref(Colaboracion.Key('responsable')).as('responsableId'),
-			qb.ref(Partenariado.Key('id_demanda')).as('demandaId'),
-			qb.ref(Partenariado.Key('id_oferta')).as('ofertaId'),
-			qb.ref(Partenariado.Key('estado')),
-			qb.raw(
-				`(
-					SELECT JSON_ARRAYAGG(id_profesor)
-					FROM ${Profesor_Colaboracion.Name}
-					WHERE ${Profesor_Colaboracion.Key('id_colaboracion')} = ${Colaboracion.Key('id')}
-				 ) AS profesores`
-			)
-		)
-		.leftJoin(qb.ref(Partenariado.Name), Colaboracion.Key('id'), '=', Partenariado.Key('id'))
+export async function getAllPartnerships(options: GetAllPartnershipsFilter): Promise<ViewPartnership.Value[]> {
+	return await qb(ViewPartnership.Name) //
+		.modify((query) => {
+			if (!isNullishOrEmpty(options.title)) query.andWhereLike('title', `%${options.title}%`);
+			if (!isNullish(options.acceptsExternals)) query.andWhere('acceptsExternals', options.acceptsExternals);
+			if (!isNullish(options.status)) query.andWhere('status', options.status);
+			if (!isNullish(options.manager)) query.andWhere('managerId', options.manager);
+			if (!isNullishOrEmpty(options.cities)) query.whereIn('demandCity', options.cities);
+		})
 		.limit(options.limit ?? 100)
 		.offset(options.offset ?? 0);
+}
 
-	if (!isNullishOrEmpty(options.creador)) {
-		query = query
-			.join(qb.ref(OfertaServicio.Name), Partenariado.Key('id_oferta'), '=', OfertaServicio.Key('id'))
-			.join(qb.ref(DemandaServicio.Name), Partenariado.Key('id_demanda'), '=', DemandaServicio.Key('id'))
-			.where(OfertaServicio.Key('creador'), options.creador)
-			.orWhere(DemandaServicio.Key('creador'), options.creador);
-	}
-
-	return await query;
+export function countPartnerships(): Promise<number> {
+	return sharedCountTable(Partenariado.Name);
 }
 
 export async function crearPrevioPartenariado(data: PrevioPartenariado.CreateData) {

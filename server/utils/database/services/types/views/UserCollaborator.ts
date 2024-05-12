@@ -1,12 +1,12 @@
 import { Colaborador } from '../Colaborador';
 import type { ViewUser } from './User';
 
-export namespace ViewUserPartner {
-	export const Name = 'view_user_partner';
+export namespace ViewUserCollaborator {
+	export const Name = 'view_user_collaborator';
 	export interface Value extends ViewUser.BaseValue<UserData> {}
 
 	export interface UserData {
-		type: 'Partner';
+		type: 'Collaborator';
 		university: Colaborador.Value['universidad'];
 		faculty: Colaborador.Value['facultad'];
 	}

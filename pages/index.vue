@@ -99,7 +99,7 @@
 		</div>
 	</section>
 
-	<section class="mt-20 rounded-lg bg-uned-green text-white">
+	<section class="mt-20 rounded-lg bg-primary text-primary-content">
 		<form class="form-subscribe p-4">
 			<h2 class="text-2xl font-bold uppercase">Suscríbete</h2>
 			<p>Recibe nuestra newsletter y avisos de proyectos</p>

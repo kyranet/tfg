@@ -12,6 +12,10 @@ export default antfu(
 			'ts/no-throw-literal': 'off',
 			'ts/no-unsafe-member-access': 'off', // FP
 			'ts/no-unnecessary-type-assertion': 'off', // FP
+			'ts/no-namespace': 'off',
+			'ts/no-floating-promises': 'off', // FP with knex thenables
+			'ts/no-unsafe-return': 'off', // FP
+			'ts/unbound-method': 'off', // FP
 			'vue/block-order': ['error', { order: ['template', 'script', 'style'] }]
 		},
 		vue: true,

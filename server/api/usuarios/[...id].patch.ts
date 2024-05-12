@@ -73,6 +73,7 @@ export default eventHandler(async (event) => {
 	const data: AuthSession = {
 		id: updated.id,
 		email: updated.email,
+		avatar: updated.avatar,
 		firstName: updated.firstName,
 		lastName: updated.lastName,
 		role: updated.user.type

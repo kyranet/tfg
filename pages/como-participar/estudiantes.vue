@@ -3,7 +3,7 @@
 		<h1>Cómo participar - Estudiantes</h1>
 		<p>
 			<strong>El ALUMNO</strong> es un estudiante que desea PARTICIPAR EN UN PROYECTO ApS para realizarlo bajo la tutorización del PROFESOR.
-			Puede ser de la UNED o EXTERNO.
+			Puede ser de la universidad o EXTERNO.
 		</p>
 		<p>
 			Así pues, el ALUMNO puede buscar entre todos los PROYECTOS ApS disponibles y solicitar acceso a alguno en el que quiera participar. Debe

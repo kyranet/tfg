@@ -13,10 +13,10 @@ export interface TutorCA {
 	datos_personales_Id: ForeignKey<DatosPersonalesInterno, 'id'>;
 }
 
-export namespace TutorCA{
-		export const Name = 'tutorCA';
-		export const Key = makeKeyFunction(Name);
+export namespace TutorCA {
+	export const Name = 'tutor';
+	export const Key = makeKeyFunction(Name);
 
-		export interface Value extends GetType<TutorCA> {}
-		export interface CreateData extends GetCreateType<TutorCA> {}
+	export interface Value extends GetType<TutorCA> {}
+	export interface CreateData extends GetCreateType<TutorCA> {}
 }

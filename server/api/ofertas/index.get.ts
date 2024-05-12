@@ -4,7 +4,7 @@ import { SearchQuery } from '~/server/utils/validators/shared';
 
 const schemaQuery = SearchQuery.merge(
 	z.object({
-		cuatrimestre: z.string().array(),
+		cuatrimestre: z.string().array().optional(),
 		terminoBusqueda: z.string().optional(),
 		creador: z.string().optional(),
 		profesor: z.string().optional(),

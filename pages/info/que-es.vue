@@ -44,11 +44,12 @@
 			<li>
 				<strong>El PROFESOR:</strong> Es un docente en alguna universidad interesado en RESPALDAR UNA OFERTA presentada por alguna ENTIDAD, o
 				interesado en PRESENTAR UNA OFERTA él mismo que pueda ser de interés para alguna ENTIDAD. Se encarga de gestionar el
-				<a href="#que-es-proyecto">PROYECTO</a> <ApS />, y de aceptar ALUMNOS para que desarrollen el mismo. Puede ser de la UNED o EXTERNO.
+				<a href="#que-es-proyecto">PROYECTO</a> <ApS />, y de aceptar ALUMNOS para que desarrollen el mismo. Puede ser de la universidad o
+				EXTERNO.
 			</li>
 			<li>
 				<strong>El ALUMNO:</strong> Es un estudiante que desea PARTICIPAR EN UN <a href="#que-es-proyecto">PROYECTO</a> <ApS /> para
-				realizarlo bajo la tutorización del PROFESOR. Puede ser de la UNED o EXTERNO.
+				realizarlo bajo la tutorización del PROFESOR. Puede ser de la universidad o EXTERNO.
 			</li>
 		</ul>
 

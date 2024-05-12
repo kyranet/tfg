@@ -1,21 +1,22 @@
-import { DatosPersonalesExterno } from '../DatosPersonalesExterno';
-import { DatosPersonalesInterno } from '../DatosPersonalesInterno';
+import type { DatosPersonalesExterno } from '../DatosPersonalesExterno';
+import type { DatosPersonalesInterno } from '../DatosPersonalesInterno';
 import type { Usuario } from '../Usuario';
 import type { ViewUserAdmin } from './UserAdmin';
 import type { ViewUserApSOffice } from './UserApSOffice';
-import { ViewUserPartner } from './UserColaborador';
+import type { ViewUserCollaborator } from './UserCollaborator';
 import type { ViewUserCommunityPartner } from './UserCommunityPartner';
 import type { ViewUserExternalProfessor } from './UserExternalProfessor';
 import type { ViewUserExternalStudent } from './UserExternalStudent';
 import type { ViewUserInternalProfessor } from './UserInternalProfessor';
 import type { ViewUserInternalStudent } from './UserInternalStudent';
-import { ViewUserTutor } from './UserTutorCA';
+import type { ViewUserTutor } from './UserTutorCA';
 
 export namespace ViewUser {
 	export const Name = 'view_user';
 	export interface BaseValue<User extends object> {
 		id: Usuario.Value['id'];
 		createdAt: Usuario.Value['createdAt'];
+		avatar: Usuario.Value['origin_img'];
 		firstName: DatosPersonalesInterno.Value['nombre'] | DatosPersonalesExterno.Value['nombre'];
 		lastName: DatosPersonalesInterno.Value['apellidos'] | DatosPersonalesExterno.Value['apellidos'];
 		phone: DatosPersonalesInterno.Value['telefono'] | DatosPersonalesExterno.Value['telefono'];
@@ -32,7 +33,7 @@ export namespace ViewUser {
 		| ViewUserApSOffice.Value
 		| ViewUserCommunityPartner.Value
 		| ViewUserTutor.Value
-		| ViewUserPartner.Value;
+		| ViewUserCollaborator.Value;
 
 	export type ValueUser =
 		| ViewUserAdmin.UserData //
@@ -43,7 +44,7 @@ export namespace ViewUser {
 		| ViewUserApSOffice.UserData
 		| ViewUserCommunityPartner.UserData
 		| ViewUserTutor.UserData
-		| ViewUserPartner.UserData;
+		| ViewUserCollaborator.UserData;
 
 	export type ValueUserType = ValueUser['type'];
 	export type ValueUserOfType<Type extends ValueUserType> = Extract<ValueUser, { type: Type }>;

@@ -4,7 +4,7 @@
 		<p>
 			<strong>El PROFESOR</strong> es un docente en alguna universidad interesado en RESPALDAR UNA OFERTA presentada por alguna ENTIDAD, o
 			interesado en PRESENTAR UNA OFERTA él mismo que pueda ser de interés para alguna ENTIDAD. Se encarga de gestionar el PROYECTO ApS, y de
-			aceptar ALUMNOS para que desarrollen el mismo. Puede ser de la UNED o EXTERNO.
+			aceptar ALUMNOS para que desarrollen el mismo. Puede ser de la universidad o EXTERNO.
 		</p>
 		<p>
 			Así pues, el PROFESOR es la pieza central del PORTAL ApS, puesto que sus funciones son las de encauzar debidamente una oferta, hasta

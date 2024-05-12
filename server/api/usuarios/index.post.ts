@@ -12,13 +12,13 @@ const originLogin = 'Portal APS';
 const originImg = 'imagen';
 
 const schemaBodyProfessor = z.object({
-	role: z.literal('InternalProfessor'),
+	role: z.literal('ExternalProfessor'),
 	university: z.string().trim(),
 	faculty: z.string().trim(),
 	knowledgeAreas: z.number().int().array()
 });
 const schemaBodyStudent = z.object({
-	role: z.literal('InternalStudent'),
+	role: z.literal('ExternalStudent'),
 	university: z.string().trim(),
 	degree: z.string().trim()
 });
@@ -56,7 +56,7 @@ export default eventHandler(async (event) => {
 	const password = await bcrypt.hash(body.password, await bcrypt.genSalt());
 	let user;
 	switch (body.data.role) {
-		case 'InternalProfessor':
+		case 'ExternalProfessor':
 			user = await insertarProfesorExterno({
 				correo: body.email,
 				nombre: body.firstName,
@@ -71,7 +71,7 @@ export default eventHandler(async (event) => {
 				areasConocimiento: body.data.knowledgeAreas
 			});
 			break;
-		case 'InternalStudent':
+		case 'ExternalStudent':
 			user = await insertarEstudianteExterno({
 				correo: body.email,
 				nombre: body.firstName,
@@ -108,6 +108,7 @@ export default eventHandler(async (event) => {
 	return session.update({
 		id: user.id,
 		email: user.email,
+		avatar: user.avatar,
 		firstName: user.firstName,
 		lastName: user.lastName,
 		role: body.data.role

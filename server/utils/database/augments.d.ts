@@ -62,6 +62,7 @@ import { ViewNotificationConfirmationRejected } from './services/types/views/Not
 import { ViewNotificationMatchingNotification } from './services/types/views/NotificationMatchingNotification';
 import { ViewNotificationOfferAccepted } from './services/types/views/NotificationOfferAccepted';
 import { ViewNotificationPartnershipFilled } from './services/types/views/NotificationPartnershipFilled';
+import { ViewPartnership } from './services/types/views/Partnership';
 import { ViewUser } from './services/types/views/User';
 import { ViewUserAdmin } from './services/types/views/UserAdmin';
 import { ViewUserApSOffice } from './services/types/views/UserApSOffice';
@@ -84,6 +85,7 @@ declare module 'knex/types/tables' {
 		[ViewUserApSOffice.Name]: ViewUserApSOffice.Value;
 		[ViewUserCommunityPartner.Name]: ViewUserCommunityPartner.Value;
 		[ViewUserPrivileged.Name]: ViewUserPrivileged.Value;
+		[ViewPartnership.Name]: ViewPartnership.Value;
 		[ViewNotification.Name]: ViewNotification.Value;
 		[ViewNotificationConfirmationAccepted.Name]: ViewNotificationConfirmationAccepted.Value;
 		[ViewNotificationConfirmationRejected.Name]: ViewNotificationConfirmationRejected.Value;

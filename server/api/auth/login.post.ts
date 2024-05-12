@@ -33,5 +33,5 @@ async function fetchAccessToken(email: string, password: string): Promise<AuthSe
 		throw createError({ message: 'Contraseña incorrecta', statusCode: 401 });
 	}
 
-	return { id: entry.id, email: entry.email, firstName: entry.firstName, lastName: entry.lastName, role: entry.role };
+	return { id: entry.id, email: entry.email, avatar: entry.avatar, firstName: entry.firstName, lastName: entry.lastName, role: entry.role };
 }

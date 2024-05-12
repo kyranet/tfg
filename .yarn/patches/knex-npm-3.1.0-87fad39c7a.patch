@@ -1,0 +1,77 @@
+diff --git a/lib/dialects/mysql/index.js b/lib/dialects/mysql/index.js
+index fe316c5330e0162f48d03b513ff3d267af9e8a09..aa09708669e2e96ccf8bcebaafaad723cda1be60 100644
+--- a/lib/dialects/mysql/index.js
++++ b/lib/dialects/mysql/index.js
+@@ -162,7 +162,7 @@ class Client_MySQL extends Client {
+       case 'pluck':
+         return map(rows, obj.pluck);
+       case 'insert':
+-        return [rows.insertId];
++        return Array.isArray(rows) ? rows : [rows.insertId];
+       case 'del':
+       case 'update':
+       case 'counter':
+diff --git a/lib/dialects/mysql/query/mysql-querycompiler.js b/lib/dialects/mysql/query/mysql-querycompiler.js
+index e694c9945b11d33cc22a5f864e37189ae2bc1c81..5cba7eac68b1f6b3405ceda9fc1507af9d646a8c 100644
+--- a/lib/dialects/mysql/query/mysql-querycompiler.js
++++ b/lib/dialects/mysql/query/mysql-querycompiler.js
+@@ -17,16 +17,9 @@ const isPlainObjectOrArray = (value) =>
+ class QueryCompiler_MySQL extends QueryCompiler {
+   constructor(client, builder, formatter) {
+     super(client, builder, formatter);
+-
+-    const { returning } = this.single;
+-    if (returning) {
+-      this.client.logger.warn(
+-        '.returning() is not supported by mysql and will not have any effect.'
+-      );
+-    }
+-
+     this._emptyInsertValue = '() values ()';
+   }
++
+   // Compiles an `delete` allowing comments
+   del() {
+     const sql = super.del();
+@@ -55,6 +48,9 @@ class QueryCompiler_MySQL extends QueryCompiler {
+       }
+     }
+ 
++    const returning = this.returning();
++    if (returning) sql += ` ${returning}`;
++
+     return sql;
+   }
+ 
+@@ -109,6 +105,7 @@ class QueryCompiler_MySQL extends QueryCompiler {
+     const where = this.where();
+     const order = this.order();
+     const limit = this.limit();
++    const returning = this.returning();
+     return (
+       (comments === '' ? '' : comments + ' ') +
+       withSQL +
+@@ -118,7 +115,8 @@ class QueryCompiler_MySQL extends QueryCompiler {
+       updates.join(', ') +
+       (where ? ` ${where}` : '') +
+       (order ? ` ${order}` : '') +
+-      (limit ? ` ${limit}` : '')
++      (limit ? ` ${limit}` : '') +
++      (returning ? ` ${returning}` : '')
+     );
+   }
+ 
+@@ -181,6 +179,13 @@ class QueryCompiler_MySQL extends QueryCompiler {
+     return `limit ${limit}`;
+   }
+ 
++  returning() {
++    const { returning } = this.single;
++    return returning
++      ? `returning ${this.formatter.columnize(returning)}`
++      : '';
++  }
++
+   whereBasic(statement) {
+     assert(
+       !isPlainObjectOrArray(statement.value),

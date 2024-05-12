@@ -1,18 +1,9 @@
 <template>
-	<div class="flex h-screen flex-col">
-		<div class="flex-auto justify-between">
-			<SectionsAppHeader />
-			<main class="layout-container">
-				<slot></slot>
-			</main>
-		</div>
-		<SectionsAppFooter />
+	<div class="flex min-h-screen flex-col">
+		<sections-app-header></sections-app-header>
+		<main class="layout-container flex flex-grow flex-col items-center">
+			<slot></slot>
+		</main>
+		<sections-app-footer></sections-app-footer>
 	</div>
 </template>
-
-<script setup lang="ts">
-if (process.client) {
-	// @ts-expect-error preline does not ship types
-	await import('preline');
-}
-</script>

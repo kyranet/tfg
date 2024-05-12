@@ -1,65 +1,61 @@
 <template>
-	<h1 class="mb-4 text-3xl font-semibold">Inicio de sesión</h1>
-	<section class="grid gap-4 md:grid-cols-2">
-		<div class="rounded-xl border bg-base-200 p-4 drop-shadow-sm">
-			<h2 class="text-xl font-semibold">Login UNED</h2>
+	<section class="mx-auto w-full max-w-[500px]">
+		<h1 class="mb-4 text-center text-3xl font-semibold">Inicio de sesión</h1>
 
-			<form @submit.prevent="performUnedLogin">
-				<label for="login-uned-email" class="form-label mt-2">Correo electrónico</label>
-				<input id="login-uned-email" v-model="unedUser" type="email" class="form-input" placeholder="socio@uned.es" />
+		<button class="btn btn-primary mt-4 w-full">Acceder con SSO {{ organization }}</button>
 
-				<label for="login-uned-password" class="form-label mt-2">Contraseña</label>
-				<input id="login-uned-password" v-model="unedPass" type="password" class="form-input" placeholder="Introduzca su contraseña" />
+		<div class="mt-8 rounded-lg bg-base-200 p-4">
+			<form @submit.prevent="performLogin">
+				<label class="input input-bordered flex items-center gap-2">
+					<Icon name="ph:envelope-simple-fill" />
+					<input v-model="email" type="text" class="input grow" placeholder="Correo electrónico" autocomplete="email" required />
+				</label>
 
-				<div class="mt-2 flex">
-					<input id="login-uned-remember" v-model="unedRemember" type="checkbox" class="form-checkbox" />
-					<label for="login-uned-remember" class="ml-3 text-sm text-gray-500 dark:text-gray-400">Recordar usuario</label>
-				</div>
+				<label class="input input-bordered flex items-center gap-2">
+					<Icon name="ph:key-fill" />
+					<input v-model="password" type="password" class="input grow" placeholder="Contraseña" autocomplete="current-password" required />
+				</label>
 
-				<input type="submit" value="Acceder vía SSO UNED" class="button-solid mt-4 w-full" />
+				<label class="label cursor-pointer">
+					<span class="label-text">Remember me</span>
+					<input type="checkbox" v-model="remember" class="checkbox" />
+				</label>
+
+				<input type="submit" value="Iniciar Sesión" class="btn btn-info mt-4 w-full text-info-content" />
 			</form>
 		</div>
 
-		<div class="rounded-xl border bg-base-200 p-4 drop-shadow-sm">
-			<h2 class="text-xl font-semibold">Login externo</h2>
-
-			<form class="h-full" @submit.prevent="performUnedLogin">
-				<label for="login-external-email" class="form-label mt-2">Correo electrónico</label>
-				<input id="login-external-email" v-model="externalUser" type="email" class="form-input" placeholder="Introduzca su usuario" />
-
-				<label for="login-external-password" class="form-label mt-2">Contraseña</label>
-				<input
-					id="login-external-password"
-					v-model="externalPass"
-					type="password"
-					class="form-input"
-					placeholder="Introduzca su contraseña"
-				/>
-
-				<div class="mt-2 flex">
-					<input id="login-external-remember" v-model="externalRemember" type="checkbox" class="form-checkbox" />
-					<label for="login-external-remember" class="ml-3 text-sm text-gray-500 dark:text-gray-400">Recordar usuario</label>
-				</div>
-
-				<input type="submit" value="Iniciar sesión" class="button-solid mt-4 w-full" />
-			</form>
+		<div v-if="error" class="alert alert-error text-error-content">
+			<h2 class="block font-semibold">Error</h2>
+			{{ error }}
 		</div>
 	</section>
-	<div class="mt-4 rounded-xl border bg-base-200 p-4 drop-shadow-sm">
-		<h2 class="text-xl font-semibold"><abbr title="Single Sign-On">SSO</abbr> externo - Google (solo estudiantes)</h2>
-
-		TBD.
-	</div>
 </template>
 
 <script setup lang="ts">
-const unedUser = ref('');
-const unedPass = ref('');
-const unedRemember = ref(false);
+const { organization } = useRuntimeConfig().public;
 
-const externalUser = ref('');
-const externalPass = ref('');
-const externalRemember = ref(false);
+const email = ref('');
+const password = ref('');
+const remember = ref(false);
 
-function performUnedLogin() {}
+const error = refAutoReset<string>('', 25000);
+
+const auth = useAuth();
+const router = useRouter();
+async function performLogin() {
+	try {
+		auth.session.value = await $fetch('/api/auth/login', { method: 'POST', body: { email: email.value, password: password.value } });
+		await router.push(auth.redirectTo.value);
+	} catch (e: any) {
+		error.value = String(e.statusText ?? e.message ?? e);
+	}
+}
 </script>
+
+<style scoped>
+.tab-info {
+	background-color: theme('colors.info') !important;
+	color: theme('colors.info-content') !important;
+}
+</style>

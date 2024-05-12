@@ -1,8 +1,8 @@
-import { contarIniciativas, contarPartenariados, contarProyectos } from '~/server/utils/database/services/daos/daoColaboracion';
+import { contarIniciativas, contarPartenariados, countProjects } from '~/server/utils/database/services/daos/daoColaboracion';
 
 export default eventHandler(async () => {
 	const [projects, partnerships, offers] = await Promise.all([
-		contarProyectos(), //
+		countProjects(), //
 		contarPartenariados(),
 		contarIniciativas()
 	]);
