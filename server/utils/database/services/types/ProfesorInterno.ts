@@ -6,9 +6,6 @@ import { makeKeyFunction, type ForeignKey, type GetCreateType, type GetType, typ
 export interface ProfesorInterno {
 	/** Foreign key of {@linkcode Profesor.id} */
 	id: PrimaryKey<ForeignKey<Profesor, 'id'>>;
-	/** Foreign key of {@linkcode Universidad.id} */
-	universidad: ForeignKey<Universidad, 'id'>;
-	facultad: VarChar<200>;
 	/** Foreign key of {@linkcode DatosPersonalesInterno.id} */
 	datos_personales_Id: ForeignKey<DatosPersonalesInterno, 'id'>;
 }

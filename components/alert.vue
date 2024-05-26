@@ -1,5 +1,5 @@
 <template>
-	<div class="mb-4 mt-6" role="alert">
+	<div class="mb-4 mt-6 w-full" role="alert">
 		<div class="relative flex">
 			<div class="p-4 text-sm"><slot></slot></div>
 			<div class="pointer-events-none absolute flex h-full w-full">

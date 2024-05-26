@@ -150,3 +150,8 @@ type PartializeKeys<Value extends object, Keys extends keyof Value> = Omit<Value
  * @template Table - The object type from which to extract the value types.
  */
 export type GetCreateType<Table extends object> = PartializeKeys<GetType<Table>, GetAutomaticKeys<Table>>;
+
+type IsJsonValue<Type> = Type extends object ? (Type extends Date ? false : true) : false;
+export type AsRaw<Table extends object> = {
+	[K in keyof Table]: IsJsonValue<Table[K]> extends true ? string : Table[K];
+};

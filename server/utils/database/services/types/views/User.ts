@@ -13,7 +13,7 @@ import type { ViewUserTutor } from './UserTutorCA';
 
 export namespace ViewUser {
 	export const Name = 'view_user';
-	export interface BaseValue<User extends object> {
+	export type BaseValue<User extends object> = User & {
 		id: Usuario.Value['id'];
 		createdAt: Usuario.Value['createdAt'];
 		avatar: Usuario.Value['origin_img'];
@@ -21,8 +21,7 @@ export namespace ViewUser {
 		lastName: DatosPersonalesInterno.Value['apellidos'] | DatosPersonalesExterno.Value['apellidos'];
 		phone: DatosPersonalesInterno.Value['telefono'] | DatosPersonalesExterno.Value['telefono'];
 		email: DatosPersonalesInterno.Value['correo'] | DatosPersonalesExterno.Value['correo'];
-		user: User;
-	}
+	};
 
 	export type Value =
 		| ViewUserAdmin.Value
@@ -35,6 +34,8 @@ export namespace ViewUser {
 		| ViewUserTutor.Value
 		| ViewUserCollaborator.Value;
 
+	export type RawValue = BaseValue<{}> & { data: string };
+
 	export type ValueUser =
 		| ViewUserAdmin.UserData //
 		| ViewUserInternalProfessor.UserData
@@ -46,7 +47,7 @@ export namespace ViewUser {
 		| ViewUserTutor.UserData
 		| ViewUserCollaborator.UserData;
 
-	export type ValueUserType = ValueUser['type'];
-	export type ValueUserOfType<Type extends ValueUserType> = Extract<ValueUser, { type: Type }>;
-	export type ValueOfType<Type extends ValueUserType> = Extract<Value, { user: { type: Type } }>;
+	export type ValueUserType = ValueUser['role'];
+	export type ValueUserOfType<Type extends ValueUserType> = Extract<ValueUser, { role: Type }>;
+	export type ValueOfType<Type extends ValueUserType> = Extract<Value, { user: { role: Type } }>;
 }

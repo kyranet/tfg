@@ -4,7 +4,7 @@
 		<h2 class="font-semibold">Error</h2>
 		{{ error.statusMessage ?? error.message ?? error }}
 	</div>
-	<div v-else-if="!data?.length" class="alert alert-warning text-warning-content">
+	<div v-else-if="!data?.entries.length" class="alert alert-warning text-warning-content">
 		<h2 class="font-semibold">Advertencia</h2>
 		No hay partenariados registrados en el sistema.
 	</div>

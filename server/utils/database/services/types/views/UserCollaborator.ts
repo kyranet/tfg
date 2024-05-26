@@ -6,7 +6,7 @@ export namespace ViewUserCollaborator {
 	export interface Value extends ViewUser.BaseValue<UserData> {}
 
 	export interface UserData {
-		type: 'Collaborator';
+		role: 'Collaborator';
 		university: Colaborador.Value['universidad'];
 		faculty: Colaborador.Value['facultad'];
 	}

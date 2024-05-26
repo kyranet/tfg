@@ -5,6 +5,6 @@ export namespace ViewUserApSOffice {
 	export interface Value extends ViewUser.BaseValue<UserData> {}
 
 	export interface UserData {
-		type: 'ApSOffice';
+		role: 'ApSOffice';
 	}
 }

@@ -1,3 +1,5 @@
+import type { ViewUser } from '~/server/utils/database/services/types/views/User';
+
 export default defineNuxtPlugin(async (nuxtApp) => {
 	// Skip plugin when rendering error page
 	if (nuxtApp.payload.error) {
@@ -23,8 +25,24 @@ export default defineNuxtPlugin(async (nuxtApp) => {
 		{ global: true }
 	);
 
-	const currentRoute = useRoute();
+	addRouteMiddleware(
+		'roles',
+		(to) => {
+			if (!to.meta.roles?.length) return;
 
+			if (!loggedIn.value) {
+				redirectTo.value = to.path;
+				return '/login';
+			}
+
+			if (!to.meta.roles.includes(session.value!.role)) {
+				return '/';
+			}
+		},
+		{ global: true }
+	);
+
+	const currentRoute = useRoute();
 	if (process.client) {
 		watch(loggedIn, async (loggedIn) => {
 			if (!loggedIn && currentRoute.meta.auth) {
@@ -45,3 +63,17 @@ export default defineNuxtPlugin(async (nuxtApp) => {
 		}
 	};
 });
+
+declare module '#app' {
+	interface PageMeta {
+		auth?: boolean;
+		roles?: ViewUser.ValueUserType[];
+	}
+}
+
+declare module 'vue-router' {
+	interface PageMeta {
+		auth?: boolean;
+		roles?: ViewUser.ValueUserType[];
+	}
+}

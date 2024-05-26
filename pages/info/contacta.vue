@@ -3,7 +3,7 @@
 		<h1>Sobre ApS - Contacta</h1>
 	</section>
 
-	<form class="mt-8 rounded-xl border bg-base-200 p-4 drop-shadow-sm" @submit.prevent="">
+	<form class="mt-8 rounded-xl border bg-base-200 p-4 drop-shadow-lg" @submit.prevent="">
 		<p class="text-sm">Por favor, rellena el siguiente formulario para contactar con nosotros.</p>
 		<hr />
 

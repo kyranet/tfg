@@ -3,7 +3,7 @@ import { countUsers, searchUsers } from '~/server/utils/database/services/daos/d
 import { SearchQuery } from '~/server/utils/validators/shared';
 
 const schemaQuery = z //
-	.object({ query: z.string().trim() })
+	.object({ query: z.string().trim().optional() })
 	.merge(SearchQuery);
 
 export default eventHandler(async (event) => {

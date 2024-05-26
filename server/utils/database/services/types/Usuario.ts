@@ -12,7 +12,7 @@ import {
 export interface Usuario {
 	id: PrimaryKey<AutoIncrement<Int>>;
 	origin_login: VarChar<200>;
-	origin_img: VarChar<200>;
+	origin_img: Defaults<VarChar<200> | null>;
 	createdAt: Defaults<Date>;
 	updatedAt: Defaults<Date>;
 	terminos_aceptados: boolean;

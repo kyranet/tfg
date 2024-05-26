@@ -23,7 +23,7 @@ export default eventHandler(async (event) => {
 	}
 
 	const usuario = await obtenerUsuarioSinRolPorId(id);
-	switch (usuario.user.type) {
+	switch (usuario.role) {
 		case 'Admin':
 			await borrarAdmin(id);
 			break;

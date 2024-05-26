@@ -7,9 +7,7 @@ import {
 	maybeGetUsuarioSinRolPorEmail
 } from '../../utils/database/services/daos/daoUsuario';
 
-const originLogin = 'Portal APS';
-// TODO: This needs to be an ID to an image from the database:
-const originImg = 'imagen';
+const originLogin = 'Portal ApS';
 
 const schemaBodyProfessor = z.object({
 	role: z.literal('ExternalProfessor'),
@@ -64,11 +62,10 @@ export default eventHandler(async (event) => {
 				telefono: body.phone,
 				password,
 				origin_login: originLogin,
-				origin_img: originImg,
 				terminos_aceptados: body.acceptedTerms,
 				universidad: body.data.university,
 				facultad: body.data.faculty,
-				areasConocimiento: body.data.knowledgeAreas
+				knowledgeAreas: body.data.knowledgeAreas
 			});
 			break;
 		case 'ExternalStudent':
@@ -79,7 +76,6 @@ export default eventHandler(async (event) => {
 				telefono: body.phone,
 				password,
 				origin_login: originLogin,
-				origin_img: originImg,
 				terminos_aceptados: body.acceptedTerms,
 				titulacion: body.data.degree,
 				universidad: body.data.university
@@ -93,7 +89,6 @@ export default eventHandler(async (event) => {
 				telefono: body.phone,
 				password,
 				origin_login: originLogin,
-				origin_img: originImg,
 				terminos_aceptados: body.acceptedTerms,
 				sector: body.data.sector,
 				nombre_socioComunitario: body.data.name,

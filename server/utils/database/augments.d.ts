@@ -63,6 +63,7 @@ import { ViewNotificationMatchingNotification } from './services/types/views/Not
 import { ViewNotificationOfferAccepted } from './services/types/views/NotificationOfferAccepted';
 import { ViewNotificationPartnershipFilled } from './services/types/views/NotificationPartnershipFilled';
 import { ViewPartnership } from './services/types/views/Partnership';
+import { ViewServiceOffer } from './services/types/views/ServiceOffer';
 import { ViewUser } from './services/types/views/User';
 import { ViewUserAdmin } from './services/types/views/UserAdmin';
 import { ViewUserApSOffice } from './services/types/views/UserApSOffice';
@@ -76,16 +77,17 @@ import { ViewUserPrivileged } from './services/types/views/UserPrivileged';
 declare module 'knex/types/tables' {
 	interface Tables {
 		// Views
-		[ViewUser.Name]: ViewUser.Value;
+		[ViewUser.Name]: ViewUser.RawValue;
 		[ViewUserAdmin.Name]: ViewUserAdmin.Value;
 		[ViewUserExternalStudent.Name]: ViewUserExternalStudent.Value;
-		[ViewUserExternalProfessor.Name]: ViewUserExternalProfessor.Value;
+		[ViewUserExternalProfessor.Name]: ViewUserExternalProfessor.RawValue;
 		[ViewUserInternalStudent.Name]: ViewUserInternalStudent.Value;
 		[ViewUserInternalProfessor.Name]: ViewUserInternalProfessor.Value;
 		[ViewUserApSOffice.Name]: ViewUserApSOffice.Value;
 		[ViewUserCommunityPartner.Name]: ViewUserCommunityPartner.Value;
 		[ViewUserPrivileged.Name]: ViewUserPrivileged.Value;
 		[ViewPartnership.Name]: ViewPartnership.Value;
+		[ViewServiceOffer.Name]: ViewServiceOffer.RawValue;
 		[ViewNotification.Name]: ViewNotification.Value;
 		[ViewNotificationConfirmationAccepted.Name]: ViewNotificationConfirmationAccepted.Value;
 		[ViewNotificationConfirmationRejected.Name]: ViewNotificationConfirmationRejected.Value;

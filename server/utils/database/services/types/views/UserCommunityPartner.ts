@@ -6,7 +6,7 @@ export namespace ViewUserCommunityPartner {
 	export interface Value extends ViewUser.BaseValue<UserData> {}
 
 	export interface UserData {
-		type: 'CommunityPartner';
+		role: 'CommunityPartner';
 		mission: SocioComunitario.Value['mision'];
 		name: SocioComunitario.Value['nombre_socioComunitario'];
 		sector: SocioComunitario.Value['sector'];

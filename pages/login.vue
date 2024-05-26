@@ -4,7 +4,7 @@
 
 		<button class="btn btn-primary mt-4 w-full">Acceder con SSO {{ organization }}</button>
 
-		<div class="mt-8 rounded-lg bg-base-200 p-4">
+		<div class="mt-8 rounded-lg bg-base-200 p-4 drop-shadow-lg">
 			<form @submit.prevent="performLogin">
 				<label class="input input-bordered flex items-center gap-2">
 					<Icon name="ph:envelope-simple-fill" />
@@ -45,10 +45,14 @@ const auth = useAuth();
 const router = useRouter();
 async function performLogin() {
 	try {
-		auth.session.value = await $fetch('/api/auth/login', { method: 'POST', body: { email: email.value, password: password.value } });
+		// @ts-ignore Type recursion limit
+		auth.session.value = await $fetch('/api/auth/login', {
+			method: 'POST',
+			body: { email: email.value, password: password.value }
+		});
 		await router.push(auth.redirectTo.value);
 	} catch (e: any) {
-		error.value = String(e.statusText ?? e.message ?? e);
+		error.value = String(e.statusMessage ?? e.message ?? e);
 	}
 }
 </script>

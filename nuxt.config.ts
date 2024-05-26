@@ -3,7 +3,7 @@ import type { Knex } from 'knex';
 
 export default defineNuxtConfig({
 	devtools: { enabled: true },
-	modules: ['@nuxtjs/tailwindcss', '@vueuse/nuxt', 'nuxt-icon'],
+	modules: ['@nuxtjs/tailwindcss', '@vueuse/nuxt', 'nuxt-icon', 'nuxt-security'],
 	runtimeConfig: {
 		auth: {
 			name: 'aps-auth',
@@ -25,5 +25,28 @@ export default defineNuxtConfig({
 			organizationUrl: process.env.NUXT_PUBLIC_ORGANIZATION_URL ?? '',
 			organizationLogo: process.env.NUXT_PUBLIC_ORGANIZATION_LOGO ?? ''
 		}
+	},
+	security: {
+		requestSizeLimiter: {
+			maxRequestSizeInBytes: mb(1),
+			maxUploadFileRequestInBytes: mb(10),
+			throwError: true
+		},
+		headers: {
+			crossOriginResourcePolicy: 'same-origin',
+			crossOriginOpenerPolicy: 'same-origin',
+			crossOriginEmbedderPolicy: 'require-corp',
+			contentSecurityPolicy: {
+				'object-src': ["'self'"]
+			}
+		},
+		corsHandler: {
+			origin: process.env.NUXT_ORIGIN || '*',
+			methods: ['GET', 'HEAD', 'POST', 'PATCH', 'DELETE', 'PUT']
+		}
 	}
 });
+
+function mb(bytes: number) {
+	return bytes * 1024 * 1024;
+}

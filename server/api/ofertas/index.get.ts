@@ -1,14 +1,15 @@
 import { z } from 'zod';
 import { contarTodasOfertasServicio, obtenerTodasOfertasServicio } from '~/server/utils/database/services/daos/daoOferta';
+import { Quarter } from '~/server/utils/database/services/types/OfertaServicio';
 import { SearchQuery } from '~/server/utils/validators/shared';
 
 const schemaQuery = SearchQuery.merge(
 	z.object({
-		cuatrimestre: z.string().array().optional(),
-		terminoBusqueda: z.string().optional(),
-		creador: z.string().optional(),
-		profesor: z.string().optional(),
-		tags: z.string().array().optional()
+		quarter: z.nativeEnum(Quarter).array().optional(),
+		title: z.string().optional(),
+		creatorId: z.number().int().optional(),
+		professorId: z.number().int().optional(),
+		tag: z.string().optional()
 	})
 );
 export default eventHandler(async (event) => {

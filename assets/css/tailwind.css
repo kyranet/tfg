@@ -10,6 +10,10 @@
 }
 
 @layer components {
+	.icon {
+		vertical-align: text-bottom !important;
+	}
+
 	.layout-container {
 		@apply mx-4 sm:mx-auto sm:w-5/6 lg:max-w-5xl xl:max-w-7xl;
 	}

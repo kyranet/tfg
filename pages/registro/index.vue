@@ -1,6 +1,6 @@
 <template>
 	<h1 class="mb-4 text-3xl font-semibold">Formulario de registro</h1>
-	<div class="prose mt-8 w-full max-w-[500px] rounded-lg bg-base-200 p-4 text-left drop-shadow-lg">
+	<div class="prose mt-8 w-full max-w-lg rounded-lg bg-base-200 p-4 text-left drop-shadow-lg">
 		<h2 class="text-xl font-semibold">Selección de perfil de usuario</h2>
 		<p>En esta página puedes registrarte dentro de la aplicación <strong>Portal ApS</strong>.</p>
 		<p>
@@ -73,10 +73,9 @@
 						<span class="label-text">Contraseña</span>
 					</div>
 					<input
-						ref="inputPassword"
 						v-model="password"
 						type="password"
-						placeholder="Introduzca su correo"
+						placeholder="Introduzca su contraseña"
 						autocomplete="new-password"
 						required
 						minlength="6"
@@ -92,7 +91,7 @@
 						ref="inputRepeatPassword"
 						v-model="repeatPassword"
 						type="password"
-						placeholder="Introduzca su correo"
+						placeholder="Repita su contraseña"
 						autocomplete="new-password"
 						required
 						minlength="6"
@@ -162,7 +161,7 @@
 						class="input input-bordered w-full"
 					/>
 				</label>
-				<label class="w- form-control mt-4">
+				<label class="form-control mt-4">
 					<div class="label">
 						<span class="label-text">Area/s de conocimiento UNESCO</span>
 					</div>
@@ -254,7 +253,6 @@
 <script setup lang="ts">
 const { organization } = useRuntimeConfig().public;
 
-const inputPassword = ref<HTMLInputElement>(null!);
 const inputRepeatPassword = ref<HTMLInputElement>(null!);
 
 const error = refAutoReset<string | null>(null, 30000);
@@ -308,7 +306,7 @@ const filled = computed(() => {
 	}
 });
 
-const { data } = await useFetch('/api/home/areas-conocimiento', { method: 'GET' });
+const { data } = await useFetch('/api/knowledge-areas', { method: 'GET' });
 
 const auth = useAuth();
 const router = useRouter();
@@ -337,7 +335,7 @@ async function performRequest() {
 				: { ...base, data: getInternalCommunityPartnerData() };
 
 	try {
-		await $fetch('/api/usuarios', { method: 'POST', body });
+		await $fetch('/api/users', { method: 'POST', body });
 		await router.push(auth.redirectTo.value);
 	} catch (e: any) {
 		error.value = String(e.statusMessage ?? e.message ?? e);

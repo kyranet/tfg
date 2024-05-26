@@ -5,6 +5,6 @@ export namespace ViewUserTutor {
 	export interface Value extends ViewUser.BaseValue<UserData> {}
 
 	export interface UserData {
-		type: 'Tutor';
+		role: 'Tutor';
 	}
 }

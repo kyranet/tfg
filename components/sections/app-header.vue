@@ -18,6 +18,14 @@
 							</li>
 						</ul>
 					</li>
+					<li v-if="auth.session.value?.role === 'Admin'">
+						<a>Zona Gestor</a>
+						<ul class="p-2">
+							<li v-for="item of adminItems">
+								<nuxt-link :to="item.url">{{ item.title }}</nuxt-link>
+							</li>
+						</ul>
+					</li>
 				</ul>
 			</div>
 			<nuxt-link to="/" class="btn btn-ghost text-xl">ApS</nuxt-link>
@@ -26,62 +34,67 @@
 			<ul class="menu menu-horizontal px-1">
 				<li><nuxt-link to="/info/que-es">¿Qué es el ApS?</nuxt-link></li>
 				<li><nuxt-link to="/proyectos">Proyectos</nuxt-link></li>
-				<li>
-					<details>
-						<summary>ApS {{ organization }}</summary>
-						<ul class="p-2">
-							<li v-for="item of items">
-								<nuxt-link :to="item.url">{{ item.title }}</nuxt-link>
-							</li>
-						</ul>
-					</details>
+				<li class="dropdown dropdown-end">
+					<div tabindex="0" role="button" class="gap-0 font-semibold">
+						ApS {{ organization }}
+						<Icon name="material-symbols:arrow-drop-down-rounded" class="h-5 w-5" />
+					</div>
+					<ul tabindex="0" class="menu dropdown-content menu-sm z-[1] mt-3 w-52 rounded-box bg-base-100 p-2 shadow">
+						<li v-for="item of items">
+							<nuxt-link :to="item.url">{{ item.title }}</nuxt-link>
+						</li>
+					</ul>
+				</li>
+				<li v-if="auth.session.value?.role === 'Admin'" class="dropdown dropdown-end">
+					<div tabindex="0" role="button" class="gap-0 font-semibold">
+						Zona Gestor
+						<Icon name="material-symbols:arrow-drop-down-rounded" class="h-5 w-5" />
+					</div>
+					<ul tabindex="0" class="menu dropdown-content menu-sm z-[1] mt-3 w-52 rounded-box bg-base-100 p-2 shadow">
+						<li v-for="item of adminItems">
+							<nuxt-link :to="item.url">{{ item.title }}</nuxt-link>
+						</li>
+					</ul>
 				</li>
 			</ul>
 		</div>
 		<div class="navbar-end">
-			<ul class="menu menu-horizontal px-1">
-				<li v-if="auth.loggedIn.value">
-					<details>
-						<summary class="flex">
-							<div class="flex flex-col">
-								<span class="font-normal">{{ auth.session.value!.firstName }} {{ auth.session.value!.lastName }}</span>
-								<span class="font-bold">{{ RoleMapping[auth.session.value!.role] }}</span>
-							</div>
-							<picture class="h-10 w-10 overflow-hidden rounded-full bg-base-300">
-								<img
-									v-show="!avatarLoading && !avatarError"
-									:src="auth.session.value!.avatar"
-									alt="Avatar"
-									onload="avatarLoading = false"
-									onerror="avatarError = true"
-								/>
-								<Icon
-									v-if="avatarLoading || avatarError"
-									name="ph:user-fill"
-									class="h-10 w-10 translate-y-1.5 text-base-200 drop-shadow-lg"
-								/>
-							</picture>
-						</summary>
-						<ul class="p-2">
-							<li v-for="item of loggedInItems">
-								<nuxt-link :to="item.url">{{ item.title }}</nuxt-link>
-							</li>
-							<button tabindex="0" class="btn btn-ghost" @click="authLogout()">Cerrar Sesión</button>
-						</ul>
-					</details>
-				</li>
-				<template v-else>
-					<nuxt-link to="/registro" tabindex="0" class="btn btn-ghost">Registro</nuxt-link>
-					<nuxt-link to="/login" tabindex="0" class="btn btn-ghost">Login</nuxt-link>
-				</template>
+			<template v-if="auth.loggedIn.value">
+				<button class="btn btn-ghost">
+					<div class="indicator">
+						<span class="badge indicator-item badge-info badge-xs m-1">1</span>
+						<Icon name="ph:bell-bold" class="h-6 w-6" />
+					</div>
+				</button>
+				<div class="dropdown dropdown-end">
+					<div tabindex="0" role="button" class="btn btn-ghost">
+						<div class="flex flex-col gap-1">
+							<span class="font-normal">{{ auth.session.value!.firstName }} {{ auth.session.value!.lastName }}</span>
+							<span class="font-bold">{{ UserRoleMapping[auth.session.value!.role] }}</span>
+						</div>
+						<picture class="h-10 w-10 overflow-hidden rounded-full bg-base-300">
+							<avatar :src="avatarId" />
+						</picture>
+					</div>
+					<ul tabindex="0" class="menu dropdown-content menu-sm z-[1] mt-3 w-52 rounded-box bg-base-100 p-2 shadow">
+						<li v-for="item of loggedInItems">
+							<nuxt-link :to="item.url">{{ item.title }}</nuxt-link>
+						</li>
+						<li>
+							<button tabindex="0" class="" @click="authLogout()">Cerrar Sesión</button>
+						</li>
+					</ul>
+				</div>
+			</template>
+			<ul v-else class="menu menu-horizontal px-1">
+				<li><nuxt-link to="/registro" tabindex="0" class="btn btn-ghost">Registro</nuxt-link></li>
+				<li><nuxt-link to="/login" tabindex="0" class="btn btn-ghost">Login</nuxt-link></li>
 			</ul>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import type { ViewUser } from '~/server/utils/database/services/types/views/User';
-
 const items = [
 	{ title: 'Quiénes somos', url: '/info/quienes-somos' },
 	{ title: 'Historia', url: '/info/historia' },
@@ -95,23 +108,16 @@ const loggedInItems = [
 	{ title: 'Editar Perfil', url: '/@me' }
 ];
 
+const adminItems = [
+	{ title: 'Usuarios', url: '/gestor/usuarios' },
+	{ title: 'Mails', url: '/gestor/mails' },
+	{ title: 'Suscripciones', url: '/gestor/suscripciones' }
+];
+
 const auth = useAuth();
-const avatarLoading = ref(true);
-const avatarError = ref(false);
+const avatarId = computed(() => auth.session.value?.avatar ?? null);
 
 const { organization } = useRuntimeConfig().public;
-
-const RoleMapping = {
-	Admin: 'Administrador',
-	InternalStudent: 'Estudiante',
-	ExternalStudent: 'Estudiante',
-	InternalProfessor: 'Profesor',
-	ExternalProfessor: 'Profesor',
-	CommunityPartner: 'Socio Comunitario',
-	ApSOffice: 'Oficina ApS',
-	Collaborator: 'Colaborador',
-	Tutor: 'Tutor CA'
-} satisfies Record<ViewUser.ValueUserType, string>;
 </script>
 
 <style scoped>

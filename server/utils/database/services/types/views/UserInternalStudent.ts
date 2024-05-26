@@ -6,7 +6,7 @@ export namespace ViewUserInternalStudent {
 	export interface Value extends ViewUser.BaseValue<UserData> {}
 
 	export interface UserData {
-		type: 'InternalStudent';
+		role: 'InternalStudent';
 		degree: EstudianteInterno.Value['titulacion_local'];
 	}
 }

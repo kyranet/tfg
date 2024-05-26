@@ -1,15 +1,13 @@
 import { isNullishOrEmpty } from '@sapphire/utilities';
 import type { Knex } from 'knex';
 import { AnuncioServicio } from '../types/AnuncioServicio';
-import { AreaServicio } from '../types/AreaServicio';
 import { AreaServicio_AnuncioServicio } from '../types/AreaServicio_AnuncioServicio';
 import { Asignatura } from '../types/Asignatura';
-import { DatosPersonalesInterno } from '../types/DatosPersonalesInterno';
 import { OfertaDemanda_Tags } from '../types/OfertaDemanda_Tags';
-import { OfertaServicio } from '../types/OfertaServicio';
-import { ProfesorInterno } from '../types/ProfesorInterno';
+import { OfertaServicio, Quarter } from '../types/OfertaServicio';
 import { ProfesorInterno_Oferta } from '../types/ProfesorInterno_Oferta';
 import { Tag } from '../types/Tag';
+import { ViewServiceOffer } from '../types/views/ServiceOffer';
 import { SearchParameters, sharedCountTable } from './shared';
 
 export type AnuncioServicioCreateData = Pick<AnuncioServicio.Value, 'titulo' | 'descripcion' | 'imagen'> & { areasServicio: readonly number[] };
@@ -18,7 +16,6 @@ async function crearAnuncio(anuncio: AnuncioServicioCreateData, trx: Knex.Transa
 		.insert({ titulo: anuncio.titulo, descripcion: anuncio.descripcion, imagen: anuncio.imagen })
 		.returning('*');
 
-	// Insertar áreas de servicio si existen
 	if (!isNullishOrEmpty(anuncio.areasServicio)) {
 		await trx(AreaServicio_AnuncioServicio.Name).insert(
 			anuncio.areasServicio.map((area) => ({
@@ -34,7 +31,8 @@ async function crearAnuncio(anuncio: AnuncioServicioCreateData, trx: Knex.Transa
 type OfertaServicioCreateDataKeys = 'cuatrimestre' | 'anio_academico' | 'fecha_limite' | 'observaciones_temporales' | 'creador';
 export type OfertaServicioCreateData = AnuncioServicioCreateData &
 	Pick<OfertaServicio.CreateData, OfertaServicioCreateDataKeys> & { asignaturas: readonly string[]; profesores: readonly number[] };
-export async function crearOferta(data: OfertaServicioCreateData): Promise<FormattedOferta> {
+export type CreateServiceOfferResult = Omit<ViewServiceOffer.Value, 'services' | 'subjects' | 'tags' | 'creator' | 'professors'>;
+export async function crearOferta(data: OfertaServicioCreateData): Promise<CreateServiceOfferResult> {
 	return await qb.transaction(async (trx) => {
 		const anuncio = await crearAnuncio(data, trx);
 		const [oferta] = await trx(OfertaServicio.Name)
@@ -45,7 +43,6 @@ export async function crearOferta(data: OfertaServicioCreateData): Promise<Forma
 				fecha_limite: data.fecha_limite,
 				observaciones_temporales: data.observaciones_temporales,
 				creador: data.creador
-				//Revisar esta logica de insercion de profesores/tags
 			})
 			.returning('*');
 
@@ -67,61 +64,24 @@ export async function crearOferta(data: OfertaServicioCreateData): Promise<Forma
 			);
 		}
 
-		return formatOferta({ ...anuncio, ...oferta });
+		return {
+			id: anuncio.id,
+			academicYear: oferta.anio_academico,
+			remarks: oferta.observaciones_temporales,
+			quarter: oferta.cuatrimestre,
+			deadline: oferta.fecha_limite,
+			image: anuncio.imagen,
+			title: anuncio.titulo,
+			description: anuncio.descripcion,
+			createdAt: anuncio.created_at,
+			updatedAt: anuncio.updated_at
+		};
 	});
 }
 
-export async function obtenerOfertaServicio(id: number): Promise<OfertaServicio.Value | null> {
-	// NOTE: I have no idea whether or not this works, verify once the program works.
-	const entry = await qb(OfertaServicio.Name)
-		.where({ id })
-		.join(AnuncioServicio.Name, AnuncioServicio.Key('id'), '=', OfertaServicio.Key('id'))
-		.join(ProfesorInterno.Name, ProfesorInterno.Key('id'), '=', OfertaServicio.Key('creador'))
-		.join(DatosPersonalesInterno.Name, DatosPersonalesInterno.Key('id'), '=', ProfesorInterno.Key('datos_personales_Id'))
-		.select(
-			qb.ref(AnuncioServicio.Key('*')),
-			qb.ref(OfertaServicio.Key('*')),
-			qb.ref(ProfesorInterno.Key('id')).as('creatorId'),
-			qb.ref(DatosPersonalesInterno.Key('nombre')).as('creatorFirstName'),
-			qb.ref(DatosPersonalesInterno.Key('apellidos')).as('creatorLastName'),
-			// Get the service areas:
-			qb(AreaServicio_AnuncioServicio.Name)
-				.select(qb.raw(`JSON_ARRAYAGG(${AreaServicio.Key('nombre')})`))
-				.where(AreaServicio_AnuncioServicio.Key('id_anuncio'), '=', OfertaServicio.Key('id'))
-				.join(AreaServicio.Name, AreaServicio.Key('id'), '=', AreaServicio_AnuncioServicio.Key('id_area'))
-				.as('areas'),
-			// Get the professors
-			qb(ProfesorInterno_Oferta.Name)
-				.select(
-					qb.raw(`JSON_ARRAY(JSON(
-						'id', ${DatosPersonalesInterno.Key('id')},
-						'firstName', ${DatosPersonalesInterno.Key('nombre')},
-						'lastName', ${DatosPersonalesInterno.Key('apellidos')},
-						'email', ${DatosPersonalesInterno.Key('correo')},
-						'telephone', ${DatosPersonalesInterno.Key('telefono')},
-						'facultad', ${ProfesorInterno.Key('facultad')},
-						'universidad', ${ProfesorInterno.Key('universidad')}
-					))`)
-				)
-				.where(ProfesorInterno_Oferta.Key('id_oferta'), '=', OfertaServicio.Key('id'))
-				.join(ProfesorInterno.Name, ProfesorInterno.Key('id'), '=', ProfesorInterno_Oferta.Key('id_profesor'))
-				.join(DatosPersonalesInterno.Name, DatosPersonalesInterno.Key('id'), '=', ProfesorInterno.Key('datos_personales_Id'))
-				.as('profesores'),
-			// Get the tags
-			qb(OfertaDemanda_Tags.Name)
-				.select(qb.raw(`JSON_ARRAYAGG(${Tag.Key('nombre')})`))
-				.where(OfertaDemanda_Tags.Key('object_id'), '=', OfertaServicio.Key('id'))
-				.join(Tag.Name, Tag.Key('id'), '=', OfertaDemanda_Tags.Key('tag_id'))
-				.as('tags'),
-			// Get the subjects
-			qb(Asignatura.Name)
-				.select(qb.raw(`JSON_ARRAYAGG(${Asignatura.Key('nombre')})`))
-				.where(Asignatura.Key('id_oferta'), '=', OfertaServicio.Key('id'))
-				.as('asignaturas')
-		)
-		.first();
-
-	return (entry ?? null) as OfertaServicio.Value | null;
+export async function obtenerOfertaServicio(id: number): Promise<ViewServiceOffer.Value> {
+	const entry = ensureDatabaseEntry(await qb(ViewServiceOffer.Name).where({ id }).first());
+	return parseViewServiceOfferJsonStringProperties(entry);
 }
 
 export function contarTodasOfertasServicio(): Promise<number> {
@@ -129,67 +89,21 @@ export function contarTodasOfertasServicio(): Promise<number> {
 }
 
 export interface OfertasServicioFilter extends SearchParameters {
-	cuatrimestre?: string[];
-	terminoBusqueda?: string;
-	creador?: string;
-	profesor?: string;
-	tags?: string[];
+	quarter?: Quarter[];
+	title?: string;
+	creatorId?: number;
+	professorId?: number;
+	tag?: string;
 }
 
-export interface GetAllServiceOffersResult extends Omit<FormattedOferta, 'creador'> {
-	creatorFirstName: string;
-	creatorLastName: string;
-	areas: string[];
-	subjects: string[];
-	tags: string[];
-}
-export async function obtenerTodasOfertasServicio(options: OfertasServicioFilter): Promise<GetAllServiceOffersResult[]> {
-	// Construye la consulta base con los filtros básicos aplicados.
-	return await qb(AnuncioServicio.Name)
-		.join(OfertaServicio.Name, OfertaServicio.Key('id'), '=', AnuncioServicio.Key('id'))
-		.join(ProfesorInterno.Name, ProfesorInterno.Key('id'), '=', OfertaServicio.Key('creador'))
-		.join(DatosPersonalesInterno.Name, DatosPersonalesInterno.Key('id'), '=', ProfesorInterno.Key('datos_personales_Id'))
-		.select(
-			AnuncioServicio.Key('id'),
-			qb.ref(AnuncioServicio.Key('titulo')).as('title'),
-			qb.ref(AnuncioServicio.Key('descripcion')).as('description'),
-			qb.ref(AnuncioServicio.Key('imagen')).as('image'),
-			qb.ref(AnuncioServicio.Key('created_at')).as('createdAt'),
-			qb.ref(AnuncioServicio.Key('updated_at')).as('updatedAt'),
-			qb.ref(OfertaServicio.Key('cuatrimestre')).as('quarter'),
-			qb.ref(OfertaServicio.Key('anio_academico')).as('academicYear'),
-			qb.ref(OfertaServicio.Key('fecha_limite')).as('deadline'),
-			qb.ref(OfertaServicio.Key('observaciones_temporales')).as('temporaryRemarks'),
-			qb.ref(DatosPersonalesInterno.Key('nombre')).as('creatorFirstName'),
-			qb.ref(DatosPersonalesInterno.Key('apellidos')).as('creatorLastName'),
-			// Get service areas
-			qb(AreaServicio_AnuncioServicio.Name)
-				.select(qb.raw(`JSON_ARRAYAGG(${AreaServicio.Key('nombre')})`))
-				.where(AreaServicio_AnuncioServicio.Key('id_anuncio'), '=', OfertaServicio.Key('id'))
-				.join(AreaServicio.Name, AreaServicio.Key('id'), '=', AreaServicio_AnuncioServicio.Key('id_area'))
-				.as('areas'),
-			// Get subjects
-			qb(Asignatura.Name)
-				.select(qb.raw(`JSON_ARRAY(${Asignatura.Key('nombre')})`))
-				.where(Asignatura.Key('id_oferta'), '=', OfertaServicio.Key('id'))
-				.as('subjects'),
-			// Get tags
-			qb(OfertaDemanda_Tags.Name)
-				.select(qb.raw(`JSON_ARRAY(${Tag.Key('nombre')})`))
-				.where(OfertaDemanda_Tags.Key('object_id'), '=', OfertaServicio.Key('id'))
-				.join(Tag.Name, Tag.Key('id'), '=', OfertaDemanda_Tags.Key('tag_id'))
-				.as('tags')
-		)
-		.modify((qb) => {
-			if (!isNullishOrEmpty(options.terminoBusqueda)) qb.where(AnuncioServicio.Key('titulo'), 'like', `%${options.terminoBusqueda}%`);
-			if (!isNullishOrEmpty(options.cuatrimestre)) qb.whereIn(OfertaServicio.Key('cuatrimestre'), options.cuatrimestre);
-			if (!isNullishOrEmpty(options.creador)) qb.where(OfertaServicio.Key('creador'), options.creador);
-			if (!isNullishOrEmpty(options.profesor)) qb.where(OfertaServicio.Key('creador'), options.profesor);
-			if (!isNullishOrEmpty(options.tags)) {
-				qb.join(OfertaDemanda_Tags.Name, OfertaDemanda_Tags.Key('object_id'), '=', AnuncioServicio.Key('id'))
-					.join(Tag.Name, Tag.Key('id'), '=', OfertaDemanda_Tags.Key('tag_id'))
-					.whereIn(Tag.Key('nombre'), options.tags);
-			}
+export async function obtenerTodasOfertasServicio(options: OfertasServicioFilter): Promise<ViewServiceOffer.Value[]> {
+	return await qb(ViewServiceOffer.Name)
+		.modify((query) => {
+			if (!isNullishOrEmpty(options.title)) query.where('title', 'like', `%${options.title}%`);
+			if (!isNullishOrEmpty(options.quarter)) query.whereIn('quarter', options.quarter);
+			if (!isNullishOrEmpty(options.creatorId)) query.whereJsonPath('creator', 'id', '=', options.creatorId);
+			if (!isNullishOrEmpty(options.professorId)) query.whereRaw("JSON_CONTAINS(professors, ?, '$**.id')", [options.professorId]);
+			if (!isNullishOrEmpty(options.tag)) query.whereRaw("JSON_CONTAINS(tags, ?, '$')", [options.tag]);
 		})
 		.limit(options.limit ?? 100)
 		.offset(options.offset ?? 0);
@@ -199,33 +113,6 @@ export async function getTagsStartingWith(text: string): Promise<FormattedTag[]>
 	return await qb(Tag.Name)
 		.whereLike({ nombre: `${text}%` })
 		.select({ id: Tag.Key('id'), name: Tag.Key('nombre') });
-}
-
-export async function getTagsByOfferId(ofertaId: number): Promise<FormattedTag[]> {
-	return await qb(OfertaDemanda_Tags.Name)
-		.join(Tag.Name, OfertaDemanda_Tags.Key('tag_id'), '=', Tag.Key('id'))
-		.where({ object_id: ofertaId })
-		.andWhereLike({ tipo: qb.ref('oferta') })
-		.select({ id: Tag.Key('id'), name: Tag.Key('nombre') });
-}
-
-export async function getTagsByOfferIds(ofertasIds: number[]): Promise<FormattedOfferTagId[]> {
-	return await qb(OfertaDemanda_Tags.Name)
-		.join(Tag.Name, OfertaDemanda_Tags.Key('tag_id'), '=', Tag.Key('id'))
-		.whereIn('object_id', ofertasIds)
-		.andWhereLike({ tipo: qb.ref('oferta') })
-		.select({ objectId: OfertaDemanda_Tags.Key('object_id'), name: Tag.Key('nombre') });
-}
-
-export async function getOffersByTagNames(tagsNames: string[]): Promise<FormattedOferta[]> {
-	const entries = await qb(OfertaDemanda_Tags.Name)
-		.distinct(OfertaDemanda_Tags.Key('object_id'))
-		.join(Tag.Name, Tag.Key('id'), '=', OfertaDemanda_Tags.Key('tag_id'))
-		.join(OfertaServicio.Name, OfertaServicio.Key('id'), '=', OfertaDemanda_Tags.Key('object_id'))
-		.join(AnuncioServicio.Name, AnuncioServicio.Key('id'), '=', OfertaServicio.Key('id'))
-		.whereIn(Tag.Key('nombre'), tagsNames)
-		.select(AnuncioServicio.Key('*'), OfertaServicio.Key('*'));
-	return entries.map((entry) => formatOferta(entry));
 }
 
 export interface FormattedTag {
@@ -238,20 +125,13 @@ export interface FormattedOfferTagId {
 	name: Tag.Value['nombre'];
 }
 
-export interface FormattedOferta extends ReturnType<typeof formatOferta> {}
-function formatOferta(data: AnuncioServicio.Value & OfertaServicio.Value) {
+function parseViewServiceOfferJsonStringProperties(value: ViewServiceOffer.RawValue): ViewServiceOffer.Value {
 	return {
-		id: data.id,
-		title: data.titulo,
-		description: data.descripcion,
-		image: data.imagen,
-		createdAt: data.created_at,
-		updatedAt: data.updated_at,
-		dummy: data.dummy,
-		quarter: data.cuatrimestre,
-		academicYear: data.anio_academico,
-		deadline: data.fecha_limite,
-		temporaryRemarks: data.observaciones_temporales,
-		creator: data.creador
+		...value,
+		services: JSON.parse(value.services),
+		subjects: JSON.parse(value.subjects),
+		tags: JSON.parse(value.tags),
+		creator: JSON.parse(value.creator),
+		professors: JSON.parse(value.professors)
 	};
 }
