@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { getNotification } from '~/server/utils/database/services/daos/daoNotificacion';
+import { getNotification } from '~/server/utils/database/services/daos/notificacion/get';
 
 const schemaParams = z.object({ id: CoercedIntegerId });
 export default eventHandler(async (event) => {

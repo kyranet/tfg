@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { crearNotificacionOfertaAceptada } from '~/server/utils/database/services/daos/daoNotificacion';
+import { crearNotificacionOfertaAceptada } from '~/server/utils/database/services/daos/notificacion/insert';
 
 const schemaBody = z.object({ deadline: z.coerce.date(), offerId: z.number().int() });
 export default eventHandler(async (event) => {

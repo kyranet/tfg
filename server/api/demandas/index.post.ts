@@ -1,4 +1,4 @@
-import { crearDemanda } from '~/server/utils/database/services/daos/daoDemanda';
+import { crearDemanda } from '~/server/utils/database/services/daos/demanda/insert';
 import { DemandaBody } from '~/server/utils/validators/Demandas';
 
 const schemaBody = DemandaBody;

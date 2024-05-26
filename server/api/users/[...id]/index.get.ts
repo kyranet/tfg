@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { obtenerUsuarioSinRolPorId } from '~/server/utils/database/services/daos/daoUsuario';
+import { obtenerUsuarioSinRolPorId } from '~/server/utils/database/services/daos/usuario/get';
 
 const schema = z.object({ id: CoercedIntegerId.or(z.literal('@me')) });
 export default eventHandler(async (event) => {

@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { crearNotificacionAceptadacionAceptada, obtenerNotificacionOfertaAceptada } from '../../../../utils/database/services/daos/daoNotificacion';
+import { crearNotificacionAceptadacionAceptada } from '~/server/utils/database/services/daos/notificacion/insert';
+import { obtenerNotificacionOfertaAceptada } from '~/server/utils/database/services/daos/notificacion/get';
 
 const schemaParams = z.object({ id: CoercedIntegerId });
 const schemaBody = z.object({ partnershipId: z.number().int() });

@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { countUsers, searchUsers } from '~/server/utils/database/services/daos/daoUsuario';
+import { countUsers } from '~/server/utils/database/services/daos/usuario/count';
+import { searchUsers } from '~/server/utils/database/services/daos/usuario/get';
 import { SearchQuery } from '~/server/utils/validators/shared';
 
 const schemaQuery = z //

@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { crearOferta } from '~/server/utils/database/services/daos/daoOferta';
-import { createAndLinkedTags } from '~/server/utils/database/services/daos/daoUtils';
+import { crearOferta } from '~/server/utils/database/services/daos/oferta/insert';
+import { createAndLinkedTags } from '~/server/utils/database/services/daos/utils';
 import { Quarter } from '~/server/utils/database/services/types/OfertaServicio';
 
 const schemaBody = z.object({

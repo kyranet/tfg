@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { contarTodasDemandasServicio, obtenerTodasDemandasServicio } from '~/server/utils/database/services/daos/daoDemanda';
+import { contarTodasDemandasServicio } from '~/server/utils/database/services/daos/demanda/count';
+import { obtenerTodasDemandasServicio } from '~/server/utils/database/services/daos/demanda/get';
 import { SearchQuery } from '~/server/utils/validators/shared';
 
 const schema = z //

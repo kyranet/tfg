@@ -1,12 +1,8 @@
 import { z } from 'zod';
-import {
-	actualizarPartenariado,
-	actualizarPrevioPartenariado,
-	crearPartenariado,
-	crearPrevioPartenariado,
-	maybeObtenerIdPartenariado
-} from '~/server/utils/database/services/daos/daoColaboracion';
-import { crearDemanda } from '~/server/utils/database/services/daos/daoDemanda';
+import { maybeObtenerIdPartenariado } from '~/server/utils/database/services/daos/colaboracion/get';
+import { crearPartenariado, crearPrevioPartenariado } from '~/server/utils/database/services/daos/colaboracion/insert';
+import { actualizarPartenariado, actualizarPrevioPartenariado } from '~/server/utils/database/services/daos/colaboracion/update';
+import { crearDemanda } from '~/server/utils/database/services/daos/demanda/insert';
 import { PartenariadoEstado } from '~/server/utils/database/services/types/Partenariado';
 import { DemandaBody } from '~/server/utils/validators/Demandas';
 import { PartenariadoBody } from '~/server/utils/validators/Partenariados';

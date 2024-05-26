@@ -1,4 +1,5 @@
-import { countInitiatives, searchInitiatives } from '~/server/utils/database/services/daos/daoIniciativa';
+import { countInitiatives } from '~/server/utils/database/services/daos/iniciativa/count';
+import { searchInitiatives } from '~/server/utils/database/services/daos/iniciativa/get';
 import { SearchQuery } from '~/server/utils/validators/shared';
 
 const schemaQuery = SearchQuery;

@@ -1,37 +1,15 @@
-import { isNullishOrEmpty } from '@sapphire/utilities';
-import { AreaServicio } from '../types/AreaServicio';
-import { AreaServicio_Iniciativa } from '../types/AreaServicio_Iniciativa';
-import { DatosPersonalesExterno } from '../types/DatosPersonalesExterno';
-import { DatosPersonalesInterno } from '../types/DatosPersonalesInterno';
-import { EstudianteExterno } from '../types/EstudianteExterno';
-import { EstudianteInterno } from '../types/EstudianteInterno';
-import { Iniciativa } from '../types/Iniciativa';
-import { Matching } from '../types/Matching';
-import { MatchingArea } from '../types/MatchingArea';
-import { MatchingAreaServicioTitulacion } from '../types/MatchingAreaServicioTitulacion';
-import { NecesidadSocial } from '../types/NecesidadSocial';
-import { sharedDeleteEntryTable } from './shared';
-
-export interface CreateIniciativaOptions extends Iniciativa.CreateData {
-	areas?: readonly AreaServicio_Iniciativa.Value['id_area'][];
-}
-
-export async function crearIniciativa(data: CreateIniciativaOptions): Promise<FormattedIniciativa> {
-	return await qb.transaction(async (trx) => {
-		const [entry] = await trx(Iniciativa.Name).insert(data).returning('*');
-
-		if (!isNullishOrEmpty(data.areas)) {
-			await trx(AreaServicio_Iniciativa.Name).insert(data.areas.map((area) => ({ id_area: area, id_iniciativa: entry.id })));
-		}
-
-		return formatIniciativa(entry);
-	});
-}
-
-export async function crearMatch(data: Matching.CreateData): Promise<FormattedMatch> {
-	const [entry] = await qb(Matching.Name).insert(data).returning('*');
-	return formatMatch(entry);
-}
+import { AreaServicio } from '../../types/AreaServicio';
+import { AreaServicio_Iniciativa } from '../../types/AreaServicio_Iniciativa';
+import { DatosPersonalesExterno } from '../../types/DatosPersonalesExterno';
+import { DatosPersonalesInterno } from '../../types/DatosPersonalesInterno';
+import { EstudianteExterno } from '../../types/EstudianteExterno';
+import { EstudianteInterno } from '../../types/EstudianteInterno';
+import { Iniciativa } from '../../types/Iniciativa';
+import { Matching } from '../../types/Matching';
+import { MatchingArea } from '../../types/MatchingArea';
+import { MatchingAreaServicioTitulacion } from '../../types/MatchingAreaServicioTitulacion';
+import { NecesidadSocial } from '../../types/NecesidadSocial';
+import { FormattedIniciativa, formatIniciativa, formatNecesidadSocial, type FormattedNecesidadSocial } from './_shared';
 
 export interface GetIniciativaResult extends FormattedIniciativa {
 	areas: readonly AreaServicio_Iniciativa.Value['id_area'][];
@@ -106,28 +84,6 @@ export async function obtenerTodasIniciativas(): Promise<GetIniciativasEstudiant
 	return [...internos, ...externos];
 }
 
-export async function actualizarIniciativa(id: number, data: CreateIniciativaOptions): Promise<FormattedIniciativa> {
-	return await qb.transaction(async (trx) => {
-		const entry = getFirstDatabaseEntry(
-			await trx(Iniciativa.Name) //
-				.where({ id })
-				.update(data)
-				.returning('*')
-		);
-
-		await trx(AreaServicio_Iniciativa.Name).where({ id_iniciativa: entry.id }).del();
-		if (!isNullishOrEmpty(data.areas)) {
-			await trx(AreaServicio_Iniciativa.Name).insert(data.areas.map((area) => ({ id_area: area, id_iniciativa: entry.id })));
-		}
-
-		return formatIniciativa(entry);
-	});
-}
-
-export function eliminarIniciativa(id: number): Promise<boolean> {
-	return sharedDeleteEntryTable(Iniciativa.Name, id);
-}
-
 export async function obtenerListaNecesidadSocial(): Promise<FormattedNecesidadSocial[]> {
 	const areas = await qb(NecesidadSocial.Name);
 	return areas.map((area) => formatNecesidadSocial(area));
@@ -148,31 +104,4 @@ export async function obtenerAreaServicioConocimientoPorArea(services: readonly 
 
 export async function existe(id_oferta: number, id_demanda: number): Promise<boolean> {
 	return (await qb(Matching.Name).where({ id_oferta, id_demanda })).length > 0;
-}
-
-export interface FormattedIniciativa extends ReturnType<typeof formatIniciativa> {}
-function formatIniciativa(data: Iniciativa.Value) {
-	return {
-		id: data.id,
-		title: data.titulo,
-		description: data.descripcion,
-		demandId: data.id_demanda,
-		studentId: data.id_estudiante,
-		socialNeed: data.necesidad_social
-	};
-}
-
-export interface FormattedMatch extends ReturnType<typeof formatMatch> {}
-function formatMatch(data: Matching.Value) {
-	return {
-		offerId: data.id_oferta,
-		demandId: data.id_demanda,
-		processed: data.procesado,
-		matching: data.emparejamiento
-	};
-}
-
-export interface FormattedNecesidadSocial extends ReturnType<typeof formatNecesidadSocial> {}
-function formatNecesidadSocial(area: NecesidadSocial.Value) {
-	return { id: area.id, name: area.nombre };
 }

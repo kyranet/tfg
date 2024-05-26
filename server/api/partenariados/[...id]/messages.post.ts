@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { crearMensajeColaboracion } from '~/server/utils/database/services/daos/daoComunicacion';
+import { crearMensajeColaboracion } from '~/server/utils/database/services/daos/comunicacion/insert';
 import { CoercedIntegerId } from '~/server/utils/validators/shared';
 
 const schemaParams = z.object({ id: CoercedIntegerId });

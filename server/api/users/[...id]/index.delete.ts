@@ -6,9 +6,9 @@ import {
 	borrarOficinaAPS,
 	borrarProfesorExterno,
 	borrarProfesorInterno,
-	borrarSocioComunitario,
-	obtenerUsuarioSinRolPorId
-} from '~/server/utils/database/services/daos/daoUsuario';
+	borrarSocioComunitario
+} from '~/server/utils/database/services/daos/usuario/delete';
+import { obtenerUsuarioSinRolPorId } from '~/server/utils/database/services/daos/usuario/get';
 
 const schema = z.object({ id: CoercedIntegerId });
 export default eventHandler(async (event) => {

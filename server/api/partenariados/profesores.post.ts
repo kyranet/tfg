@@ -1,4 +1,4 @@
-import { crearPartenariado } from '~/server/utils/database/services/daos/daoColaboracion';
+import { crearPartenariado } from '~/server/utils/database/services/daos/colaboracion/insert';
 import { PartenariadoEstado } from '~/server/utils/database/services/types/Partenariado';
 import { PartenariadoBody } from '~/server/utils/validators/Partenariados';
 

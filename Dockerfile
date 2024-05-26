@@ -36,6 +36,7 @@ COPY --chown=node:node plugins/ plugins/
 COPY --chown=node:node public/ public/
 COPY --chown=node:node server/ server/
 COPY --chown=node:node static/ static/
+COPY --chown=node:node utils/ utils/
 
 COPY --chown=node:node app.vue app.vue
 COPY --chown=node:node nuxt.config.ts nuxt.config.ts
@@ -57,6 +58,16 @@ ENV NODE_OPTIONS="--enable-source-maps"
 WORKDIR /usr/src/app
 
 COPY --chown=node:node --from=builder /usr/src/app/.output .output
+
+# Create data files
+RUN mkdir -p data/avatars             \
+			 data/initiatives/default \
+			 data/initiatives/files   \
+			 data/partnerships/files  \
+			 data/projects/files
+
+# Allow user node to write to data files
+RUN chown -R node:node data
 
 USER root
 

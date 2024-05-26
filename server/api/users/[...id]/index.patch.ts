@@ -2,6 +2,7 @@ import { isNullishOrEmpty } from '@sapphire/utilities';
 import bcrypt from 'bcryptjs';
 import type { H3Event } from 'h3';
 import { z } from 'zod';
+import { obtenerUsuarioSinRolPorId } from '~/server/utils/database/services/daos/usuario/get';
 import type { ViewUser } from '~/server/utils/database/services/types/views/User';
 import type { ViewUserAdmin } from '~/server/utils/database/services/types/views/UserAdmin';
 import type { ViewUserApSOffice } from '~/server/utils/database/services/types/views/UserApSOffice';
@@ -17,10 +18,8 @@ import {
 	actualizarOficinaAPS,
 	actualizarProfesorExterno,
 	actualizarProfesorInterno,
-	actualizarSocioComunitario,
-	obtenerUsuarioSinRolPorId,
-	type UpdateUserData
-} from '../../../utils/database/services/daos/daoUsuario';
+	actualizarSocioComunitario
+} from '../../../utils/database/services/daos/usuario/update';
 
 const baseSchemaBody = z.object({
 	password: z.string().trim().min(6).max(100).optional(),

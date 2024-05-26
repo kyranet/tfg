@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { contarTodasOfertasServicio, obtenerTodasOfertasServicio } from '~/server/utils/database/services/daos/daoOferta';
+import { contarTodasOfertasServicio } from '~/server/utils/database/services/daos/oferta/count';
+import { obtenerTodasOfertasServicio } from '~/server/utils/database/services/daos/oferta/get';
 import { Quarter } from '~/server/utils/database/services/types/OfertaServicio';
 import { SearchQuery } from '~/server/utils/validators/shared';
 

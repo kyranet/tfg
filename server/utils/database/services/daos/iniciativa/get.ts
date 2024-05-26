@@ -1,5 +1,5 @@
-import { Iniciativa } from '../types/Iniciativa';
-import { sharedCountTable, type SearchParameters } from './shared';
+import { Iniciativa } from '../../types/Iniciativa';
+import type { SearchParameters } from '../shared';
 
 export async function getInitiative(id: number) {
 	return ensureDatabaseEntry(
@@ -13,10 +13,6 @@ export async function searchInitiatives(search: SearchParameters) {
 		.select(InitiativeSelect)
 		.limit(search.limit ?? 100)
 		.offset(search.offset ?? 0);
-}
-
-export function countInitiatives() {
-	return sharedCountTable(Iniciativa.Name);
 }
 
 const InitiativeSelect = {

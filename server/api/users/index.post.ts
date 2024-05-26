@@ -1,23 +1,17 @@
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
-import {
-	insertarEstudianteExterno,
-	insertarProfesorExterno,
-	insertarSocioComunitario,
-	maybeGetUsuarioSinRolPorEmail
-} from '../../utils/database/services/daos/daoUsuario';
-
-const originLogin = 'Portal ApS';
+import { maybeGetUsuarioSinRolPorEmail } from '~/server/utils/database/services/daos/usuario/get';
+import { insertarEstudianteExterno, insertarProfesorExterno, insertarSocioComunitario } from '~/server/utils/database/services/daos/usuario/insert';
 
 const schemaBodyProfessor = z.object({
 	role: z.literal('ExternalProfessor'),
-	university: z.string().trim(),
+	university: z.number().int(),
 	faculty: z.string().trim(),
 	knowledgeAreas: z.number().int().array()
 });
 const schemaBodyStudent = z.object({
 	role: z.literal('ExternalStudent'),
-	university: z.string().trim(),
+	university: z.number().int(),
 	degree: z.string().trim()
 });
 const schemaBodyCommunityPartner = z.object({
@@ -56,44 +50,41 @@ export default eventHandler(async (event) => {
 	switch (body.data.role) {
 		case 'ExternalProfessor':
 			user = await insertarProfesorExterno({
-				correo: body.email,
-				nombre: body.firstName,
-				apellidos: body.lastName,
-				telefono: body.phone,
+				email: body.email,
+				firstName: body.firstName,
+				lastName: body.lastName,
+				phone: body.phone,
 				password,
-				origin_login: originLogin,
-				terminos_aceptados: body.acceptedTerms,
-				universidad: body.data.university,
-				facultad: body.data.faculty,
+				acceptedTerms: body.acceptedTerms,
+				university: body.data.university,
+				faculty: body.data.faculty,
 				knowledgeAreas: body.data.knowledgeAreas
 			});
 			break;
 		case 'ExternalStudent':
 			user = await insertarEstudianteExterno({
-				correo: body.email,
-				nombre: body.firstName,
-				apellidos: body.lastName,
-				telefono: body.phone,
+				email: body.email,
+				firstName: body.firstName,
+				lastName: body.lastName,
+				phone: body.phone,
 				password,
-				origin_login: originLogin,
-				terminos_aceptados: body.acceptedTerms,
-				titulacion: body.data.degree,
-				universidad: body.data.university
+				acceptedTerms: body.acceptedTerms,
+				degree: body.data.degree,
+				university: body.data.university
 			});
 			break;
 		case 'CommunityPartner':
 			user = await insertarSocioComunitario({
-				correo: body.email,
-				nombre: body.firstName,
-				apellidos: body.lastName,
-				telefono: body.phone,
+				email: body.email,
+				firstName: body.firstName,
+				lastName: body.lastName,
+				phone: body.phone,
 				password,
-				origin_login: originLogin,
-				terminos_aceptados: body.acceptedTerms,
+				acceptedTerms: body.acceptedTerms,
 				sector: body.data.sector,
-				nombre_socioComunitario: body.data.name,
+				name: body.data.name,
 				url: body.data.url,
-				mision: body.data.mission
+				mission: body.data.mission
 			});
 			break;
 		default:

@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { crearNotificacionAceptadacionRechazada, obtenerNotificacionOfertaAceptada } from '~/server/utils/database/services/daos/daoNotificacion';
+import { obtenerNotificacionOfertaAceptada } from '~/server/utils/database/services/daos/notificacion/get';
+import { crearNotificacionAceptadacionRechazada } from '~/server/utils/database/services/daos/notificacion/insert';
 
 const schemaParams = z.object({ id: CoercedIntegerId });
 export default eventHandler(async (event) => {

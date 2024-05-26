@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { countPartnerships, getAllPartnerships } from '~/server/utils/database/services/daos/daoColaboracion';
+import { countPartnerships } from '~/server/utils/database/services/daos/colaboracion/count';
+import { getAllPartnerships } from '~/server/utils/database/services/daos/colaboracion/get';
 import { ProyectoEstado } from '~/server/utils/database/services/types/Proyecto';
 
 const schema = SearchQuery.merge(
@@ -20,6 +21,9 @@ const schema = SearchQuery.merge(
 	})
 );
 export default eventHandler(async (event) => {
-	const [entries, count] = await Promise.all([getAllPartnerships(await getValidatedQuery(event, schema.parse)), countPartnerships()]);
+	const [entries, count] = await Promise.all([
+		getAllPartnerships(await getValidatedQuery(event, schema.parse)), //
+		countPartnerships()
+	]);
 	return { entries, count };
 });

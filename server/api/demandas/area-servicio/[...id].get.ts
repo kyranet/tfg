@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { obtenerDemandaPorAreaServicio } from '~/server/utils/database/services/daos/daoDemanda';
+import { obtenerDemandaPorAreaServicio } from '~/server/utils/database/services/daos/demanda/get';
 
 const schema = z.object({ id: CoercedIntegerId });
 export default eventHandler(async (event) => {
