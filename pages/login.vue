@@ -25,10 +25,9 @@
 			</form>
 		</div>
 
-		<div v-if="error" class="alert alert-error text-error-content">
-			<h2 class="block font-semibold">Error</h2>
+		<alert v-if="error" type="danger" title="Error">
 			{{ error }}
-		</div>
+		</alert>
 	</section>
 </template>
 
