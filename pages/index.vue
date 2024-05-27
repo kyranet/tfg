@@ -1,5 +1,5 @@
 <template>
-	<Carousel :items="slides" />
+	<Carousel :items="slides" class="relative -z-10" />
 
 	<section class="mt-20 w-full text-center">
 		<h2 class="text-center text-3xl font-semibold">Cómo participar</h2>
