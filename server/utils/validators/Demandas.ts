@@ -1,25 +1,18 @@
 import { z } from 'zod';
 
 export const DemandaBody = z.object({
-	areaServicio: z.number().int().array(),
-	titulacionesLocales: z.number().int().array(),
-	titulo: z.string(),
-	descripcion: z.string(),
-	imagen: z.string(),
-	ciudad: z.string(),
-	finalidad: z.string(),
-	fechas: z.object({
-		definition: z.object({
-			start: z.coerce.date(),
-			end: z.coerce.date()
-		}),
-		execution: z.object({
-			start: z.coerce.date(),
-			end: z.coerce.date()
-		}),
-		end: z.coerce.date()
-	}),
-	observaciones: z.string(),
-	necesidadSocial: z.number().int(),
-	comunidadBeneficiaria: z.string()
+	city: z.string().min(1).max(200).default('online'),
+	purpose: z.string().min(1).max(200),
+	periodDefinitionStart: z.coerce.date().nullable().default(null),
+	periodDefinitionEnd: z.coerce.date().nullable().default(null),
+	periodExecutionStart: z.coerce.date().nullable().default(null),
+	periodExecutionEnd: z.coerce.date().nullable().default(null),
+	periodDeadline: z.coerce.date().nullable().default(null),
+	temporaryObservations: z.string().max(1200).nullable().default(null),
+	beneficiaryCommunity: z.string().min(1).max(200),
+	title: z.string().min(1).max(200),
+	description: z.string().min(1).max(1200),
+	socialNeed: z.number().int().min(1),
+	serviceAreas: z.array(z.number().int().min(1)).optional(),
+	degrees: z.array(z.number().int().min(1)).optional()
 });

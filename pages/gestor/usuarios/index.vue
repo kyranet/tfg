@@ -34,7 +34,7 @@
 				<tr v-for="entry of data.users" :key="entry.id" class="hover">
 					<td class="flex items-center gap-4">
 						<div class="mask mask-circle h-12 w-12 shrink-0">
-							<avatar :src="entry.avatar" />
+							<avatar :src="entry.avatar" :size="64" />
 						</div>
 						<div class="grid gap-1">
 							<span class="font-semibold"> {{ entry.firstName }} {{ entry.lastName }} </span>
@@ -78,7 +78,7 @@
 			<div v-if="deleting" class="rounded-xl bg-base-200 p-4 drop-shadow-lg">
 				<div class="flex items-center gap-4">
 					<div class="mask mask-circle h-12 w-12 shrink-0">
-						<avatar :src="deleting.avatar" />
+						<avatar :src="deleting.avatar" :size="64" />
 					</div>
 					<div class="grid gap-1">
 						<span class="font-semibold"> {{ deleting.firstName }} {{ deleting.lastName }} </span>
@@ -104,8 +104,7 @@
 			<div class="modal-action">
 				<form method="dialog">
 					<button class="btn btn-error rounded-r-none" @click="onConfirmDelete">Borrar</button>
-					<!-- if there is a button in form, it will close the modal -->
-					<button class="btn rounded-l-none" @click="onConfirmCancel">Close</button>
+					<button class="btn rounded-l-none" @click="onConfirmCancel">Cerrar</button>
 				</form>
 			</div>
 		</div>

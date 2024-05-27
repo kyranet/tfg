@@ -1,4 +1,5 @@
-import { Upload } from '../../types/Upload';
+import type { Newsletter } from '../../types/Newsletter';
+import type { Upload } from '../../types/Upload';
 
 export interface FormattedUpload extends ReturnType<typeof formatUpload> {}
 export function formatUpload(entry: Upload.Value) {
@@ -12,5 +13,15 @@ export function formatUpload(entry: Upload.Value) {
 		clientName: entry.client_name,
 		nombre: entry.nombre,
 		creador: entry.creador
+	};
+}
+
+export interface FormattedNewsletter extends ReturnType<typeof formatNewsletter> {}
+export function formatNewsletter(entry: Newsletter.Value) {
+	return {
+		id: entry.id,
+		mailTo: entry.mail_to,
+		createdAt: entry.created_at,
+		updatedAt: entry.updated_at
 	};
 }

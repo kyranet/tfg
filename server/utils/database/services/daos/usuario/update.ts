@@ -20,6 +20,7 @@ import { ViewUserExternalProfessor } from '../../types/views/UserExternalProfess
 import { ViewUserExternalStudent } from '../../types/views/UserExternalStudent';
 import { ViewUserInternalProfessor } from '../../types/views/UserInternalProfessor';
 import { ViewUserInternalStudent } from '../../types/views/UserInternalStudent';
+import { sharedUpdateAndReturn } from '../shared';
 import { deleteUpload } from '../uploads/delete';
 import { updateUpload } from '../uploads/update';
 import { formatUser, type BaseUserData } from './_shared';
@@ -37,7 +38,7 @@ async function performAvatarUpload(id: number, avatar: Buffer | null | undefined
 		.resize({ width: 512, height: 512, fit: 'inside', withoutEnlargement: true })
 		.webp()
 		.toBuffer();
-	return updateUpload('usuarios', 'avatar', id, file, trx);
+	return updateUpload('usuarios', 'avatar', id, file, '.webp', id, trx);
 }
 
 export interface UpdateBaseUserData {
@@ -46,13 +47,12 @@ export interface UpdateBaseUserData {
 }
 async function sharedUpdateUser(id: number, data: UpdateBaseUserData, trx: Knex.Transaction): Promise<Usuario.Value> {
 	const avatar = await performAvatarUpload(id, data.avatar, trx);
-	return getFirstDatabaseEntry(
-		await trx(Usuario.Name) //
-			.where({ id })
-			.update({ origin_img: avatar, terminos_aceptados: data.acceptedTerms })
-			.returning('*'),
-		'No se ha encontrado un usuario con el ID proporcionado'
-	);
+	return sharedUpdateAndReturn({
+		table: Usuario.Name,
+		where: { id },
+		data: { origin_img: avatar, terminos_aceptados: data.acceptedTerms },
+		trx
+	});
 }
 
 export interface UpdateUserData extends UpdateBaseUserData {
@@ -69,15 +69,14 @@ async function sharedUpdatePersonalUserData(
 	trx: Knex.Transaction
 ): Promise<BaseUserData> {
 	const user = await sharedUpdateUser(userId, data, trx);
-	const userData = getFirstDatabaseEntry(
-		await trx(table)
-			.where({ id: userDataId })
-			.update({ nombre: data.firstName, apellidos: data.lastName, password: data.password, telefono: data.phone })
-			.returning('*'),
-		'No se ha encontrado los datos personales internos con el ID proporcionado'
-	);
+	const userData = await sharedUpdateAndReturn({
+		table,
+		where: { id: userDataId },
+		data: { nombre: data.firstName, apellidos: data.lastName, password: data.password, telefono: data.phone },
+		trx
+	});
 
-	return { ...user, ...userData };
+	return { ...userData, ...user };
 }
 
 async function sharedUpdateInternalPersonalUserData(
@@ -132,17 +131,12 @@ export interface UpdateCommunityPartnerData extends UpdateUserData {
 }
 export async function actualizarSocioComunitario(id: number, data: UpdateCommunityPartnerData): Promise<ViewUserCommunityPartner.Value> {
 	return qb.transaction(async (trx) => {
-		const entry = getFirstDatabaseEntry(
-			await trx(SocioComunitario.Name)
-				.where({ id })
-				.update({
-					mision: data.mission,
-					nombre_socioComunitario: data.name,
-					sector: data.sector,
-					url: data.url
-				})
-				.returning('*')
-		);
+		const entry = await sharedUpdateAndReturn({
+			table: SocioComunitario.Name,
+			where: { id },
+			data: { mision: data.mission, nombre_socioComunitario: data.name, sector: data.sector, url: data.url },
+			trx
+		});
 
 		const userData = await sharedUpdateExternalPersonalUserData(id, entry.datos_personales_Id, data, trx);
 		return formatUser(userData, {
@@ -161,13 +155,12 @@ export interface UpdateInternalStudentData extends UpdateStudentData {
 }
 export async function actualizarEstudianteInterno(id: number, data: UpdateInternalStudentData): Promise<ViewUserInternalStudent.Value> {
 	return qb.transaction(async (trx) => {
-		const entry = getFirstDatabaseEntry(
-			await trx(EstudianteInterno.Name) //
-				.where({ id })
-				.update({ titulacion_local: data.degree })
-				.returning('*'),
-			'No se ha encontrado un estudiante interno con el ID proporcionado'
-		);
+		const entry = await sharedUpdateAndReturn({
+			table: EstudianteInterno.Name,
+			where: { id },
+			data: { titulacion_local: data.degree },
+			trx
+		});
 
 		const userData = await sharedUpdateInternalPersonalUserData(id, entry.datos_personales_Id, data, trx);
 		return formatUser(userData, { role: 'InternalStudent', degree: entry.titulacion_local });
@@ -180,13 +173,12 @@ export interface UpdateExternalStudentData extends UpdateStudentData {
 }
 export async function actualizarEstudianteExterno(id: number, data: UpdateExternalStudentData): Promise<ViewUserExternalStudent.Value> {
 	return qb.transaction(async (trx) => {
-		const entry = getFirstDatabaseEntry(
-			await trx(EstudianteExterno.Name) //
-				.where({ id })
-				.update({ titulacion: data.degree, universidad: data.university })
-				.returning('*'),
-			'No se ha encontrado un estudiante externo con el ID proporcionado'
-		);
+		const entry = await sharedUpdateAndReturn({
+			table: EstudianteExterno.Name,
+			where: { id },
+			data: { titulacion: data.degree, universidad: data.university },
+			trx
+		});
 
 		const userData = await sharedUpdateExternalPersonalUserData(id, entry.datos_personales_Id, data, trx);
 		return formatUser(userData, { role: 'ExternalStudent', degree: entry.titulacion, university: entry.universidad });
@@ -261,13 +253,12 @@ export interface UpdateExternalProfessorData extends UpdateProfessorData {
 }
 export async function actualizarProfesorExterno(id: number, data: UpdateExternalProfessorData): Promise<ViewUserExternalProfessor.Value> {
 	return qb.transaction(async (trx) => {
-		const entry = getFirstDatabaseEntry(
-			await trx(ProfesorExterno.Name) //
-				.where({ id })
-				.update({ universidad: data.university, facultad: data.faculty })
-				.returning('*'),
-			'No se ha encontrado un profesor externo con el ID proporcionado'
-		);
+		const entry = await sharedUpdateAndReturn({
+			table: ProfesorExterno.Name,
+			where: { id },
+			data: { universidad: data.university, facultad: data.faculty },
+			trx
+		});
 
 		const knowledgeAreas = await updateSharedProfessorKnowledgeAreas(id, data, trx);
 		const userData = await sharedUpdateExternalPersonalUserData(id, entry.datos_personales_Id, data, trx);

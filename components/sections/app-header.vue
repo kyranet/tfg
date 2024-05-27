@@ -60,21 +60,14 @@
 		</div>
 		<div class="navbar-end">
 			<template v-if="auth.loggedIn.value">
-				<button class="btn btn-ghost">
-					<div class="indicator">
-						<span class="badge indicator-item badge-info badge-xs m-1">1</span>
-						<Icon name="ph:bell-bold" class="h-6 w-6" />
-					</div>
-				</button>
+				<sections-app-header-notifications />
 				<div class="dropdown dropdown-end">
-					<div tabindex="0" role="button" class="btn btn-ghost">
-						<div class="flex flex-col gap-1">
-							<span class="font-normal">{{ auth.session.value!.firstName }} {{ auth.session.value!.lastName }}</span>
-							<span class="font-bold">{{ UserRoleMapping[auth.session.value!.role] }}</span>
+					<div tabindex="0" role="button" class="btn btn-ghost flex-nowrap">
+						<div class="flex shrink flex-col gap-1">
+							<span class="truncate font-normal">{{ auth.session.value!.firstName }} {{ auth.session.value!.lastName }}</span>
+							<span class="truncate font-bold">{{ UserRoleMapping[auth.session.value!.role] }}</span>
 						</div>
-						<picture class="h-10 w-10 overflow-hidden rounded-full bg-base-300">
-							<avatar :src="avatarId" />
-						</picture>
+						<avatar :src="avatarId" :size="64" class="h-10 w-10 overflow-hidden rounded-full" />
 					</div>
 					<ul tabindex="0" class="menu dropdown-content menu-sm z-[1] mt-3 w-52 rounded-box bg-base-100 p-2 shadow">
 						<li v-for="item of loggedInItems">
@@ -110,7 +103,7 @@ const loggedInItems = [
 
 const adminItems = [
 	{ title: 'Usuarios', url: '/gestor/usuarios' },
-	{ title: 'Mails', url: '/gestor/mails' },
+	{ title: 'Emails', url: '/gestor/emails' },
 	{ title: 'Suscripciones', url: '/gestor/suscripciones' }
 ];
 

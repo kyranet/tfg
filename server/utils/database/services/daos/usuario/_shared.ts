@@ -39,6 +39,7 @@ export function formatUser<User extends ViewUser.ValueUserType>(
 	return {
 		id: datos.id,
 		createdAt: datos.createdAt,
+		avatar: datos.origin_img,
 		firstName: datos.nombre,
 		lastName: datos.apellidos,
 		email: datos.correo,

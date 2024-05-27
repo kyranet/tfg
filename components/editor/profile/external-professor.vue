@@ -6,13 +6,6 @@
 
 	<label class="form-control">
 		<div class="label">
-			<span class="label-text">Rol</span>
-		</div>
-		<input type="text" class="input input-bordered w-full" disabled="true" value="Profesor" autocomplete="off" />
-	</label>
-
-	<label class="form-control">
-		<div class="label">
 			<span class="label-text">Universidad</span>
 		</div>
 		<select v-model="university" class="select select-bordered" required :disabled="universityError !== null || !universityEntries?.length">
@@ -25,7 +18,7 @@
 		<div class="label">
 			<span class="label-text">Facultad</span>
 		</div>
-		<input v-model="faculty" type="text" class="input input-bordered w-full" autocomplete="off" />
+		<input v-model="faculty" type="text" class="input input-bordered w-full" placeholder="Introduzca su facultad" autocomplete="off" />
 	</label>
 
 	<label class="form-control">
@@ -42,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ university: number; faculty: string; knowledgeAreas: number[] }>();
+const props = withDefaults(defineProps<{ university: number | undefined | null; faculty: string; knowledgeAreas: number[] }>(), { university: null });
 const { university, faculty, knowledgeAreas } = useVModels(props);
 
 const { data: universityEntries, error: universityError } = await useFetch('/api/home/universidades', { method: 'GET' });

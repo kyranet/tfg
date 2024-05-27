@@ -1,5 +1,6 @@
 import type { AnuncioServicio } from '../../types/AnuncioServicio';
 import type { DemandaServicio } from '../../types/DemandaServicio';
+import { ViewDemand } from '../../types/views/Demand';
 
 export interface FormattedDemanda extends ReturnType<typeof formatDemanda> {}
 export function formatDemanda(entry: AnuncioServicio.Value & DemandaServicio.Value) {
@@ -22,5 +23,13 @@ export function formatDemanda(entry: AnuncioServicio.Value & DemandaServicio.Val
 		temporaryObservations: entry.observaciones_temporales,
 		socialNeed: entry.necesidad_social,
 		beneficiaryCommunity: entry.comunidad_beneficiaria
+	};
+}
+
+export function parseViewDemandJsonStringProperties(entry: ViewDemand.RawValue): ViewDemand.Value {
+	return {
+		...entry,
+		serviceAreas: JSON.parse(entry.serviceAreas),
+		degrees: JSON.parse(entry.degrees)
 	};
 }

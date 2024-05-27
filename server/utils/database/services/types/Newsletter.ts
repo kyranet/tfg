@@ -1,4 +1,5 @@
 import {
+	Unique,
 	makeKeyFunction,
 	type AutoIncrement,
 	type Defaults,
@@ -11,9 +12,9 @@ import {
 
 export interface Newsletter {
 	id: PrimaryKey<AutoIncrement<Int>>;
-	mail_to: VarChar<200>;
-	createdAt: Defaults<Date>;
-	updatedAt: Defaults<Date | null>;
+	mail_to: Unique<VarChar<200>>;
+	created_at: Defaults<Date>;
+	updated_at: Defaults<Date | null>;
 }
 
 export namespace Newsletter {

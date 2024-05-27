@@ -1,5 +1,5 @@
 <template>
-	<section class="mx-auto w-full max-w-[500px]">
+	<section class="mx-auto w-full max-w-screen-md">
 		<h1 class="mb-4 text-center text-3xl font-semibold">Inicio de sesión</h1>
 
 		<button class="btn btn-primary mt-4 w-full">Acceder con SSO {{ organization }}</button>

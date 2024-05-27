@@ -6,28 +6,48 @@ import { DemandaServicio } from '../../types/DemandaServicio';
 import { TitulacionLocal_Demanda } from '../../types/TitulacionLocal_Demanda';
 import { formatDemanda, type FormattedDemanda } from './_shared';
 
-export type AnuncioServicioCreateData = AnuncioServicio.CreateData & { areasServicio?: readonly number[] };
-async function crearAnuncio(data: AnuncioServicioCreateData, trx: Knex.Transaction): Promise<AnuncioServicio.Value> {
+export interface CreateAnnouncementOptions {
+	title: string;
+	image?: string | null;
+	description: string;
+	serviceAreas?: readonly number[];
+}
+async function crearAnuncio(data: CreateAnnouncementOptions, trx: Knex.Transaction): Promise<AnuncioServicio.Value> {
 	const [entry] = await trx(AnuncioServicio.Name)
 		.insert({
-			titulo: data.titulo,
-			descripcion: data.descripcion,
-			imagen: data.imagen,
-			dummy: data.dummy
+			titulo: data.title,
+			descripcion: data.description,
+			imagen: data.image
 		})
 		.returning('*');
 
-	if (!isNullishOrEmpty(data.areasServicio)) {
-		await trx(AreaServicio_AnuncioServicio.Name) //
-			.insert(data.areasServicio.map((area) => ({ id_area: area, id_anuncio: entry.id })));
+	if (!isNullishOrEmpty(data.serviceAreas)) {
+		await trx(AreaServicio_AnuncioServicio.Name).insert(
+			data.serviceAreas.map((area) => ({
+				id_area: area,
+				id_anuncio: entry.id
+			}))
+		);
 	}
 
 	return entry;
 }
 
-export type DemandaServicioCreateData = AnuncioServicioCreateData &
-	Omit<DemandaServicio.CreateData, 'id'> & { titulacionesLocales?: readonly number[] };
-export function crearDemanda(data: DemandaServicioCreateData): Promise<FormattedDemanda> {
+export interface CreateDemandOptions extends CreateAnnouncementOptions {
+	city: string;
+	purpose: string;
+	creator: number;
+	periodDefinitionStart: Date | null;
+	periodDefinitionEnd: Date | null;
+	periodExecutionStart: Date | null;
+	periodExecutionEnd: Date | null;
+	periodDeadline: Date | null;
+	temporaryObservations: string | null;
+	beneficiaryCommunity: string;
+	socialNeed: number;
+	degrees?: readonly number[];
+}
+export function crearDemanda(data: CreateDemandOptions): Promise<FormattedDemanda> {
 	return qb.transaction(async (trx) => {
 		// Crear el anuncio de servicio asociado a la demanda
 		const anuncio = await crearAnuncio(data, trx);
@@ -36,23 +56,23 @@ export function crearDemanda(data: DemandaServicioCreateData): Promise<Formatted
 		const [demanda] = await trx(DemandaServicio.Name)
 			.insert({
 				id: anuncio.id,
-				creador: data.creador,
-				ciudad: data.ciudad,
-				finalidad: data.finalidad,
-				periodo_definicion_ini: data.periodo_definicion_ini,
-				periodo_definicion_fin: data.periodo_definicion_fin,
-				periodo_ejecucion_ini: data.periodo_ejecucion_ini,
-				periodo_ejecucion_fin: data.periodo_ejecucion_fin,
-				fecha_fin: data.fecha_fin,
-				observaciones_temporales: data.observaciones_temporales,
-				necesidad_social: data.necesidad_social,
-				comunidad_beneficiaria: data.comunidad_beneficiaria
+				creador: data.creator,
+				ciudad: data.city,
+				finalidad: data.purpose,
+				periodo_definicion_ini: data.periodDefinitionStart,
+				periodo_definicion_fin: data.periodDefinitionEnd,
+				periodo_ejecucion_ini: data.periodExecutionStart,
+				periodo_ejecucion_fin: data.periodExecutionEnd,
+				fecha_fin: data.periodDeadline,
+				observaciones_temporales: data.temporaryObservations,
+				necesidad_social: data.socialNeed,
+				comunidad_beneficiaria: data.beneficiaryCommunity
 			})
 			.returning('*');
 
-		if (!isNullishOrEmpty(data.titulacionesLocales)) {
+		if (!isNullishOrEmpty(data.degrees)) {
 			await trx(TitulacionLocal_Demanda.Name).insert(
-				data.titulacionesLocales.map((titulacion) => ({
+				data.degrees.map((titulacion) => ({
 					id_titulacion: titulacion,
 					id_demanda: anuncio.id
 				}))

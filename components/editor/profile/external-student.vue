@@ -6,13 +6,6 @@
 
 	<label class="form-control">
 		<div class="label">
-			<span class="label-text">Rol</span>
-		</div>
-		<input type="text" class="input input-bordered w-full" disabled="true" value="Estudiante" />
-	</label>
-
-	<label class="form-control">
-		<div class="label">
 			<span class="label-text">Universidad</span>
 		</div>
 		<select v-model="university" class="select select-bordered" required :disabled="error !== null || !universities?.length">
@@ -25,12 +18,12 @@
 		<div class="label">
 			<span class="label-text">Titulación</span>
 		</div>
-		<input v-model="degree" type="text" class="input input-bordered w-full" autocomplete="off" />
+		<input v-model="degree" type="text" class="input input-bordered w-full" placeholder="Introduzca su titulación" autocomplete="off" />
 	</label>
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ university: number; degree: string }>();
+const props = withDefaults(defineProps<{ university: number | undefined | null; degree: string }>(), { university: null });
 const { university, degree } = useVModels(props);
 
 const { data: universities, error } = await useFetch('/api/home/universidades', { method: 'GET' });

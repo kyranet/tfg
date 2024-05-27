@@ -1,6 +1,6 @@
 <template>
 	<h1 class="mb-4 text-3xl font-semibold">Crear Oferta</h1>
-	<form @submit.prevent="performRequest" class="w-full max-w-lg">
+	<form @submit.prevent="performRequest" class="w-full max-w-screen-md">
 		<div class="rounded-lg bg-base-200 p-4 drop-shadow-lg">
 			<label class="form-control w-full">
 				<div class="label">
@@ -153,11 +153,11 @@ const remarks = ref('');
 const serviceAreas = ref<number[]>([]);
 const tags = ref<string[]>([]);
 
+const router = useRouter();
 const error = autoResetRef<string | null>(null, 15000);
-
 async function performRequest() {
 	try {
-		const result = await $fetch('/api/ofertas', {
+		const entry = await $fetch('/api/ofertas', {
 			method: 'POST',
 			body: {
 				title: title.value,
@@ -172,7 +172,7 @@ async function performRequest() {
 			}
 		});
 
-		console.log(result);
+		await router.push(`/ofertas/${entry.id}`);
 	} catch (e: any) {
 		console.log(e);
 		error.value = String(e.statusMessage ?? e.message ?? e);

@@ -1,13 +1,9 @@
 <template>
 	<h1 class="mb-4 text-3xl font-semibold">Proyectos</h1>
-	<div v-if="error" class="alert alert-error text-error-content">
-		<h2 class="font-semibold">Error</h2>
+	<alert v-if="error" type="danger" title="Error">
 		{{ error.statusMessage ?? error.message ?? error }}
-	</div>
-	<div v-else-if="!data?.count" class="alert alert-warning text-warning-content">
-		<h2 class="font-semibold">Advertencia</h2>
-		No hay proyectos registrados en el sistema.
-	</div>
+	</alert>
+	<alert v-else-if="!data?.count" type="warning" title="Advertencia"> No hay proyectos registrados en el sistema. </alert>
 	<div v-else>
 		{{ data }}
 	</div>

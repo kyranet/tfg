@@ -1,3 +1,4 @@
+import { isNullishOrEmpty } from '@sapphire/utilities';
 import { Mail } from '../../types/Mail';
 import { Mensaje } from '../../types/Mensaje';
 import { MensajeAnuncioServicio } from '../../types/MensajeAnuncioServicio';
@@ -6,12 +7,8 @@ import { Newsletter } from '../../types/Newsletter';
 import { Upload } from '../../types/Upload';
 import { Upload_AnuncioServicio } from '../../types/Upload_AnuncioServicio';
 import { Upload_Colaboracion } from '../../types/Upload_Colaboracion';
-import { FormattedUpload, formatUpload } from './_shared';
-
-// Devuelve el upload correspondiente
-export async function obtenerUpload(id: number): Promise<FormattedUpload> {
-	return formatUpload(ensureDatabaseEntry(await qb(Upload.Name).where({ id }).first()));
-}
+import { SearchParameters } from '../shared';
+import { FormattedNewsletter, FormattedUpload, formatNewsletter } from './_shared';
 
 //Devolver mensaje correspondiente
 export async function obtenerMensaje(id: number): Promise<Mensaje.Value> {
@@ -54,6 +51,24 @@ export async function obtenerMail(id: number): Promise<Mail.Value> {
 	return ensureDatabaseEntry(await qb(Mail.Name).where({ id }).first());
 }
 
-export async function obtenerNewsletter(id: number): Promise<Newsletter.Value> {
-	return ensureDatabaseEntry(await qb(Newsletter.Name).where({ id }).first());
+export interface GetAllNewslettersOptions extends SearchParameters {
+	email?: string;
+}
+export async function getAllNewsletters(options: GetAllNewslettersOptions): Promise<FormattedNewsletter[]> {
+	const entries = await qb(Newsletter.Name)
+		.modify((qb) => {
+			if (!isNullishOrEmpty(options.email)) {
+				qb.where(Newsletter.Key('mail_to'), 'like', `%${options.email}%`);
+			}
+		})
+		.limit(options.limit ?? 100)
+		.offset(options.offset ?? 0)
+		.orderBy(Newsletter.Key('created_at'), 'desc');
+
+	return entries.map(formatNewsletter);
+}
+
+export async function getNewsletter(id: number): Promise<FormattedNewsletter> {
+	const entry = ensureDatabaseEntry(await qb(Newsletter.Name).where({ id }).first());
+	return formatNewsletter(entry);
 }

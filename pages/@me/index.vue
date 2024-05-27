@@ -7,7 +7,7 @@
 
 	<form v-else-if="user" @submit.prevent="performRequest" class="w-full">
 		<!-- User Data -->
-		<div class="mt-8 flex w-full flex-row gap-4 rounded-lg bg-base-200 p-4 drop-shadow-lg">
+		<div class="mt-8 flex w-full flex-col items-center gap-4 rounded-lg bg-base-200 p-4 drop-shadow-lg md:flex-row">
 			<!-- Information -->
 			<div class="grow">
 				<h2 class="mb-2 text-left text-2xl font-semibold">
@@ -77,11 +77,11 @@
 			<!-- Avatar -->
 			<div ref="avatarContainerElement" class="relative h-48 w-48 shrink-0">
 				<div class="relative mx-auto block">
-					<picture class="block overflow-hidden rounded-full">
-						<avatar :src="avatarId" />
-					</picture>
+					<img v-if="preview" :src="preview" class="block overflow-hidden rounded-full" />
+					<avatar v-else :src="avatarId" :size="256" class="block overflow-hidden rounded-full" />
+
 					<div
-						class="absolute bottom-0 left-0 right-0 top-0 rounded-full bg-black/40 opacity-0 outline outline-info transition-opacity"
+						class="pointer-events-none absolute bottom-0 left-0 right-0 top-0 rounded-full bg-black/40 opacity-0 outline outline-info transition-opacity"
 						:class="{ 'opacity-100': isOverDropZone }"
 					>
 						<div class="h-full w-full content-center text-center text-xl font-semibold drop-shadow-md">
@@ -95,26 +95,53 @@
 					</div>
 
 					<div class="absolute bottom-0 left-0">
-						<label for="avatar-file-upload" class="btn btn-neutral btn-sm">
-							<Icon name="material-symbols:edit-rounded" />
-							Editar
-						</label>
+						<div class="dropdown dropdown-hover">
+							<div tabindex="0" role="button" class="btn btn-neutral btn-sm">
+								<Icon name="material-symbols:edit-rounded" />
+								Editar
+							</div>
+							<ul tabindex="0" class="menu dropdown-content z-[1] w-52 rounded-box bg-base-100 p-2 shadow">
+								<li>
+									<label for="avatar-file-upload">
+										<Icon name="material-symbols:add-a-photo-rounded" />
+										Subir imagen
+									</label>
+								</li>
+								<li v-if="avatarId">
+									<button
+										class="text-error"
+										@click.prevent="
+											file = null;
+											avatarId = null;
+										"
+									>
+										<Icon name="material-symbols:delete-rounded" />
+										Eliminar imagen
+									</button>
+								</li>
+							</ul>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 
 		<!-- Role Data -->
-		<div class="mt-8 grid w-full rounded-lg bg-base-200 p-4 drop-shadow-lg">
+		<div class="relative -z-10 mt-8 grid w-full rounded-lg bg-base-200 p-4 drop-shadow-lg">
 			<h2 class="mb-2 text-left text-2xl font-semibold">
 				<Icon name="material-symbols:user-attributes-rounded" class="h-8 w-8" aria-hidden="true" />
 				Información
 			</h2>
 
-			<div class="grid grid-cols-3 gap-4">
-				<editor-profile-admin v-if="user.role === 'Admin'" />
-				<editor-profile-tutor v-else-if="user.role === 'Tutor'" />
-				<editor-profile-internal-professor v-else-if="user.role === 'InternalProfessor'" />
+			<div class="grid md:grid-cols-3 md:gap-4">
+				<label class="form-control">
+					<div class="label">
+						<span class="label-text">Rol</span>
+					</div>
+					<input type="text" class="input input-bordered w-full" disabled="true" :value="UserRoleMapping[user.role]" autocomplete="off" />
+				</label>
+
+				<editor-profile-internal-professor v-if="user.role === 'InternalProfessor'" v-model:knowledgeAreas="knowledgeAreas" />
 				<editor-profile-external-professor
 					v-else-if="user.role === 'ExternalProfessor'"
 					v-model:university="university"
@@ -135,7 +162,6 @@
 					v-model:mission="communityPartnerMission"
 					v-model:name="communityPartnerName"
 				/>
-				<editor-profile-aps-office v-else-if="user.role === 'ApSOffice'" />
 			</div>
 		</div>
 
@@ -145,7 +171,7 @@
 				<Icon name="material-symbols:shield-lock-rounded" class="h-8 w-8" aria-hidden="true" />
 				Seguridad
 			</h2>
-			<div class="grid grid-cols-3 gap-4">
+			<div class="grid md:grid-cols-3 md:gap-4">
 				<label class="form-control w-full">
 					<div class="label">
 						<span class="label-text">Contraseña Actual</span>
@@ -196,18 +222,27 @@
 				</label>
 			</div>
 		</div>
+
+		<div class="mt-8">
+			<button type="submit" class="btn btn-primary">Guardar Cambios</button>
+		</div>
+
+		<alert v-if="updateError" type="danger" title="Error" class="col-span-3">
+			{{ updateError }}
+		</alert>
 	</form>
 
 	<input id="avatar-file-upload" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/tiff" class="hidden" @change="setFile" />
 </template>
 
 <script setup lang="ts">
+import { isNullishOrEmpty } from '@sapphire/utilities';
 import type { ViewUser } from '~/server/utils/database/services/types/views/User';
 
 definePageMeta({ auth: true });
 
 const auth = useAuth();
-const avatarId = computed(() => auth.session.value?.avatar ?? null);
+const avatarId = ref(auth.session.value?.avatar ?? null);
 
 const { data, error, execute } = useFetch('/api/users/@me', { method: 'GET', immediate: false });
 if (auth.loggedIn.value) {
@@ -215,8 +250,11 @@ if (auth.loggedIn.value) {
 }
 
 const avatarContainerElement = ref<HTMLDivElement>(null!);
-const { files: dropZoneFiles, isOverDropZone } = useDropZone(avatarContainerElement, {
-	dataTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/tiff']
+const { isOverDropZone } = useDropZone(avatarContainerElement, {
+	dataTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/tiff'],
+	onDrop(files) {
+		file.value = isNullishOrEmpty(files) ? undefined : files[0];
+	}
 });
 
 const user = data.value as ViewUser.Value | null;
@@ -224,14 +262,26 @@ const firstName = ref(user?.firstName ?? '');
 const lastName = ref(user?.lastName ?? '');
 const email = ref(user?.email ?? '');
 const phone = ref(user?.phone ?? null);
-const file = ref<File | null>(null);
+const file = ref<File | null | undefined>(undefined);
 const currentPassword = ref('');
 const password = ref('');
 const repeatPassword = ref('');
 
-watch(dropZoneFiles, (files) => {
-	file.value = files?.length ? files[0] : null;
-});
+const preview = ref<string | null>(null);
+if (process.client) {
+	const fileReader = new FileReader();
+	fileReader.addEventListener('load', () => {
+		preview.value = fileReader.result as string;
+	});
+
+	watch(file, (file) => {
+		if (file) {
+			fileReader.readAsDataURL(file);
+		} else {
+			preview.value = null;
+		}
+	});
+}
 
 const degreeId = ref(0);
 const degreeName = ref('');
@@ -243,11 +293,16 @@ const communityPartnerSector = ref('');
 const communityPartnerUrl = ref('');
 const communityPartnerMission = ref('');
 const communityPartnerName = ref('');
-if (user) {
+if (user) setValuesFromUser(user);
+
+function setValuesFromUser(user: ViewUser.Value) {
 	switch (user.role) {
 		case 'ExternalStudent':
 			university.value = user.university;
 			degreeName.value = user.degree;
+			break;
+		case 'InternalProfessor':
+			knowledgeAreas.value = user.knowledgeAreas.slice();
 			break;
 		case 'ExternalProfessor':
 			university.value = user.university;
@@ -298,7 +353,104 @@ function setFile(event: Event) {
 	file.value = target.files?.length ? target.files[0] : null;
 }
 
-function performRequest() {}
+function getJsonBodyShared() {
+	return {
+		firstName: firstName.value || undefined,
+		lastName: lastName.value || undefined,
+		phone: phone.value || undefined,
+		password: password.value || undefined,
+		currentPassword: currentPassword.value || undefined
+	};
+}
+
+function getJsonBodyExternalStudent() {
+	return { university: university.value, degree: degreeName.value };
+}
+
+function getJsonBodyInternalProfessor() {
+	return { knowledgeAreas: knowledgeAreas.value };
+}
+
+function getJsonBodyExternalProfessor() {
+	return { university: university.value, knowledgeAreas: knowledgeAreas.value, faculty: faculty.value };
+}
+
+function getJsonBodyCommunityPartner() {
+	return {
+		sector: communityPartnerSector.value,
+		url: communityPartnerUrl.value,
+		mission: communityPartnerMission.value,
+		name: communityPartnerName.value
+	};
+}
+
+function getJsonBodyInternalStudent() {
+	return { degree: degreeId.value };
+}
+
+function getJsonBodyCollaborator() {
+	return { university: university.value, faculty: faculty.value };
+}
+
+function getJsonBody() {
+	const body = getJsonBodyShared();
+	switch (user?.role) {
+		case 'ExternalStudent':
+			return { ...body, ...getJsonBodyExternalStudent() };
+		case 'InternalProfessor':
+			return { ...body, ...getJsonBodyInternalProfessor() };
+		case 'ExternalProfessor':
+			return { ...body, ...getJsonBodyExternalProfessor() };
+		case 'CommunityPartner':
+			return { ...body, ...getJsonBodyCommunityPartner() };
+		case 'InternalStudent':
+			return { ...body, ...getJsonBodyInternalStudent() };
+		case 'Collaborator':
+			return { ...body, ...getJsonBodyCollaborator() };
+		default:
+			return body;
+	}
+}
+
+const updateError = refAutoReset<string | null>(null, 30000);
+async function performRequest() {
+	const json = getJsonBody();
+
+	let body: FormData | object;
+	if (file.value) {
+		const form = new FormData();
+		form.append('files[0]', file.value);
+		form.append('payload_json', new Blob([JSON.stringify(json)], { type: 'application/json' }));
+		body = form;
+	} else {
+		body = { ...json, avatar: file.value };
+	}
+
+	try {
+		// @ts-expect-error Nitro $fetch issue
+		const user = (await $fetch('/api/users/@me', { method: 'PATCH', body })) as ViewUser.Value;
+		firstName.value = user.firstName;
+		lastName.value = user.lastName;
+		email.value = user.email;
+		phone.value = user.phone;
+		file.value = undefined;
+		currentPassword.value = '';
+		password.value = '';
+		repeatPassword.value = '';
+		avatarId.value = user.avatar;
+		setValuesFromUser(user);
+		auth.session.value = {
+			id: user.id,
+			email: user.email,
+			avatar: user.avatar,
+			firstName: user.firstName,
+			lastName: user.lastName,
+			role: user.role
+		};
+	} catch (e: any) {
+		updateError.value = String(e.statusMessage ?? e.message ?? e);
+	}
+}
 </script>
 
 <style scoped></style>

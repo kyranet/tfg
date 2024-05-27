@@ -1,6 +1,6 @@
 <template>
 	<h1 class="mb-4 text-3xl font-semibold">Formulario de registro</h1>
-	<div class="prose mt-8 w-full max-w-lg rounded-lg bg-base-200 p-4 text-left drop-shadow-lg">
+	<div class="prose mt-8 w-full max-w-screen-md rounded-lg bg-base-200 p-4 text-left drop-shadow-lg">
 		<h2 class="text-xl font-semibold">Selección de perfil de usuario</h2>
 		<p>En esta página puedes registrarte dentro de la aplicación <strong>Portal ApS</strong>.</p>
 		<p>
@@ -67,7 +67,7 @@
 				</label>
 			</div>
 
-			<div class="mt-4 grid md:grid-cols-2 md:gap-4">
+			<div class="grid md:mt-4 md:grid-cols-2 md:gap-4">
 				<label class="form-control w-full">
 					<div class="label">
 						<span class="label-text">Contraseña</span>
@@ -119,125 +119,24 @@
 
 			<template v-if="type === 'ExternalStudent'">
 				<hr class="mb-4 mt-8" />
-				<label class="form-control w-full">
-					<div class="label">
-						<span class="label-text">Universidad</span>
-					</div>
-					<input
-						v-model="studentUniversity"
-						type="text"
-						placeholder="Introduzca su universidad o institución educativa"
-						autocomplete="off"
-						required
-						class="input input-bordered w-full"
-					/>
-				</label>
-				<label class="form-control w-full">
-					<div class="label">
-						<span class="label-text">Titulación</span>
-					</div>
-					<input
-						v-model="studentDegree"
-						type="text"
-						placeholder="Introduzca su titulación"
-						autocomplete="off"
-						required
-						class="input input-bordered w-full"
-					/>
-				</label>
+				<editor-profile-external-student v-model:university="studentUniversity" v-model:degree="studentDegree" />
 			</template>
 			<template v-else-if="type === 'ExternalProfessor'">
 				<hr class="mb-4 mt-8" />
-				<label class="form-control w-full">
-					<div class="label">
-						<span class="label-text">Universidad</span>
-					</div>
-					<input
-						v-model="professorUniversity"
-						type="text"
-						placeholder="Introduzca su universidad o institución educativa"
-						autocomplete="off"
-						required
-						class="input input-bordered w-full"
-					/>
-				</label>
-				<label class="form-control mt-4">
-					<div class="label">
-						<span class="label-text">Area/s de conocimiento UNESCO</span>
-					</div>
-					<select v-model="professorKnowledgeAreas" class="select select-bordered" required multiple :disabled="!data?.length">
-						<option disabled :value="null">Selecciona la/s área/s de conocimiento</option>
-						<option v-for="area in data" :key="area.id" :value="area.id">{{ area.nombre }}</option>
-					</select>
-				</label>
-				<label class="form-control mt-4 w-full">
-					<div class="label">
-						<span class="label-text">Facultad o escuela</span>
-					</div>
-					<input
-						v-model="professorFaculty"
-						type="text"
-						placeholder="Introduzca su facultad o escuela"
-						autocomplete="off"
-						required
-						class="input input-bordered w-full"
-					/>
-				</label>
+				<editor-profile-external-professor
+					v-model:university="professorUniversity"
+					v-model:faculty="professorFaculty"
+					v-model:knowledgeAreas="professorKnowledgeAreas"
+				/>
 			</template>
 			<template v-else-if="type === 'CommunityPartner'">
 				<hr class="mb-4 mt-8" />
-				<label class="form-control w-full">
-					<div class="label">
-						<span class="label-text">Sector</span>
-					</div>
-					<input
-						v-model="communityPartnerSector"
-						type="text"
-						placeholder="Introduzca el sector de su institución"
-						autocomplete="off"
-						required
-						class="input input-bordered w-full"
-					/>
-				</label>
-				<label class="form-control mt-4 w-full">
-					<div class="label">
-						<span class="label-text">URL</span>
-					</div>
-					<input
-						v-model="communityPartnerUrl"
-						type="url"
-						placeholder="Introduzca la URL de su institución"
-						autocomplete="url"
-						required
-						class="input input-bordered w-full"
-					/>
-				</label>
-				<label class="form-control mt-4 w-full">
-					<div class="label">
-						<span class="label-text">Misión</span>
-					</div>
-					<input
-						v-model="communityPartnerMission"
-						type="text"
-						placeholder="Introduzca la misión de su institución"
-						autocomplete="work"
-						required
-						class="input input-bordered w-full"
-					/>
-				</label>
-				<label class="form-control mt-4 w-full">
-					<div class="label">
-						<span class="label-text">Nombre</span>
-					</div>
-					<input
-						v-model="communityPartnerName"
-						type="text"
-						placeholder="Introduzca el nombre de su institución"
-						autocomplete="organization"
-						required
-						class="input input-bordered w-full"
-					/>
-				</label>
+				<editor-profile-community-partner
+					v-model:sector="communityPartnerSector"
+					v-model:url="communityPartnerUrl"
+					v-model:mission="communityPartnerMission"
+					v-model:name="communityPartnerName"
+				/>
 			</template>
 
 			<label class="label mt-4 cursor-pointer justify-start gap-2">
@@ -265,10 +164,10 @@ const phone = ref<number>();
 const password = ref('');
 const repeatPassword = ref('');
 
-const studentUniversity = ref('');
+const studentUniversity = ref<number>();
 const studentDegree = ref('');
 
-const professorUniversity = ref('');
+const professorUniversity = ref<number>();
 const professorKnowledgeAreas = ref<number[]>([]);
 const professorFaculty = ref('');
 
@@ -305,8 +204,6 @@ const filled = computed(() => {
 		return communityPartnerSector.value && communityPartnerUrl.value && communityPartnerMission.value && communityPartnerName.value;
 	}
 });
-
-const { data } = await useFetch('/api/knowledge-areas', { method: 'GET' });
 
 const auth = useAuth();
 const router = useRouter();

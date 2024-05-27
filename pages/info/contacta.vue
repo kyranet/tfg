@@ -3,62 +3,80 @@
 		<h1>Sobre ApS - Contacta</h1>
 	</section>
 
-	<form class="mt-8 rounded-xl border bg-base-200 p-4 drop-shadow-lg" @submit.prevent="">
+	<form class="mt-8 max-w-screen-md rounded-lg bg-base-200 p-4 drop-shadow-lg" @submit.prevent="">
 		<p class="text-sm">Por favor, rellena el siguiente formulario para contactar con nosotros.</p>
 		<hr />
 
-		<div class="mt-4 grid gap-4 md:grid-cols-2">
-			<div>
-				<label for="contact-first-name" class="form-label">Nombre</label>
+		<div class="mt-4 grid md:grid-cols-2 md:gap-4">
+			<label class="form-control w-full">
+				<div class="label">
+					<span class="label-text">Nombre *</span>
+				</div>
 				<input
-					id="contact-first-name"
 					v-model="formFirstName"
 					type="text"
+					placeholder="Introduzca su nombre"
 					autocomplete="given-name"
-					class="form-input"
-					placeholder="Introduce tu nombre"
+					class="input input-bordered w-full"
 					required
 				/>
-			</div>
-			<div>
-				<label for="contact-last-name" class="form-label">Apellidos</label>
+			</label>
+
+			<label class="form-control w-full">
+				<div class="label">
+					<span class="label-text">Apellidos *</span>
+				</div>
 				<input
-					id="contact-last-name"
 					v-model="formLastName"
-					type="email"
+					type="text"
+					placeholder="Introduzca sus apellidos"
 					autocomplete="family-name"
-					class="form-input"
-					placeholder="Introduce tus apellidos"
+					class="input input-bordered w-full"
 					required
 				/>
-			</div>
-			<div>
-				<label for="contact-email" class="form-label">Correo electrónico</label>
+			</label>
+
+			<label class="form-control w-full">
+				<div class="label">
+					<span class="label-text">Correo electrónico *</span>
+				</div>
 				<input
-					id="contact-email"
 					v-model="formEmail"
 					type="email"
+					placeholder="Introduzca su correo electrónico"
 					autocomplete="email"
-					class="form-input"
-					placeholder="socio@uned.es"
+					class="input input-bordered w-full"
 					required
 				/>
-			</div>
-			<div>
-				<label for="contact-kind" class="form-label">Área sobre la que trata el mensaje</label>
-				<select id="contact-kind" v-model="formKind" class="form-input">
+			</label>
+
+			<label class="form-control w-full">
+				<div class="label">
+					<span class="label-text">Área sobre la que trata el mensaje *</span>
+				</div>
+				<select v-model="formKind" class="select select-bordered" required>
 					<option :value="0">Pregunta sin categorizar</option>
 					<option :value="1">Sugerir oferta</option>
 					<option :value="2">Problema con la aplicación</option>
 					<option :value="3">Relacionado con el sistema de registro y login</option>
 				</select>
-			</div>
+			</label>
 		</div>
 
-		<label for="contact-message" class="form-label mt-4">Correo electrónico</label>
-		<textarea id="contact-message" v-model="formMessage" class="form-input" placeholder="Escribe lo que quieras contarnos" required></textarea>
+		<label class="form-control w-full">
+			<div class="label">
+				<span class="label-text">Mensaje *</span>
+			</div>
+			<textarea
+				v-model="formMessage"
+				placeholder="Escribe lo que quieras contarnos"
+				autocomplete="off"
+				class="input input-bordered w-full"
+				required
+			></textarea>
+		</label>
 
-		<button type="submit" class="button-solid mt-4">Enviar mensaje</button>
+		<button type="submit" class="btn btn-neutral mt-4">Enviar mensaje</button>
 	</form>
 </template>
 

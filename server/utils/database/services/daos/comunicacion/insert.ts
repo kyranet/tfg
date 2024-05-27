@@ -8,7 +8,7 @@ import { Newsletter } from '../../types/Newsletter';
 import { Upload } from '../../types/Upload';
 import { Upload_AnuncioServicio } from '../../types/Upload_AnuncioServicio';
 import { Upload_Colaboracion } from '../../types/Upload_Colaboracion';
-import { FormattedUpload, formatUpload } from './_shared';
+import { FormattedNewsletter, FormattedUpload, formatNewsletter, formatUpload } from './_shared';
 
 //Crear nuevo mensaje
 export async function crearMensajeAnuncio(data: Mensaje.CreateData, anuncioId: number): Promise<Mensaje.Value> {
@@ -90,9 +90,12 @@ export async function crearMail(data: Mail.CreateData): Promise<Mail.Value> {
 	return mail;
 }
 
-export async function crearNewsletter(data: Newsletter.CreateData): Promise<Newsletter.Value> {
-	const [news] = await qb(Newsletter.Name) //
-		.insert(data)
-		.returning('*');
-	return news;
+export interface CreateNewsletterOptions {
+	mailTo: string;
+}
+export async function putNewsletter(data: CreateNewsletterOptions): Promise<void> {
+	await qb(Newsletter.Name) //
+		.insert({ mail_to: data.mailTo })
+		.onConflict(Newsletter.Key('mail_to'))
+		.ignore();
 }

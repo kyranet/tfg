@@ -7,22 +7,17 @@ import { Partenariado } from '../../types/Partenariado';
 import { PrevioPartenariado } from '../../types/PrevioPartenariado';
 import { Profesor_Colaboracion } from '../../types/Profesor_Colaboracion';
 import { Proyecto } from '../../types/Proyecto';
+import { sharedUpdateAndReturn } from '../shared';
 import { formatNota, formatPartenariado, formatProyecto, type FormattedNota, type FormattedPartenariado, type FormattedProyecto } from './_shared';
 
 export type ColaboracionUpdateData = { id: number } & Partial<Colaboracion.Value> & { profesores?: readonly number[] };
 async function actualizarColaboracion(data: ColaboracionUpdateData, trx: Knex.Transaction): Promise<Colaboracion.Value> {
-	const entry = getFirstDatabaseEntry(
-		await trx(Colaboracion.Name)
-			.where({ id: data.id })
-			.update({
-				titulo: data.titulo,
-				descripcion: data.descripcion,
-				admite_externos: data.admite_externos,
-				responsable: data.responsable
-			})
-			.returning('*'),
-		'No se ha encontrado una colaboración con el ID proporcionado'
-	);
+	const entry = await sharedUpdateAndReturn({
+		table: Colaboracion.Name,
+		where: { id: data.id },
+		data: { titulo: data.titulo, descripcion: data.descripcion, admite_externos: data.admite_externos, responsable: data.responsable },
+		trx
+	});
 
 	await trx(Profesor_Colaboracion.Name).where({ id_colaboracion: data.id }).del();
 	if (!isNullishOrEmpty(data.profesores)) {
@@ -41,13 +36,12 @@ export type PartenariadoUpdateData = ColaboracionUpdateData & Partial<Partenaria
 export function actualizarPartenariado(data: PartenariadoUpdateData): Promise<FormattedPartenariado> {
 	return qb.transaction(async (trx) => {
 		const colaboracion = await actualizarColaboracion(data, trx);
-		const partenariado = getFirstDatabaseEntry(
-			await trx(Partenariado.Name)
-				.where({ id: data.id })
-				.update({ id_demanda: data.id_demanda, id_oferta: data.id_oferta, estado: data.estado })
-				.returning('*'),
-			'No se ha encontrado un partenariado a actualizar con el ID proporcionado'
-		);
+		const partenariado = await sharedUpdateAndReturn({
+			table: Partenariado.Name,
+			where: { id: data.id },
+			data: { id_demanda: data.id_demanda, id_oferta: data.id_oferta, estado: data.estado },
+			trx
+		});
 
 		return formatPartenariado({ ...colaboracion, ...partenariado });
 	});
@@ -57,11 +51,12 @@ export type ProyectoUpdateData = ColaboracionUpdateData & Partial<Proyecto.Value
 export async function actualizarProyecto(data: ProyectoUpdateData): Promise<FormattedProyecto> {
 	return qb.transaction(async (trx) => {
 		const colaboracion = await actualizarColaboracion(data, trx);
-		const proyectos = await trx(Proyecto.Name)
-			.where({ id: data.id })
-			.update({ id_partenariado: data.id_partenariado, estado: data.estado })
-			.returning('*');
-		const proyecto = getFirstDatabaseEntry(proyectos, 'No se ha encontrado un proyecto a actualizar con el ID proporcionado');
+		const proyecto = await sharedUpdateAndReturn({
+			table: Proyecto.Name,
+			where: { id: data.id },
+			data: { id_partenariado: data.id_partenariado, estado: data.estado },
+			trx
+		});
 
 		await trx(EstudianteProyecto.Name).where({ id_proyecto: data.id }).del();
 		if (!isNullishOrEmpty(data.estudiantes)) {
@@ -79,10 +74,11 @@ export async function actualizarProyecto(data: ProyectoUpdateData): Promise<Form
 
 export type NotaUpdateData = Pick<Nota.Value, 'id' | 'nota'>;
 export async function actualizarNota(nota: NotaUpdateData): Promise<FormattedNota> {
-	const entry = getFirstDatabaseEntry(
-		await qb(Nota.Name).where({ id: nota.id }).update({ nota: nota.nota }).returning('*'),
-		'No se ha encontrado una nota a actualizar con el ID proporcionado'
-	);
+	const entry = await sharedUpdateAndReturn({
+		table: Nota.Name,
+		where: { id: nota.id },
+		data: { nota: nota.nota }
+	});
 
 	return formatNota(entry);
 }

@@ -1,25 +1,26 @@
 <template>
-	<img ref="imageElement" v-if="src" v-show="!shouldDisplayDefault" :src="src" alt="Avatar" @load="onLoad" @error="onError" />
-	<icons-avatar-default v-show="shouldDisplayDefault" />
+	<picture class="bg-base-300">
+		<source v-if="src" type="image/webp" :srcset="srcsetWebp" />
+		<source v-if="src" type="image/png" :srcset="srcsetPng" />
+		<object v-if="src" :data="src" type="image/png" class="h-full w-full">
+			<icons-avatar-default />
+		</object>
+		<icons-avatar-default v-else />
+	</picture>
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ src: string | null }>();
-const src = computed(() => (props.src ? `/avatars/${props.src}` : null));
+const props = withDefaults(defineProps<{ src: string | null; size: 64 | 128 | 256 | 512; densities?: number[] }>(), {
+	densities: () => [1, 2]
+});
+const src = computed(() => (props.src ? `/avatars/${props.src}.webp` : null));
 
-const imageElement = ref<HTMLImageElement>(null!);
-const loading = ref(true);
-const errored = ref(false);
+const sizes = computed(() => props.densities.map((density) => ({ suffix: `${density}x`, size: props.size * density })));
 
-const shouldDisplayDefault = computed(() => !src || loading.value || errored.value);
+const srcsetWebp = makeGroupIconSrcset('webp');
+const srcsetPng = makeGroupIconSrcset('png');
 
-function onLoad() {
-	loading.value = false;
-	errored.value = false;
-}
-
-function onError() {
-	loading.value = false;
-	errored.value = true;
+function makeGroupIconSrcset(format: 'webp' | 'png') {
+	return computed(() => sizes.value.map(({ size, suffix }) => `/avatars/${props.src}.${format}?size=${size} ${suffix}`).join(', '));
 }
 </script>

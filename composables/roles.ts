@@ -11,3 +11,7 @@ export function isProfessorRole(role: ViewUser.ValueUserType | null) {
 export function isCommunityPartnerRole(role: ViewUser.ValueUserType | null) {
 	return role === 'CommunityPartner';
 }
+
+export function isAdminRole(role: ViewUser.ValueUserType | null) {
+	return role === 'Admin';
+}

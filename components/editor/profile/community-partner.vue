@@ -1,13 +1,6 @@
 <template>
 	<label class="form-control">
 		<div class="label">
-			<span class="label-text">Rol</span>
-		</div>
-		<input type="text" class="input input-bordered w-full" disabled="true" value="Socio Comunitario" />
-	</label>
-
-	<label class="form-control">
-		<div class="label">
 			<span class="label-text">Sector</span>
 		</div>
 		<input

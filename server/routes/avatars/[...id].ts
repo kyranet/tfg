@@ -23,7 +23,7 @@ export default eventHandler(async (event) => {
 		format = 'webp';
 	}
 
-	const path = join(Root, `${id}.png`);
+	const path = join(Root, `${id}.webp`);
 	const canRead = await access(path, constants.R_OK)
 		.then(() => true)
 		.catch(() => false);

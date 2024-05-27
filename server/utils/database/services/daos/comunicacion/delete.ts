@@ -30,6 +30,6 @@ export function eliminarMail(id_mail: number): Promise<boolean> {
 	return sharedDeleteEntryTable(Mail.Name, id_mail);
 }
 
-export async function eliminarNewsletter(id: number): Promise<boolean> {
+export async function deleteNewsletter(id: number): Promise<boolean> {
 	return sharedDeleteEntryTable(Newsletter.Name, id);
 }

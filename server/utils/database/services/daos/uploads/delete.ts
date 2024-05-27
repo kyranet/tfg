@@ -1,5 +1,5 @@
 import type { Knex } from 'knex';
-import { access, constants, rm } from 'node:fs/promises';
+import { rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { Upload } from '../../types/Upload';
 import { getLocalFileUploadRoot } from './_shared';
@@ -19,11 +19,12 @@ export async function deleteUpload(
 	// If the entry exists, delete the file and the entry:
 	if (entry) {
 		const path = resolve(getLocalFileUploadRoot(type, field), entry.path);
-		const canWrite = await access(path, constants.F_OK)
-			.then(() => true)
-			.catch(() => false);
 
-		if (canWrite) await rm(path);
+		try {
+			await rm(path);
+		} catch (error) {
+			console.error(`Error deleting file at path: ${path}`, error);
+		}
 		await trx(Upload.Name).where({ id: entry.id }).del();
 	}
 

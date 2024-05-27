@@ -66,3 +66,46 @@ INNER JOIN partenariado pa ON colaboracion.id = pa.id
 INNER JOIN oferta_servicio os ON pa.id_oferta = os.id
 INNER JOIN demanda_servicio ds ON pa.id_demanda = ds.id
 INNER JOIN socio_comunitario sc ON ds.creador = sc.id;
+
+CREATE OR REPLACE SQL SECURITY INVOKER VIEW view_demand AS
+SELECT
+    demanda.id,
+    demanda.ciudad as `city`,
+    demanda.finalidad as `purpose`,
+    demanda.periodo_definicion_ini as `periodDefinitionStart`,
+    demanda.periodo_definicion_fin as `periodDefinitionEnd`,
+    demanda.periodo_ejecucion_ini as `periodEjecutionStart`,
+    demanda.periodo_ejecucion_ini as `periodEjecutionEnd`,
+    demanda.fecha_fin as `periodDeadline`,
+    demanda.observaciones_temporales as `temporaryObservations`,
+    demanda.comunidad_beneficiaria as `beneficiaryCommunity`,
+    anuncio.titulo as `title`,
+    anuncio.descripcion as `description`,
+    anuncio.created_at as `createdAt`,
+    anuncio.updated_at as `updatedAt`,
+    anuncio.imagen as `image`,
+    ns.id as `socialNeedId`,
+    ns.nombre as `socialNeedName`,
+    sc.id as `creatorId`,
+    sc.nombre_socioComunitario as `creatorName`,
+    sc.mision as `creatorMission`,
+    sc.sector as `creatorSector`,
+    sc.url as `creatorUrl`,
+    u.origin_img as `creatorAvatar`,
+    (
+        SELECT COALESCE(JSON_ARRAYAGG(sa.nombre), JSON_ARRAY())
+        FROM areaservicio_anuncioservicio sa_sa
+        INNER JOIN area_servicio sa ON sa_sa.id_area = sa.id
+        WHERE sa_sa.id_anuncio = anuncio.id
+    ) as `serviceAreas`,
+    (
+        SELECT COALESCE(JSON_ARRAYAGG(tl.nombre), JSON_ARRAY())
+        FROM titulacionlocal_demanda degree
+        INNER JOIN titulacion_local tl on degree.id_titulacion = tl.id
+        WHERE degree.id_demanda = demanda.id
+    ) as `degrees`
+FROM demanda_servicio demanda
+INNER JOIN anuncio_servicio anuncio ON demanda.id = anuncio.id
+INNER JOIN necesidad_social ns ON demanda.necesidad_social = ns.id
+INNER JOIN socio_comunitario sc ON demanda.creador = sc.id
+INNER JOIN usuario u on sc.id = u.id;

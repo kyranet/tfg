@@ -2,15 +2,6 @@ import { isNullishOrEmpty } from '@sapphire/utilities';
 import bcrypt from 'bcryptjs';
 import type { H3Event } from 'h3';
 import { z } from 'zod';
-import { obtenerUsuarioSinRolPorId } from '~/server/utils/database/services/daos/usuario/get';
-import type { ViewUser } from '~/server/utils/database/services/types/views/User';
-import type { ViewUserAdmin } from '~/server/utils/database/services/types/views/UserAdmin';
-import type { ViewUserApSOffice } from '~/server/utils/database/services/types/views/UserApSOffice';
-import type { ViewUserCommunityPartner } from '~/server/utils/database/services/types/views/UserCommunityPartner';
-import type { ViewUserExternalProfessor } from '~/server/utils/database/services/types/views/UserExternalProfessor';
-import type { ViewUserExternalStudent } from '~/server/utils/database/services/types/views/UserExternalStudent';
-import type { ViewUserInternalProfessor } from '~/server/utils/database/services/types/views/UserInternalProfessor';
-import type { ViewUserInternalStudent } from '~/server/utils/database/services/types/views/UserInternalStudent';
 import {
 	actualizarAdmin,
 	actualizarEstudianteExterno,
@@ -19,13 +10,17 @@ import {
 	actualizarProfesorExterno,
 	actualizarProfesorInterno,
 	actualizarSocioComunitario
-} from '../../../utils/database/services/daos/usuario/update';
+} from '~/server/utils/database/services/daos/usuario/update';
+import type { ViewUser } from '~/server/utils/database/services/types/views/User';
+import { ViewUserPrivileged } from '~/server/utils/database/services/types/views/UserPrivileged';
 
 const baseSchemaBody = z.object({
 	password: z.string().trim().min(6).max(100).optional(),
+	currentPassword: z.string().trim().min(6).max(100).optional(),
 	firstName: z.string().trim().min(2).max(100).optional(),
 	lastName: z.string().trim().min(2).max(100).optional(),
 	phone: z.number().int().optional(),
+	avatar: z.null().optional(),
 	acceptedTerms: z.boolean().optional()
 });
 
@@ -38,34 +33,34 @@ export default eventHandler(async (event) => {
 	}
 
 	// Only administrators can update other users:
-	if (session.data.id !== id && session.data.role !== 'Admin') {
+	const isSelf = session.data.id === id;
+	if (!isSelf && session.data.role !== 'Admin') {
 		throw createError({ statusCode: 403, statusMessage: 'Operación no autorizada, solo gestores.' });
 	}
 
-	const usuario = await obtenerUsuarioSinRolPorId(id);
-
+	const usuario = ensureDatabaseEntry(await qb(ViewUserPrivileged.Name).where({ id }).first());
 	let updated: ViewUser.Value;
 	switch (usuario.role) {
 		case 'Admin':
-			updated = await updateAdmin(usuario as ViewUserAdmin.Value, event);
+			updated = await updateAdmin(usuario, isSelf, event);
 			break;
 		case 'InternalProfessor':
-			updated = await updateInternalProfessor(usuario as ViewUserInternalProfessor.Value, event);
+			updated = await updateInternalProfessor(usuario, isSelf, event);
 			break;
 		case 'ExternalProfessor':
-			updated = await updateExternalProfessor(usuario as ViewUserExternalProfessor.Value, event);
+			updated = await updateExternalProfessor(usuario, isSelf, event);
 			break;
 		case 'InternalStudent':
-			updated = await updateInternalStudent(usuario as ViewUserInternalStudent.Value, event);
+			updated = await updateInternalStudent(usuario, isSelf, event);
 			break;
 		case 'ExternalStudent':
-			updated = await updateExternalStudent(usuario as ViewUserExternalStudent.Value, event);
+			updated = await updateExternalStudent(usuario, isSelf, event);
 			break;
 		case 'ApSOffice':
-			updated = await updateApSOffice(usuario as ViewUserApSOffice.Value, event);
+			updated = await updateApSOffice(usuario, isSelf, event);
 			break;
 		case 'CommunityPartner':
-			updated = await updateCommunityPartner(usuario as ViewUserCommunityPartner.Value, event);
+			updated = await updateCommunityPartner(usuario, isSelf, event);
 			break;
 		default:
 			throw createError({ statusCode: 400, statusMessage: 'No se puede actualizar los datos para tu rol' });
@@ -85,13 +80,14 @@ export default eventHandler(async (event) => {
 	return updated;
 });
 
+const FilesRegExp = /^files\[(\d+)\]$/;
 async function sharedReadBody<T>(event: H3Event, schema: z.ZodType<T>): Promise<T & { avatar: Buffer | null }> {
 	const contentType = event.headers.get('content-type');
 	if (contentType === 'application/json') {
 		return { ...(await readValidatedBody(event, schema.parse)), avatar: null };
 	}
 
-	if (contentType === 'multipart/form-data') {
+	if (contentType?.startsWith('multipart/form-data')) {
 		const parts = await readMultipartFormData(event);
 		if (isNullishOrEmpty(parts)) {
 			throwValidationError('No se ha proporcionado ningún dato');
@@ -106,70 +102,95 @@ async function sharedReadBody<T>(event: H3Event, schema: z.ZodType<T>): Promise<
 				}
 
 				json = schema.parse(JSON.parse(part.data.toString()));
-			} else if (part.name === 'avatar') {
+				continue;
+			}
+
+			if (isNullishOrEmpty(part.name)) {
+				throwValidationError('Se ha proporcionado un campo sin nombre');
+			}
+
+			const match = FilesRegExp.exec(part.name);
+			if (match !== null) {
 				if (avatar !== null) {
 					throwValidationError('Se ha proporcionado más de un archivo');
+				}
+
+				if (match[1] !== '0') {
+					throwValidationError('El archivo proporcionado no es válido');
 				}
 
 				avatar = part.data;
 			}
 		}
 
-		return { ...(json ?? {}), avatar } as T & { avatar: Buffer | null };
+		return { avatar, ...(json ?? {}) } as T & { avatar: Buffer | null };
 	}
 
 	throwValidationError('Tipo de contenido no soportado');
 }
 
-async function sharedReplacePassword<T extends z.infer<typeof baseSchemaBody>>(body: T): Promise<T> {
-	return {
-		...body,
-		password: isNullishOrEmpty(body.password) ? undefined : await bcrypt.hash(body.password, await bcrypt.genSalt())
-	};
+async function sharedReplacePassword<T extends z.infer<typeof baseSchemaBody>>(user: ViewUserPrivileged.Value, isSelf: boolean, body: T): Promise<T> {
+	let password: string | undefined = undefined;
+	if (!isNullishOrEmpty(body.password)) {
+		if (isSelf) {
+			if (isNullishOrEmpty(body.currentPassword)) {
+				throwValidationError('Se debe proporcionar la contraseña actual');
+			}
+
+			const valid = await bcrypt.compare(body.currentPassword, user.password);
+			if (!valid) {
+				throwValidationError('La contraseña actual no es válida');
+			}
+		}
+
+		password = await bcrypt.hash(body.password, await bcrypt.genSalt());
+	}
+
+	return { ...body, password };
 }
 
 const schemaBodyAdmin = baseSchemaBody;
-async function updateAdmin(user: ViewUserAdmin.Value, event: H3Event) {
+async function updateAdmin(user: ViewUserPrivileged.Value, isSelf: boolean, event: H3Event) {
 	const body = await sharedReadBody(event, schemaBodyAdmin);
-	return actualizarAdmin(user.id, await sharedReplacePassword(body));
+	return actualizarAdmin(user.id, await sharedReplacePassword(user, isSelf, body));
 }
 
 const schemaBodyInternalProfessor = z
 	.object({ university: z.number().int().optional(), faculty: z.string().trim().optional(), knowledgeAreas: z.number().int().array().optional() })
 	.merge(baseSchemaBody);
-async function updateInternalProfessor(user: ViewUserInternalProfessor.Value, event: H3Event) {
+async function updateInternalProfessor(user: ViewUserPrivileged.Value, isSelf: boolean, event: H3Event) {
 	const body = await sharedReadBody(event, schemaBodyInternalProfessor);
-	return actualizarProfesorInterno(user.id, await sharedReplacePassword(body));
+	return actualizarProfesorInterno(user.id, await sharedReplacePassword(user, isSelf, body));
 }
 
 const schemaBodyExternalProfessor = z
 	.object({ university: z.number().int().optional(), faculty: z.string().trim().optional(), knowledgeAreas: z.number().int().array().optional() })
 	.merge(baseSchemaBody);
-async function updateExternalProfessor(user: ViewUserExternalProfessor.Value, event: H3Event) {
+async function updateExternalProfessor(user: ViewUserPrivileged.Value, isSelf: boolean, event: H3Event) {
 	const body = await sharedReadBody(event, schemaBodyExternalProfessor);
-	return actualizarProfesorExterno(user.id, await sharedReplacePassword(body));
+	return actualizarProfesorExterno(user.id, await sharedReplacePassword(user, isSelf, body));
 }
 
 const schemaBodyInternalStudent = z //
 	.object({ degree: z.number().int().optional() })
 	.merge(baseSchemaBody);
-async function updateInternalStudent(user: ViewUserInternalStudent.Value, event: H3Event) {
+async function updateInternalStudent(user: ViewUserPrivileged.Value, isSelf: boolean, event: H3Event) {
 	const body = await sharedReadBody(event, schemaBodyInternalStudent);
-	return actualizarEstudianteInterno(user.id, await sharedReplacePassword(body));
+	return actualizarEstudianteInterno(user.id, await sharedReplacePassword(user, isSelf, body));
 }
 
 const schemaBodyExternalStudent = z //
 	.object({ degree: z.string().optional(), university: z.number().int().optional() })
 	.merge(baseSchemaBody);
-async function updateExternalStudent(user: ViewUserExternalStudent.Value, event: H3Event) {
+async function updateExternalStudent(user: ViewUserPrivileged.Value, isSelf: boolean, event: H3Event) {
 	const body = await sharedReadBody(event, schemaBodyExternalStudent);
-	return actualizarEstudianteExterno(user.id, await sharedReplacePassword(body));
+	return actualizarEstudianteExterno(user.id, await sharedReplacePassword(user, isSelf, body));
 }
 
 const schemaBodyApSOffice = baseSchemaBody;
-async function updateApSOffice(user: ViewUserApSOffice.Value, event: H3Event) {
+async function updateApSOffice(user: ViewUserPrivileged.Value, isSelf: boolean, event: H3Event) {
 	const body = await sharedReadBody(event, schemaBodyApSOffice);
-	return actualizarOficinaAPS(user.id, await sharedReplacePassword(body));
+	return actualizarOficinaAPS(user.id, await sharedReplacePassword(user, isSelf, body));
 }
 
 const schemaBodyCommunityPartner = z
@@ -180,7 +201,7 @@ const schemaBodyCommunityPartner = z
 		mission: z.string().trim().optional()
 	})
 	.merge(baseSchemaBody);
-async function updateCommunityPartner(user: ViewUserCommunityPartner.Value, event: H3Event) {
+async function updateCommunityPartner(user: ViewUserPrivileged.Value, isSelf: boolean, event: H3Event) {
 	const body = await sharedReadBody(event, schemaBodyCommunityPartner);
-	return actualizarSocioComunitario(user.id, await sharedReplacePassword(body));
+	return actualizarSocioComunitario(user.id, await sharedReplacePassword(user, isSelf, body));
 }

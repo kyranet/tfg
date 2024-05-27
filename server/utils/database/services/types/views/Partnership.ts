@@ -1,14 +1,13 @@
-import { Colaboracion } from '../Colaboracion';
-import { DatosPersonalesExterno } from '../DatosPersonalesExterno';
-import { DatosPersonalesInterno } from '../DatosPersonalesInterno';
-import { DemandaServicio } from '../DemandaServicio';
-import { Estudiante } from '../Estudiante';
-import { EstudianteInterno } from '../EstudianteInterno';
-import { OfertaServicio } from '../OfertaServicio';
-import { Partenariado } from '../Partenariado';
-import { Profesor } from '../Profesor';
-import { Proyecto } from '../Proyecto';
-import { SocioComunitario } from '../SocioComunitario';
+import type { Colaboracion } from '../Colaboracion';
+import type { DatosPersonalesExterno } from '../DatosPersonalesExterno';
+import type { DatosPersonalesInterno } from '../DatosPersonalesInterno';
+import type { DemandaServicio } from '../DemandaServicio';
+import type { Estudiante } from '../Estudiante';
+import type { OfertaServicio } from '../OfertaServicio';
+import type { Partenariado } from '../Partenariado';
+import type { Profesor } from '../Profesor';
+import type { Proyecto } from '../Proyecto';
+import type { SocioComunitario } from '../SocioComunitario';
 import { makeKeyFunction } from '../base/Shared';
 
 export namespace ViewPartnership {

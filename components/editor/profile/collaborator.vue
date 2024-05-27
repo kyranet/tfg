@@ -6,13 +6,6 @@
 
 	<label class="form-control">
 		<div class="label">
-			<span class="label-text">Rol</span>
-		</div>
-		<input type="text" class="input input-bordered w-full" disabled="true" value="Colaborador" />
-	</label>
-
-	<label class="form-control">
-		<div class="label">
 			<span class="label-text">Universidad</span>
 		</div>
 		<select v-model="university" class="select select-bordered" required :disabled="error !== null || !entries?.length">

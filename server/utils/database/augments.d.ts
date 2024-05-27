@@ -55,6 +55,7 @@ import { Upload } from './services/types/Upload';
 import { Upload_AnuncioServicio } from './services/types/Upload_AnuncioServicio';
 import { Upload_Colaboracion } from './services/types/Upload_Colaboracion';
 import { Usuario } from './services/types/Usuario';
+import { ViewDemand } from './services/types/views/Demand';
 import { ViewNotification } from './services/types/views/Notification';
 import { ViewNotificationBackedDemand } from './services/types/views/NotificationBackedDemand';
 import { ViewNotificationConfirmationAccepted } from './services/types/views/NotificationConfirmationAccepted';
@@ -86,6 +87,7 @@ declare module 'knex/types/tables' {
 		[ViewUserApSOffice.Name]: ViewUserApSOffice.Value;
 		[ViewUserCommunityPartner.Name]: ViewUserCommunityPartner.Value;
 		[ViewUserPrivileged.Name]: ViewUserPrivileged.Value;
+		[ViewDemand.Name]: ViewDemand.RawValue;
 		[ViewPartnership.Name]: ViewPartnership.Value;
 		[ViewServiceOffer.Name]: ViewServiceOffer.RawValue;
 		[ViewNotification.Name]: ViewNotification.Value;

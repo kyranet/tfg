@@ -1,6 +1,6 @@
 <template>
 	<div class="group relative">
-		<button class="input input-bordered w-full text-left" :disabled="disabled">
+		<button class="input input-bordered w-full text-left" :disabled="disabled" @click.prevent>
 			<span v-if="selected.length === 0" class="text-base-content/60">{{ tooltip }}</span>
 			<span v-for="entry of names" :key="entry.value" class="badge badge-neutral">{{ entry.name }}</span>
 		</button>
@@ -19,9 +19,10 @@
 </template>
 
 <script setup lang="ts" generic="T extends string | number">
-const props = withDefaults(defineProps<{ entries: { name: string; value: T }[]; modelValue?: T[]; disabled?: boolean; tooltip?: string }>(), {
-	modelValue: () => []
-});
+const props = withDefaults(
+	defineProps<{ entries: { name: string; value: T }[]; modelValue?: T[]; disabled?: boolean; tooltip?: string; required?: boolean }>(),
+	{ modelValue: () => [] }
+);
 const selected = useVModel(props, 'modelValue');
 
 const names = computed(() => props.entries.filter((entry) => selected.value.includes(entry.value)));

@@ -1,10 +1,10 @@
 <template>
 	<Carousel :items="slides" />
 
-	<section class="mt-20 text-center">
+	<section class="mt-20 w-full text-center">
 		<h2 class="text-center text-3xl font-semibold">Cómo participar</h2>
 		<hr class="mb-6 mt-1" />
-		<div class="grid md:grid-cols-3">
+		<div class="grid gap-4 md:grid-cols-3">
 			<div class="flex flex-col items-center gap-2">
 				<Icon name="fa6-solid:user-graduate" size="96" />
 				<h3 class="font-semibold uppercase">Estudiantes</h3>
@@ -51,10 +51,10 @@
 		</div>
 	</section>
 
-	<section class="mt-20 text-center">
+	<section class="mt-20 w-full text-center">
 		<h2 class="text-center text-3xl font-semibold">Destacados</h2>
 		<hr class="mb-6 mt-1" />
-		<div class="grid md:grid-cols-3">
+		<div class="grid gap-4 md:grid-cols-3">
 			<div>
 				<span class="text-5xl font-extrabold">{{ stats?.projects ?? 0 }}</span>
 				<h3 class="font-semibold uppercase">Proyectos</h3>
@@ -85,7 +85,7 @@
 	<section class="mt-20">
 		<h2 class="text-center text-3xl font-semibold">Noticias</h2>
 		<hr class="mb-6 mt-1" />
-		<div class="grid gap-2 md:grid-cols-3">
+		<div class="grid gap-4 md:grid-cols-3">
 			<div v-for="entry of news" :key="entry.title" class="rounded-lg border bg-base-200 p-4">
 				<h3 class="mb-2 text-xl font-semibold">{{ entry.title }}</h3>
 				<p class="text-sm">{{ entry.description }}</p>
@@ -99,16 +99,7 @@
 		</div>
 	</section>
 
-	<section class="mt-20 rounded-lg bg-primary text-primary-content">
-		<form class="form-subscribe p-4">
-			<h2 class="text-2xl font-bold uppercase">Suscríbete</h2>
-			<p>Recibe nuestra newsletter y avisos de proyectos</p>
-			<div class="form-subscribe-input">
-				<input type="email" name="email" placeholder="Introduce tu correo electrónico" class="grow rounded-l-lg px-4" />
-				<input type="submit" value="Suscribir" class="rounded-r-lg bg-gray-600 px-4 py-2 font-bold uppercase" />
-			</div>
-		</form>
-	</section>
+	<newsletter-subscribe />
 </template>
 
 <script setup lang="ts">
@@ -147,38 +138,3 @@ const news = [
 
 const { data: stats } = await useFetch('/api/home/datos');
 </script>
-
-<style scoped>
-.form-subscribe {
-	@apply grid gap-2;
-	grid-template-rows: auto auto auto;
-	grid-template-columns: 1fr;
-	grid-template-areas:
-		'a'
-		'b'
-		'c';
-}
-
-@screen lg {
-	.form-subscribe {
-		grid-template-rows: auto auto;
-		grid-template-columns: 1fr 1fr;
-		grid-template-areas:
-			'a a'
-			'b c';
-	}
-}
-
-.form-subscribe > h2 {
-	grid-area: a;
-}
-
-.form-subscribe > p {
-	grid-area: b;
-}
-
-.form-subscribe-input {
-	grid-area: c;
-	@apply flex;
-}
-</style>
