@@ -27,6 +27,9 @@ on:
 jobs:
     PublishApS:
         name: Publish ApS image to container registries
+        permissions:
+            contents: read
+            packages: write
         runs-on: ubuntu-latest
         steps:
             - name: Checkout Project
